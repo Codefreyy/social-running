@@ -5,6 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Social Running</title>
+    <link rel="stylesheet" href="style.css" />
   </head>
 
   <body>
@@ -12,7 +13,22 @@
     <section id="auth">hello auth</section>
 
     <!-- for create runs form-->
-    <section id="create-run">hello create</section>
+    <section id="create-run">
+      <form>
+        <label for="start-time"> Starting Time </label>
+        <input name="start-time" type="date" id="start-time" />
+
+        <label> Starting Point </label>
+        <input name="start-point" id="start-point" />
+
+        <label> Ending Point </label>
+        <input name="end-point" id="end-point" />
+
+        <label> Expected Pace </label>
+        <input name="expected-pace" id="expected-pace" />
+        <button id="create-run" type="submit">Create a run</button>
+      </form>
+    </section>
 
     <!-- for runs list -->
     <section id="run-list">hello list</section>
