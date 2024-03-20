@@ -36,4 +36,12 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   loadRuns() // Load the list when the page is ready
+
+
+  login_btn = document.getElementById("log-in");
+  login_btn.addEventListener("click", Log_in);
+
+  function Log_in() {
+    console.log("log in ");
+  }
 })
