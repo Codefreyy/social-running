@@ -8,7 +8,17 @@ document.addEventListener("DOMContentLoaded", () => {
       const endPoint = document.getElementById("end-point").value
       const expectedPace = document.getElementById("expected-pace").value
 
-      const runData = { startTime, startPoint, endPoint, expectedPace }
+      const name = document.getElementById("name").value
+      const description = document.getElementById("description").value
+
+      const runData = {
+        startTime,
+        startPoint,
+        endPoint,
+        expectedPace,
+        name,
+        description,
+      }
 
       const response = await fetch("/runs", {
         method: "POST",

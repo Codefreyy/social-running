@@ -63,10 +63,20 @@ app.get("/runs", async (req, res) => {
 
 // Create new runs
 app.post("/runs", async (req, res) => {
-  const runData = { ...req.body, id: nanoid() } // Construct a run data
+  const { startTime, startPoint, endPoint, expectedPace, name, description } =
+    req.body // Add 'name' and 'description' if you plan to include these in the form
+  const runData = {
+    _id: nanoid(),
+    startTime,
+    startPoint,
+    endPoint,
+    expectedPace,
+    name, // Include this if your form has a 'name' field
+    description, // Include this if your form has a 'description' field
+  }
   try {
     await runsCollection.insertOne(runData)
-    res.json("Run added successfully")
+    res.json({ message: "Run added successfully" })
   } catch (error) {
     console.error(error)
     res.status(500).json({ error: "An error occurred" })

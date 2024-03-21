@@ -1,6 +1,13 @@
 const { nanoid } = require("nanoid")
 
+async function clearDatabase(runsCollection, usersCollection) {
+  await runsCollection.deleteMany({})
+  await usersCollection.deleteMany({})
+}
+
 async function insertStarterData(runsCollection, usersCollection) {
+  await clearDatabase(runsCollection, usersCollection) // clear the database first after connection, in case old data interference
+
   await insertRuns(runsCollection)
   await insertUsers(usersCollection)
 }
@@ -12,26 +19,22 @@ async function insertRuns(runsCollection) {
       {
         _id: nanoid(),
         name: "North Queensferry to Dalmeny Estate and back",
-        date: "2024-04-19",
-        time: "10:00",
-        distance: "Approx 11 miles",
-        pace: "Approx 9.5 minute miles",
+        startTime: "2024-04-19T10:00", // Combined date and time
+        startPoint: "56.0012:-3.3978", // Example latitude and longitude
+        endPoint: "56.0012:-3.3978",
+        expectedPace: "9.5 minute miles",
         description:
           "Starting at North Queensferry, cross the Forth Road Bridge into South Queensferry, along cycle path to Dalmeny then into Dalmeny Estate before returning to South Queensferry then back across the bridge.",
-        startingPoint: "Carpark at Doubletree (next to Forth Road Bridge)",
-        endPoint: "Carpark at Doubletree (next to Forth Road Bridge)",
       },
       {
         _id: nanoid(),
         name: "Black Mountains Trail Half-Marathon",
-        date: "2024-05-19",
-        time: "10:00",
-        distance: "13.1 miles",
-        pace: "Approx 11 minute miles",
+        startTime: "2024-05-19T10:00",
+        startPoint: "51.8798858:-3.1150119",
+        endPoint: "51.8791546:-3.1148286",
+        expectedPace: "11 minute miles",
         description:
-          "Starting with a short climb onto the Table Mountain, up through the valley to summit of PenTwyn Glas, continue on this ridge until you descend into McNamara’s Pass, leaving the base of the valley, follow an ancient wall, follow forest trails, then cross streams and fields climbing to retrace earlier steps.",
-        startingPoint: "latitude: 51.8798858, longitude: -3.1150119",
-        endPoint: "latitude: 51.8791546, longitude: -3.1148286",
+          "Starting with a short climb onto the Table Mountain, up through the valley to summit of PenTwyn Glas, continue on this ridge until you descend into McNamara’s Pass...",
         route: "Blacks-Mountain-Half-Marathon-2019.gpx",
       },
     ])
