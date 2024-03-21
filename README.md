@@ -10,6 +10,7 @@ Welcome to the Social Running Project! Follow these instructions to get the serv
 2. Open a terminal in the `socialrunning` directory.
 3. Type `npm i` to install all the dependencies
 4. Type `npm start` or `node server.js` and press Enter to start the server. This process may take a few seconds.
+Or Type `npm run dev` to use nodemon, so that you don't need to restart the server every time you make changes.
 5. Wait for the message `Server is running on port 5500` to appear in the terminal. This confirms that the server has successfully started.
 
 ### Client Setup

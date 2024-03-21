@@ -5,7 +5,7 @@
     password: "socialrunninggroup3abc",
     port: "24755",
     database: "mongodb_data",
-    // collection: "modules",
+    collection: "runs",
     users: "users",
   }
 

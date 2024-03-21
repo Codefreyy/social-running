@@ -31,39 +31,43 @@ document.addEventListener("DOMContentLoaded", () => {
     listElement.innerHTML = "" // Clear the list before adding new elements
     runs.forEach((run) => {
       const item = document.createElement("div")
-      item.textContent = `Start Time: ${run.startTime}, Start Point: ${run.startPoint}, End Point: ${run.endPoint}, Pace: ${run.expectedPace}`
+      item.textContent = `Start Time: ${run.startTime}, Start Point: ${run.startPoint}, End Point: ${run.endPoint}, Expected Pace: ${run.expectedPace}`
       listElement.appendChild(item)
     })
   }
 
   loadRuns() // Load the list when the page is ready
 
+  login_btn = document.getElementById("log-in")
+  login_btn.addEventListener("click", login)
 
-  login_btn = document.getElementById("log-in");
-  login_btn.addEventListener("click", login);
-  
   function parseResponse(response) {
-    return response.json();
-
+    return response.json()
   }
 
   function login() {
-    console.log("log in started");
-    username = document.getElementById("username");
-    password = document.getElementById("password");
-    user_key = btoa(username.value + ":" + password.value);
-		username.value = "";
-		password.value = "";
+    console.log("log in started")
+    username = document.getElementById("username")
+    password = document.getElementById("password")
+    user_key = btoa(username.value + ":" + password.value)
+    username.value = ""
+    password.value = ""
     // Send login credentials to the server
-    fetch('/login', {
-      method: 'POST',
+    fetch("/login", {
+      method: "POST",
       headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Basic ' + user_key
-      }
+        "Content-Type": "application/json",
+        Authorization: "Basic " + user_key,
+      },
     })
-    .then(parseResponse)
-    .then((data)=> {alert(`${data.username} logged in with the following password : ${data.password}`)})
-    .catch((error) => {console.error('Login failed:', error);});
-  }; 
-});
+      .then(parseResponse)
+      .then((data) => {
+        alert(
+          `${data.username} logged in with the following password : ${data.password}`
+        )
+      })
+      .catch((error) => {
+        console.error("Login failed:", error)
+      })
+  }
+})
