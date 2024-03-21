@@ -26,6 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const loadRuns = async () => {
     const response = await fetch("/runs")
     const runs = await response.json()
+
     const listElement = document.getElementById("run-list")
     listElement.innerHTML = "" // Clear the list before adding new elements
     runs.forEach((run) => {
