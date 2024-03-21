@@ -80,4 +80,28 @@ document.addEventListener("DOMContentLoaded", () => {
         console.error("Login failed:", error)
       })
   }
+
+  
+  const logout_btn = document.getElementById("btnLogout");
+  logout_btn.addEventListener("click", logout);
+
+  function logout() {
+    fetch("/logout", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log(data); 
+    })
+    .catch(error => {
+      console.error("Logout failed:", error);
+    });
+  }
+
 })
+
+
+  

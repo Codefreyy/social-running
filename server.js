@@ -105,6 +105,20 @@ app.post("/login", authorise, (req, res) => {
   console.log(`user loged in : ${username} with the password ${password}`)
 })
 
+app.post("/logout", (req, res) => {
+  // Clear the user data from the session or wherever it's stored
+  req.session.destroy(err => {
+    if (err) {
+      console.error("Error destroying session:", err);
+      res.status(500).json({ error: "Internal Server Error" });
+    } else {
+      console.log("User logged out successfully");
+      res.status(200).json({ message: "Logged out successfully" });
+    }
+  });
+});
+
+
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`)
 })
