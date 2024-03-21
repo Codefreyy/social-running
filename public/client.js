@@ -37,4 +37,33 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   loadRuns() // Load the list when the page is ready
-})
+
+
+  login_btn = document.getElementById("log-in");
+  login_btn.addEventListener("click", login);
+  
+  function parseResponse(response) {
+    return response.json();
+
+  }
+
+  function login() {
+    console.log("log in started");
+    username = document.getElementById("username");
+    password = document.getElementById("password");
+    user_key = btoa(username.value + ":" + password.value);
+		username.value = "";
+		password.value = "";
+    // Send login credentials to the server
+    fetch('/login', {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Basic ' + user_key
+      }
+    })
+    .then(parseResponse)
+    .then((data)=> {alert(`${data.username} logged in with the following password : ${data.password}`)})
+    .catch((error) => {console.error('Login failed:', error);});
+  }; 
+});
