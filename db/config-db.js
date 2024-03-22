@@ -2,8 +2,8 @@
   const db_info = {
     url: "localhost",
     username: "webuser",
-    password: "socialrunninggroup3abc",
-    port: "24755",
+    password: "socialrunning",
+    port: "27017",
     database: "mongodb_data",
     collection: "runs",
     users: "users",

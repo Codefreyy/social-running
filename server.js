@@ -8,8 +8,9 @@ const { nanoid } = require("nanoid") // for generating unique ids
 const MongoClient = require("mongodb").MongoClient
 const { insertStarterData } = require("./db/db-setup")
 
-// const config = require("./db/config-db.js")
-const url = "mongodb://localhost:27017"
+const config = require("./db/config-db.js")
+// const url = "mongodb://localhost:27017"
+const url = `mongodb://${config.username}:${config.password}@${config.url}:${config.port}/${config.database}?authSource=admin`
 const client = new MongoClient(url)
 
 let runsCollection = null
@@ -107,17 +108,16 @@ app.post("/login", authorise, (req, res) => {
 
 app.post("/logout", (req, res) => {
   // Clear the user data from the session or wherever it's stored
-  req.session.destroy(err => {
+  req.session.destroy((err) => {
     if (err) {
-      console.error("Error destroying session:", err);
-      res.status(500).json({ error: "Internal Server Error" });
+      console.error("Error destroying session:", err)
+      res.status(500).json({ error: "Internal Server Error" })
     } else {
-      console.log("User logged out successfully");
-      res.status(200).json({ message: "Logged out successfully" });
+      console.log("User logged out successfully")
+      res.status(200).json({ message: "Logged out successfully" })
     }
-  });
-});
-
+  })
+})
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`)
