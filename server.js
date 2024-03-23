@@ -54,7 +54,10 @@ app.use(express.json()) // parse the req body as json
 // get runs
 app.get("/runs", async (req, res) => {
   try {
-    const results = await runsCollection.find({}).toArray()
+    const results = await runsCollection
+      .find({})
+      .sort({ createdAt: -1 })
+      .toArray()
     res.json(results)
   } catch (error) {
     console.error(error)
@@ -65,15 +68,16 @@ app.get("/runs", async (req, res) => {
 // Create new runs
 app.post("/runs", async (req, res) => {
   const { startTime, startPoint, endPoint, expectedPace, name, description } =
-    req.body // Add 'name' and 'description' if you plan to include these in the form
+    req.body
   const runData = {
     _id: nanoid(),
     startTime,
     startPoint,
     endPoint,
     expectedPace,
-    name, // Include this if your form has a 'name' field
-    description, // Include this if your form has a 'description' field
+    name,
+    description,
+    createdAt: new Date(),
   }
   try {
     await runsCollection.insertOne(runData)
