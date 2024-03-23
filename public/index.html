@@ -6,6 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Social Running</title>
     <link rel="stylesheet" href="style.css" />
+    <link
+      rel="stylesheet"
+      href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.0/mapbox-gl-geocoder.css"
+      type="text/css"
+    />
+    <link
+      href="https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.css"
+      rel="stylesheet"
+    />
   </head>
 
   <body>
@@ -36,11 +45,31 @@
         <label for="start-time"> Starting Time </label>
         <input name="start-time" type="datetime-local" id="start-time" />
 
-        <label> Starting Point </label>
-        <input name="start-point" id="start-point" />
+        <div id="search-section">
+          <div id="start-search-area">
+            <label> Starting Point </label>
+            <input
+              type="text"
+              id="start-point-search"
+              placeholder="Enter a location"
+            />
+            <!-- this hidden input is for lat lon number form submit -->
+            <input type="hidden" name="start-point" id="start-point" />
+            <div id="start-point-suggestions"></div>
+          </div>
 
-        <label> Ending Point </label>
-        <input name="end-point" id="end-point" />
+          <div id="end-search-area">
+            <label> Ending Point </label>
+            <input
+              type="text"
+              id="end-point-search"
+              placeholder="Enter a location"
+            />
+            <input type="hidden" name="end-point" id="end-point" />
+            <div id="end-point-suggestions"></div>
+          </div>
+        </div>
+        <div id="start-map" style="width: 600px; height: 300px"></div>
 
         <label> Expected Pace </label>
         <input name="expected-pace" id="expected-pace" />
@@ -56,9 +85,11 @@
       <div id="run-details" style="display: none">
         <button id="btn-back-to-list">&#x2190; Back</button>
         <div id="run-details-content"></div>
+        <div id="detail-map" style="width: 600px; height: 400px"></div>
       </div>
     </section>
 
     <script src="./client.js"></script>
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.js"></script>
   </body>
 </html>
