@@ -17,10 +17,11 @@
     <!-- for login & register -->
     <section id="auth">
       <label> Username </label>
-      <input name="username" id="username" />
+      <input name="username" id="username" value="admin" />
       <label> Password </label>
-      <input name="password" id="password" />
+      <input name="password" id="password" value="admin" />
       <button id="log-in">Log in</button>
+      default value: admin (for quicker testing purpose)
     </section>
 
     <!-- for create runs form-->
@@ -51,9 +52,11 @@
     <section id="run-list">hello list</section>
 
     <!-- for run details -->
-    <section id="run-details" style="display: none">
-      <h2 id="details-title"></h2>
-      <p id="details-description"></p>
+    <section>
+      <div id="run-details" style="display: none">
+        <button id="btn-back-to-list">&#x2190; Back</button>
+        <div id="run-details-content"></div>
+      </div>
     </section>
 
     <script src="./client.js"></script>

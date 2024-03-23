@@ -84,6 +84,22 @@ app.post("/runs", async (req, res) => {
   }
 })
 
+// Get run details by id
+app.get("/runs/:id", async (req, res) => {
+  const { id } = req.params
+  try {
+    const result = await runsCollection.findOne({ _id: id })
+    if (result) {
+      res.json(result)
+    } else {
+      res.status(404).json({ error: "Run not found" })
+    }
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ error: "An error occurred" })
+  }
+})
+
 //temporary db for testing purposes
 db_temp = { username: null, password: null, email: null }
 

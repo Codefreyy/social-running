@@ -35,15 +35,34 @@ document.addEventListener("DOMContentLoaded", () => {
       loadRuns() // Refresh the list after adding
     })
 
-  window.viewRunDetails = (runId) => {
-    // Hide other sections
+  document.getElementById("btn-back-to-list").addEventListener("click", () => {
+    document.getElementById("run-details").style.display = "none"
+    document.getElementById("run-list").style.display = "block"
+    document.getElementById("create-run").style.display = "block"
+  })
+
+  window.viewRunDetails = async (runId) => {
+    // hide other sections
     document.getElementById("create-run").style.display = "none"
     document.getElementById("run-list").style.display = "none"
-    // More logic to fetch and display details for the specified run
 
-    const detailsSection = document.getElementById("run-details")
-    detailsSection.innerHTML = `<h2>Run Details for ID: ${runId}</h2>` // Replace this with your own logic to fetch and display run details
-    detailsSection.style.display = "block"
+    // fetching run details from the server
+    const response = await fetch(`/runs/${runId}`)
+    const runDetails = await response.json()
+
+    // constructing details section content
+    const detailsSection = document.getElementById("run-details-content")
+    detailsSection.innerHTML = `
+    <div class="run-details-card">
+        <h2>${runDetails.name}</h2>
+        <p>Description: ${runDetails.description}</p>
+        <p>Start Time: ${new Date(runDetails.startTime).toLocaleString()}</p>
+        <p>Starting Point: ${runDetails.startPoint}</p>
+        <p>Ending Point: ${runDetails.endPoint}</p>
+        <p>Expected Pace: ${runDetails.expectedPace}</p>
+    </div>
+`
+    document.getElementById("run-details").style.display = "block"
   }
 
   const loadRuns = async () => {
@@ -94,10 +113,10 @@ document.addEventListener("DOMContentLoaded", () => {
       .then(parseResponse)
       .then((data) => {
         toggleSections(false) // login successfully, so hide auth form, show other sections
-        alert(`${data.username} logged in!`)
       })
       .catch((error) => {
         console.error("Login failed:", error)
+        alert(`Logged in failed!`)
       })
   }
 
@@ -133,5 +152,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("run-list").style.display = showLogin
       ? "none"
       : "block"
+
+    document.getElementById("run-details").style.display = "none"
   }
 })
