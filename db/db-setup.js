@@ -18,24 +18,43 @@ async function insertRuns(runsCollection) {
     .insertMany([
       {
         _id: nanoid(),
-        name: "North Queensferry to Dalmeny Estate and back",
-        startTime: "2024-04-19T10:00", // Combined date and time
-        startPoint: "56.0012:-3.3978", // Example latitude and longitude
-        endPoint: "56.0012:-3.3978",
-        expectedPace: "9.5 minute miles",
-        description:
-          "Starting at North Queensferry, cross the Forth Road Bridge into South Queensferry, along cycle path to Dalmeny then into Dalmeny Estate before returning to South Queensferry then back across the bridge.",
+        name: "Morning Park Run",
+        startTime: new Date("2024-04-19T07:00:00Z"),
+        endPoint: "-2.97019,56.460594",
+        startPoint: "-2.802661,56.3434325",
+        startPointName:
+          "The Royal and Ancient Golf Club of St Andrews, The Links, St. Andrews, Scotland KY16 9AB, United Kingdom",
+        endPointName: "Dundee, Dundee City, Scotland, United Kingdom",
+        expectedPace: 10,
+        description: "A lovely run through the city parks.",
+
+        level: "newbie", // 'intermediate' or 'expert'
       },
       {
         _id: nanoid(),
-        name: "Black Mountains Trail Half-Marathon",
-        startTime: "2024-05-19T10:00",
-        startPoint: "51.8798858:-3.1150119",
-        endPoint: "51.8791546:-3.1148286",
-        expectedPace: "11 minute miles",
-        description:
-          "Starting with a short climb onto the Table Mountain, up through the valley to summit of PenTwyn Glas, continue on this ridge until you descend into McNamara’s Pass...",
-        route: "Blacks-Mountain-Half-Marathon-2019.gpx",
+        name: "Evening Bridge Run",
+        startTime: new Date("2024-05-22T19:00:00Z"),
+        startPoint: "56.0212,-3.3978",
+        endPoint: "56.0412,-3.3978",
+        startPointName: "Old Bridge",
+        endPointName: "New Bridge",
+        expectedPace: 8,
+        description: "Bridge to bridge run at sunset.",
+
+        level: "intermediate", // 'newbie' or 'expert'
+      },
+      {
+        _id: nanoid(),
+        name: "Evening Bridge Run",
+        startTime: new Date("2024-05-22T19:00:00Z"),
+        startPoint: "56.0212,-3.3978",
+        endPoint: "56.0412,-3.3978",
+        startPointName: "Old Bridge",
+        endPointName: "New Bridge",
+        expectedPace: 12,
+        description: "Bridge to bridge run at sunset.",
+        status: "active", // or 'expired'
+        level: "expert", // 'newbie' or 'expert'
       },
     ])
     .then((res) => console.log("Data inserted with IDs", res.insertedIds))

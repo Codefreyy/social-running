@@ -6,21 +6,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Social Running</title>
     <link rel="stylesheet" href="style.css" />
+    <link
+      rel="stylesheet"
+      href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.0/mapbox-gl-geocoder.css"
+      type="text/css"
+    />
+    <link
+      href="https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.css"
+      rel="stylesheet"
+    />
   </head>
 
   <body>
     <!-- for logout -->
-    <div>
+    <div id="logout">
       <button id="btnLogout">Logout</button>
     </div>
-
+    <h1>Social Runners</h1> 
     <!-- for login & register -->
     <section id="auth">
       <label> Username </label>
-      <input name="username" id="username" />
+      <input name="username" id="username" value="admin" />
       <label> Password </label>
-      <input name="password" id="password" />
+      <input name="password" id="password" value="admin" />
       <button id="log-in">Log in</button>
+      default value: admin (for quicker testing purpose)
     </section>
 
     <!-- for create runs form-->
@@ -35,13 +45,38 @@
         <label for="start-time"> Starting Time </label>
         <input name="start-time" type="datetime-local" id="start-time" />
 
-        <label> Starting Point </label>
-        <input name="start-point" id="start-point" />
+        <div id="search-section">
+          <div id="start-search-area">
+            <label> Starting Point </label>
+            <input
+              type="text"
+              id="start-point-search"
+              placeholder="Enter a location"
+            />
+            <!-- this hidden input is for lat lon number form submit -->
+            <input type="hidden" name="start-point" id="start-point" />
+            <div id="start-point-suggestions"></div>
+          </div>
 
-        <label> Ending Point </label>
-        <input name="end-point" id="end-point" />
-
-        <label> Expected Pace </label>
+          <div id="end-search-area">
+            <label> Ending Point </label>
+            <input
+              type="text"
+              id="end-point-search"
+              placeholder="Enter a location"
+            />
+            <input type="hidden" name="end-point" id="end-point" />
+            <div id="end-point-suggestions"></div>
+          </div>
+        </div>
+        <div id="start-map" style="width: 600px; height: 300px"></div>
+        <label>Level</label>
+        <select name="level" id="level">
+          <option value="newbie">Newbie</option>
+          <option value="intermediate">Intermediate</option>
+          <option value="expert">Expert</option>
+        </select>
+        <label> Expected Pace (minute miles) </label>
         <input name="expected-pace" id="expected-pace" />
         <button id="create-run" type="submit">Create a run</button>
       </form>
@@ -50,10 +85,22 @@
     <!-- for runs list -->
     <section id="run-list">hello list</section>
 
+
+
+    <!-- for run details -->
+    <section>
+      <div id="run-details" style="display: none">
+        <button id="btn-back-to-list">&#x2190; Back</button>
+        <div id="run-details-content"></div>
+        <div id="run-details-map" style="width: 800px; height: 400px"></div>
+      </div>
+    </section>
+
     <h2>Comments</h2>
     <input id="comInput"><button id="comSubmit">submit</button>
     <section id="commentsSec">showComments</section>
 
     <script src="./client.js"></script>
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.js"></script>
   </body>
 </html>

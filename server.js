@@ -56,7 +56,10 @@ app.use(express.json()) // parse the req body as json
 // get runs
 app.get("/runs", async (req, res) => {
   try {
-    const results = await runsCollection.find({}).toArray()
+    const results = await runsCollection
+      .find({})
+      .sort({ createdAt: -1 })
+      .toArray()
     res.json(results)
   } catch (error) {
     console.error(error)
@@ -66,20 +69,47 @@ app.get("/runs", async (req, res) => {
 
 // Create new runs
 app.post("/runs", async (req, res) => {
-  const { startTime, startPoint, endPoint, expectedPace, name, description } =
-    req.body // Add 'name' and 'description' if you plan to include these in the form
+  const {
+    startTime,
+    startPoint,
+    endPoint,
+    expectedPace,
+    name,
+    description,
+    startPointName,
+    endPointName,
+  } = req.body
   const runData = {
     _id: nanoid(),
     startTime,
     startPoint,
     endPoint,
+    startPointName,
+    endPointName,
     expectedPace,
-    name, // Include this if your form has a 'name' field
-    description, // Include this if your form has a 'description' field
+    name,
+    description,
+    createdAt: new Date(),
   }
   try {
     await runsCollection.insertOne(runData)
     res.json({ message: "Run added successfully" })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ error: "An error occurred" })
+  }
+})
+
+// Get run details by id
+app.get("/runs/:id", async (req, res) => {
+  const { id } = req.params
+  try {
+    const result = await runsCollection.findOne({ _id: id })
+    if (result) {
+      res.json(result)
+    } else {
+      res.status(404).json({ error: "Run not found" })
+    }
   } catch (error) {
     console.error(error)
     res.status(500).json({ error: "An error occurred" })
@@ -110,16 +140,16 @@ app.post("/login", authorise, (req, res) => {
 
 app.post("/logout", (req, res) => {
   // Clear the user data from the session or wherever it's stored
-  req.session.destroy(err => {
+  req.session.destroy((err) => {
     if (err) {
-      console.error("Error destroying session:", err);
-      res.status(500).json({ error: "Internal Server Error" });
+      console.error("Error destroying session:", err)
+      res.status(500).json({ error: "Internal Server Error" })
     } else {
-      console.log("User logged out successfully");
-      res.status(200).json({ message: "Logged out successfully" });
+      console.log("User logged out successfully")
+      res.status(200).json({ message: "Logged out successfully" })
     }
-  });
-});
+  })
+})
 
 
 app.listen(port, () => {
