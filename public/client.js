@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("btn-back-to-list").addEventListener("click", () => {
     document.getElementById("run-details").style.display = "none"
-    document.getElementById("run-list").style.display = "block"
+    document.getElementById("run-list").style.display = "flex"
     document.getElementById("create-run").style.display = "block"
   })
 
@@ -35,13 +35,20 @@ document.addEventListener("DOMContentLoaded", () => {
         <h2>${runDetails.name}</h2>
         <p>Description: ${runDetails.description}</p>
         <p>Start Time: ${new Date(runDetails.startTime).toLocaleString()}</p>
-        <p>Starting Point: ${runDetails.startPoint}</p>
-        <p>Ending Point: ${runDetails.endPoint}</p>
-        <p>Expected Pace: ${runDetails.expectedPace}</p>
+        <p>Start Point: ${
+          runDetails.startPointName || runDetails.startPoint
+        }</p> 
+        <p>End Point: ${runDetails.endPointName || runDetails.endPoint}</p> 
+        <p>Expected Pace: ${runDetails.expectedPace} minute miles</p>
     </div>
 `
     document.getElementById("run-details").style.display = "block"
-    showRoute()
+
+    // coordinates of start point and end point
+    const startPointCoords = runDetails.startPoint.split(",").map(Number)
+    const endPointCoords = runDetails.endPoint.split(",").map(Number)
+
+    showDetailRunRoute(startPointCoords, endPointCoords)
   }
 
   login_btn = document.getElementById("log-in")
@@ -51,7 +58,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const startPointSearch = document.getElementById("start-point-search")
   startPointSearch.addEventListener("input", async (e) => {
-    console.log("...")
     const searchText = e.target.value
     if (searchText.length < 3) return // Wait for at least 3 characters before searching
 
@@ -64,6 +70,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const suggestions = data.features
 
     const suggestionsList = document.getElementById("start-point-suggestions")
+    suggestionsList.style.display = "block"
     suggestionsList.innerHTML = "" // Clear existing suggestions
     suggestions.forEach((place) => {
       const option = document.createElement("div")
@@ -73,10 +80,11 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("start-point-search").value = place.place_name
         document.getElementById("start-point").value = place.center.join(",")
         suggestionsList.innerHTML = "" // Clear suggestions after selection
+        suggestionsList.style.display = "none"
 
         // Update the map with the new marker
         if (startPointMarker) startPointMarker.remove() // Remove existing marker
-        startPointMarker = new mapboxgl.Marker()
+        startPointMarker = new mapboxgl.Marker({ color: "green" })
           .setLngLat(place.center)
           .addTo(startMap) // Assuming startMap is your map instance
         startMap.flyTo({ center: place.center, zoom: 10 })
@@ -102,6 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const suggestionsList = document.getElementById("end-point-suggestions")
     suggestionsList.innerHTML = "" // Clear existing suggestions
+    suggestionsList.style.display = "block"
     suggestions.forEach((place) => {
       const option = document.createElement("div")
       option.className = "suggestion"
@@ -110,10 +119,11 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("end-point-search").value = place.place_name
         document.getElementById("end-point").value = place.center.join(",")
         suggestionsList.innerHTML = "" // Clear suggestions after selection
+        suggestionsList.style.display = "none"
 
         // Update the map with the new marker
         if (endPointMarker) endPointMarker.remove() // Remove existing marker
-        endPointMarker = new mapboxgl.Marker()
+        endPointMarker = new mapboxgl.Marker({ color: "red" })
           .setLngLat(place.center)
           .addTo(startMap)
         startMap.flyTo({ center: place.center, zoom: 10 })
@@ -176,7 +186,10 @@ async function onCreateRunFormSubmit(e) {
   const startTime = document.getElementById("start-time").value
   const startPoint = document.getElementById("start-point").value
   const endPoint = document.getElementById("end-point").value
+  const startPointName = document.getElementById("start-point-search").value // 获取地点的名称
+  const endPointName = document.getElementById("end-point-search").value //
   const expectedPace = document.getElementById("expected-pace").value
+  const level = document.getElementById("level").value
 
   const name = document.getElementById("name").value
   const description = document.getElementById("description").value
@@ -184,9 +197,12 @@ async function onCreateRunFormSubmit(e) {
   const runData = {
     startTime,
     startPoint,
+    startPointName,
+    endPointName,
     endPoint,
     expectedPace,
     name,
+    level,
     description,
   }
 
@@ -229,14 +245,25 @@ const loadRuns = async () => {
 
   const listElement = document.getElementById("run-list")
   listElement.innerHTML = "" // Clear the list before adding new elements
+  listElement.className = "runs-grid" // Assign a class for styling the grid
+
   runs.forEach((run) => {
+    const now = new Date()
+    const startTime = new Date(run.startTime)
+    let status = "Upcoming" // Default status
+    if (now > startTime) {
+      status = "Expired" // If the current time is past the start time
+    }
+
     const item = document.createElement("div")
     item.className = "run-item" // Add a class for styling
     item.innerHTML = `
           <h3>${run.name}</h3>
-          <p>Start Time: ${new Date(run.startTime).toLocaleString()}</p>
-          <p>Start Point: ${run.startPoint}</p>
-          <p>End Point: ${run.endPoint}</p>
+          <p>Start Time: ${startTime.toLocaleString()}</p>
+          <p>Start Point: ${run.startPointName}</p>
+          <p>End Point: ${run.endPointName}</p>
+          <p>Level: ${run.level}</p>
+          <p>Status: ${status}</p>
           <p>Expected Pace: ${run.expectedPace}</p>
           <button onclick="viewRunDetails('${run._id}')">See Detail</button>
       `
@@ -302,7 +329,52 @@ function toggleSections(showLogin) {
     : "block"
   document.getElementById("run-list").style.display = showLogin
     ? "none"
-    : "block"
+    : "flex"
 
   document.getElementById("run-details").style.display = "none"
+}
+
+function showDetailRunRoute(start, end) {
+  const detailsMap = new mapboxgl.Map({
+    container: "run-details-map",
+    style: "mapbox://styles/mapbox/streets-v11",
+    center: [start[0], start[1]], // 使用起点坐标作为地图中心
+    zoom: 12,
+  })
+
+  detailsMap.on("load", () => {
+    new mapboxgl.Marker({ color: "green" }).setLngLat(start).addTo(detailsMap)
+    new mapboxgl.Marker({ color: "red" }).setLngLat(end).addTo(detailsMap)
+
+    // 构建并显示路线
+    const directionsQuery = `https://api.mapbox.com/directions/v5/mapbox/walking/${start[0]},${start[1]};${end[0]},${end[1]}?geometries=geojson&access_token=${MY_MAPBOXGL_TOKEN}`
+
+    fetch(directionsQuery)
+      .then((response) => response.json())
+      .then((data) => {
+        const route = data.routes[0].geometry
+        detailsMap.addSource("route", {
+          type: "geojson",
+          data: {
+            type: "Feature",
+            properties: {},
+            geometry: route,
+          },
+        })
+
+        detailsMap.addLayer({
+          id: "route",
+          type: "line",
+          source: "route",
+          layout: {
+            "line-join": "round",
+            "line-cap": "round",
+          },
+          paint: {
+            "line-color": "#888",
+            "line-width": 6,
+          },
+        })
+      })
+  })
 }

@@ -67,13 +67,23 @@ app.get("/runs", async (req, res) => {
 
 // Create new runs
 app.post("/runs", async (req, res) => {
-  const { startTime, startPoint, endPoint, expectedPace, name, description } =
-    req.body
+  const {
+    startTime,
+    startPoint,
+    endPoint,
+    expectedPace,
+    name,
+    description,
+    startPointName,
+    endPointName,
+  } = req.body
   const runData = {
     _id: nanoid(),
     startTime,
     startPoint,
     endPoint,
+    startPointName,
+    endPointName,
     expectedPace,
     name,
     description,

@@ -70,8 +70,13 @@
           </div>
         </div>
         <div id="start-map" style="width: 600px; height: 300px"></div>
-
-        <label> Expected Pace </label>
+        <label>Level</label>
+        <select name="level" id="level">
+          <option value="newbie">Newbie</option>
+          <option value="intermediate">Intermediate</option>
+          <option value="expert">Expert</option>
+        </select>
+        <label> Expected Pace (minute miles) </label>
         <input name="expected-pace" id="expected-pace" />
         <button id="create-run" type="submit">Create a run</button>
       </form>
@@ -85,7 +90,7 @@
       <div id="run-details" style="display: none">
         <button id="btn-back-to-list">&#x2190; Back</button>
         <div id="run-details-content"></div>
-        <div id="detail-map" style="width: 600px; height: 400px"></div>
+        <div id="run-details-map" style="width: 800px; height: 400px"></div>
       </div>
     </section>
 
