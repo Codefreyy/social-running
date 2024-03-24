@@ -27,7 +27,7 @@ async function insertRuns(runsCollection) {
         endPointName: "Dundee, Dundee City, Scotland, United Kingdom",
         expectedPace: 10,
         description: "A lovely run through the city parks.",
-        status: "active", // or 'expired'
+
         level: "newbie", // 'intermediate' or 'expert'
       },
       {
@@ -40,7 +40,7 @@ async function insertRuns(runsCollection) {
         endPointName: "New Bridge",
         expectedPace: 8,
         description: "Bridge to bridge run at sunset.",
-        status: "active", // or 'expired'
+
         level: "intermediate", // 'newbie' or 'expert'
       },
       {

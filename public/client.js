@@ -338,7 +338,7 @@ function showDetailRunRoute(start, end) {
   const detailsMap = new mapboxgl.Map({
     container: "run-details-map",
     style: "mapbox://styles/mapbox/streets-v11",
-    center: [start[0], start[1]], // 使用起点坐标作为地图中心
+    center: [start[0], start[1]],
     zoom: 12,
   })
 
@@ -346,7 +346,6 @@ function showDetailRunRoute(start, end) {
     new mapboxgl.Marker({ color: "green" }).setLngLat(start).addTo(detailsMap)
     new mapboxgl.Marker({ color: "red" }).setLngLat(end).addTo(detailsMap)
 
-    // 构建并显示路线
     const directionsQuery = `https://api.mapbox.com/directions/v5/mapbox/walking/${start[0]},${start[1]};${end[0]},${end[1]}?geometries=geojson&access_token=${MY_MAPBOXGL_TOKEN}`
 
     fetch(directionsQuery)
