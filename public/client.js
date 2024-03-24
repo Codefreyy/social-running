@@ -272,27 +272,14 @@ function login() {
       alert(`Logged in failed!`)
     })
 }
-
-const logout_btn = document.getElementById("btnLogout")
-logout_btn.addEventListener("click", logout)
-
-function logout() {
-  fetch("/logout", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      console.log(data)
-      // show auth form, hide other sections
-      toggleSections(true)
-    })
-    .catch((error) => {
-      console.error("Logout failed:", error)
-    })
-}
+// Logout client route
+document.addEventListener("DOMContentLoaded", () => {
+  const logoutBtn = document.querySelector("#btnLogout");
+  const authSection = document.getElementById("auth");
+  logoutBtn.addEventListener("click", () => {
+    toggleSections(true);
+  });
+});
 
 function toggleSections(showLogin) {
   document.getElementById("auth").style.display = showLogin ? "block" : "none"
@@ -306,3 +293,5 @@ function toggleSections(showLogin) {
 
   document.getElementById("run-details").style.display = "none"
 }
+
+

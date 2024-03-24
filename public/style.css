@@ -13,12 +13,6 @@ form {
   align-items: start;
 }
 
-#btnLogout {
-  position: absolute;
-  top: 10px;
-  right: 100px;
-}
-
 .run-item {
   border: 1px solid #ddd;
   margin-bottom: 10px;
@@ -83,4 +77,65 @@ form {
 .suggestion:hover {
   background-color: #3579f6;
   color: white;
+}
+
+h1 {
+  font-size: 50px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  margin-left: 300px;
+}
+
+#logout {
+  position: absolute;
+  top: 10px;  
+  right: 100px;  
+  padding: 10px 20px;
+  border: 2px solid #55ebd2;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+#logout:hover {
+  background-color: #c05c3e;
+}
+ #log-in {
+  padding: 10px 20px;
+  border: 2px solid #1c84d8;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+#log-in:hover {
+  background-color: #27d8df;
+}
+
+#auth {
+  border: 10px solid #7db3bb;
+  margin-top: 20px;
+  padding: 50px;
+  border-radius: 10px;
+  margin-left: 100px;
+}
+
+@media only screen and (max-width: 768px) {
+  .container {
+    width: 90%;
+  }
+}
+
+@media only screen and (max-width: 576px) {
+  .container {
+    width: 95%;
+  }
+}
+
+input[name="username"],
+input[name="password"] {
+  
+  margin-bottom: 10px;
+  width: 200px;
+  padding: 8px;
+  border: 2px solid #ccc;
+  border-radius: 3px;
 }
