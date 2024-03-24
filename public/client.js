@@ -81,7 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
       })
   }
 
-  
+
   const logout_btn = document.getElementById("btnLogout");
   logout_btn.addEventListener("click", logout);
 
@@ -92,16 +92,58 @@ document.addEventListener("DOMContentLoaded", () => {
         "Content-Type": "application/json"
       }
     })
-    .then(response => response.json())
-    .then(data => {
-      console.log(data); 
-    })
-    .catch(error => {
-      console.error("Logout failed:", error);
-    });
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+      })
+      .catch(error => {
+        console.error("Logout failed:", error);
+      });
   }
 
 })
 
 
-  
+
+
+
+document.addEventListener('DOMContentLoaded', async () => {
+  const subBtn = document.getElementById("comSubmit")
+  const comContent = document.getElementById("comments")
+  const comInput = document.getElementById("comInput")
+  const commentsSec = document.getElementById("commentsSec")
+
+  async function showComments() {
+    const response = await fetch('/comments')
+    const comments = await response.json()
+    commentsSec.innerHTML = ""
+    comments.forEach(comment => {
+      const comDetail = document.createElement("p")
+      const date = new Date(comment.createdAt).toLocaleString()
+      comDetail.textContent = `${comment.username}: ${comment.content} (${date})`
+      commentsSec.appendChild(comDetail)
+    })
+    console.log(comments);
+  }
+  subBtn.addEventListener('click', async () => {
+    const commentText = comInput.value
+    if (commentText) {
+      const response = await fetch('/comments', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text: commentText }),
+      });
+      if (response.ok) {
+        comInput.value = '';
+        showComments(); // Re-fetch and display all comments
+      } 
+    }
+  })
+  showComments()
+})
+
+
+
+

@@ -8,12 +8,14 @@ const { nanoid } = require("nanoid") // for generating unique ids
 const MongoClient = require("mongodb").MongoClient
 const { insertStarterData } = require("./db/db-setup")
 
-// const config = require("./db/config-db.js")
-const url = "mongodb://localhost:27017"
+const config = require("./db/config-db.js")
+// const url = "mongodb://localhost:27017"
+const url = `mongodb://${config.username}:${config.password}@${config.url}:${config.port}/${config.database}?authSource=admin`
 const client = new MongoClient(url)
 
 let runsCollection = null
 let usersCollection = null
+let commentsCollection = null
 
 //connect to the database
 client
@@ -24,6 +26,7 @@ client
     const db = client.db()
     runsCollection = db.collection("runs")
     usersCollection = db.collection("users")
+    commentsCollection = db.collection("comments")
 
     console.log("Connected!", conn.s.url.replace(/:([^:@]{1,})@/, ":****@"))
   })
@@ -35,7 +38,7 @@ client
     throw err
   })
   //interact with the database
-  .then(() => insertStarterData(runsCollection, usersCollection))
+  .then(() => insertStarterData(runsCollection, usersCollection, commentsCollection))
   //exit gracefully from any errors
   .catch((err) => {
     console.log("Giving up!", err.message)
@@ -122,3 +125,30 @@ app.post("/logout", (req, res) => {
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`)
 })
+
+app.post('/comments', async (req, res) => {
+  const content = req.body.text
+  const commentText = {
+    _id: nanoid(),
+    content,
+    createdAt: new Date()
+  }
+  try{
+    await commentsCollection.insertOne(commentText)
+    res.json({message: "comment saved"})
+  }catch(error){
+    console.log(error)
+    res.status(500).json({message: "An error occurred while saving comments"})
+  }
+})
+
+app.get('/comments', async (req, res) => {
+  try{
+    const comments = await commentsCollection.find({}).toArray()
+    res.json(comments)
+  }catch(error){
+    console.log(error)
+    res.status(500).json({message: "An error occurred while getting comments"})
+  }
+})
+
