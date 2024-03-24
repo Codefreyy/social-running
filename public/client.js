@@ -272,7 +272,7 @@ function login() {
       alert(`Logged in failed!`)
     })
 }
-// Logout client route
+
 document.addEventListener("DOMContentLoaded", () => {
   const logoutBtn = document.querySelector("#btnLogout");
   const authSection = document.getElementById("auth");
