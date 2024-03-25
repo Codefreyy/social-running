@@ -15,6 +15,7 @@ const client = new MongoClient(url)
 
 let runsCollection = null
 let usersCollection = null
+let commentsCollection = null
 
 //connect to the database
 client
@@ -25,6 +26,7 @@ client
     const db = client.db()
     runsCollection = db.collection("runs")
     usersCollection = db.collection("users")
+    commentsCollection = db.collection("comments")
 
     console.log("Connected!", conn.s.url.replace(/:([^:@]{1,})@/, ":****@"))
   })
@@ -36,7 +38,9 @@ client
     throw err
   })
   //interact with the database
-  .then(() => insertStarterData(runsCollection, usersCollection))
+  .then(() =>
+    insertStarterData(runsCollection, usersCollection, commentsCollection)
+  )
   //exit gracefully from any errors
   .catch((err) => {
     console.log("Giving up!", err.message)
@@ -103,6 +107,7 @@ app.get("/runs/:id", async (req, res) => {
   const { id } = req.params
   try {
     const result = await runsCollection.findOne({ _id: id })
+    console.log(result)
     if (result) {
       res.json(result)
     } else {
@@ -129,6 +134,7 @@ app.post("/login", authorise, (req, res) => {
   //get the user data
   const username = req.auth.user
   const password = req.auth.password
+
   //update database
   db_temp.username = username
   db_temp.password = password
@@ -149,7 +155,38 @@ app.post("/logout", (req, res) => {
   })
 })
 
-
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`)
+})
+
+app.post("/comments", async (req, res) => {
+  const { content, runId, username } = req.body
+  const commentText = {
+    _id: nanoid(),
+    runId,
+    username,
+    content,
+    createdAt: new Date(),
+  }
+  console.log(req.body)
+  try {
+    await commentsCollection.insertOne(commentText)
+    res.json({ message: "comment saved" })
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({ message: "An error occurred while saving comments" })
+  }
+})
+
+app.get("/comments", async (req, res) => {
+  try {
+    const { runId } = req.query
+    const comments = await commentsCollection.find({ runId: runId }).toArray()
+    res.json(comments)
+  } catch (error) {
+    console.log(error)
+    res
+      .status(500)
+      .json({ message: "An error occurred while getting comments" })
+  }
 })
