@@ -119,6 +119,60 @@ app.get("/runs/:id", async (req, res) => {
   }
 })
 
+// POST /runs/:id/join - Join a run
+app.post("/runs/:id/join", async (req, res) => {
+  const runId = req.params.id
+  const username = req.body.username
+
+  console.log(runId, username)
+
+  try {
+    const updatedInfo = await runsCollection.updateOne(
+      { _id: runId },
+      { $addToSet: { participants: username } } // Use $addToSet to avoid duplicate entries
+    )
+    if (updatedInfo.matchedCount === 0) {
+      return res.status(404).json({ error: "Run not found" })
+    }
+    res.json({ message: "Successfully joined the run" })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ error: "An error occurred" })
+  }
+})
+
+// GET /runs/:id/participants - Get number of participants
+app.get("/runs/:id/participants", async (req, res) => {
+  const runId = req.params.id
+
+  try {
+    const run = await runsCollection.findOne({ _id: runId })
+    if (!run) {
+      return res.status(404).json({ error: "Run not found" })
+    }
+    const participantCount = run.participants ? run.participants.length : 0
+    res.json({ participantCount })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ error: "An error occurred" })
+  }
+})
+
+// Get the list of runs a user has joined
+app.get("/users/:username/joinedRuns", async (req, res) => {
+  const { username } = req.params
+
+  try {
+    const joinedRuns = await runsCollection
+      .find({ participants: username })
+      .toArray()
+    res.json({ joinedRuns })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ error: "An error occurred" })
+  }
+})
+
 //temporary db for testing purposes
 db_temp = { username: null, password: null, email: null }
 
@@ -140,19 +194,6 @@ app.post("/login", authorise, (req, res) => {
   db_temp.password = password
   res.status(200).json(db_temp)
   console.log(`user loged in : ${username} with the password ${password}`)
-})
-
-app.post("/logout", (req, res) => {
-  // Clear the user data from the session or wherever it's stored
-  req.session.destroy((err) => {
-    if (err) {
-      console.error("Error destroying session:", err)
-      res.status(500).json({ error: "Internal Server Error" })
-    } else {
-      console.log("User logged out successfully")
-      res.status(200).json({ message: "Logged out successfully" })
-    }
-  })
 })
 
 app.listen(port, () => {

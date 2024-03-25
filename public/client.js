@@ -31,11 +31,20 @@ document.addEventListener("DOMContentLoaded", () => {
     const response = await fetch(`/runs/${runId}`)
     const runDetails = await response.json()
 
+    // update join button
+    const username = localStorage.getItem("username")
+    const joinedRuns = await fetchJoinedRuns(username)
+    const hasJoined = joinedRuns.includes(runId)
+
     // constructing details section content
     const detailsSection = document.getElementById("run-details-content")
     detailsSection.innerHTML = `
     <div class="run-details-card">
         <h2>${runDetails.name}</h2>
+    <button id="joinRun" data-run-id="${runDetails._id}">${
+      username ? "Join" : "Login to Join"
+    }</button>
+    <div>Participants: <span id="participantCount">0</span></div>
         <p>Description: ${runDetails.description}</p>
         <p>Start Time: ${new Date(runDetails.startTime).toLocaleString()}</p>
         <p>Start Point: ${
@@ -46,6 +55,9 @@ document.addEventListener("DOMContentLoaded", () => {
     </div>
 `
     document.getElementById("run-details").style.display = "block"
+    const joinButton = document.getElementById("joinRun")
+    joinButton.textContent = hasJoined ? "Joined" : "Join"
+    joinButton.disabled = hasJoined
 
     // coordinates of start point and end point
     const startPointCoords = runDetails.startPoint.split(",").map(Number)
@@ -53,13 +65,59 @@ document.addEventListener("DOMContentLoaded", () => {
 
     await showComments(runId)
     showDetailRunRoute(startPointCoords, endPointCoords)
+
+    // bind eventListner to joinRun button
+    document
+      .getElementById("joinRun")
+      .addEventListener("click", async function () {
+        const runId = this.getAttribute("data-run-id")
+        const username = localStorage.getItem("username")
+        const response = await fetch(`/runs/${runId}/join`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ username: username }),
+        })
+        if (response.ok) {
+          // Refresh the participant count
+          fetchParticipants(runId)
+          this.textContent = "Joined"
+          this.disabled = true
+        }
+      })
+
+    // Call fetchParticipants initially to load the current participant count
+    if (currentRunId) {
+      fetchParticipants(currentRunId)
+    }
+  }
+
+  async function fetchJoinedRuns(username) {
+    if (!username) return []
+    const response = await fetch(
+      `/users/${encodeURIComponent(username)}/joinedRuns`
+    )
+    if (response.ok) {
+      const { joinedRuns } = await response.json()
+      return joinedRuns.map((run) => run._id) // We just need the IDs for comparison
+    }
+    return []
+  }
+
+  async function fetchParticipants(runId) {
+    const response = await fetch(`/runs/${runId}/participants`)
+    if (response.ok) {
+      const data = await response.json()
+      document.getElementById("participantCount").innerText =
+        data.participantCount
+    }
   }
 
   login_btn = document.getElementById("log-in")
   login_btn.addEventListener("click", login)
 
   // map search
-
   const startPointSearch = document.getElementById("start-point-search")
   startPointSearch.addEventListener("input", async (e) => {
     const searchText = e.target.value
@@ -302,6 +360,7 @@ function login() {
     .then(parseResponse)
     .then((data) => {
       localStorage.setItem("username", data.username)
+      updateNavbar(data.username)
       loadRuns()
       toggleSections(false) // login successfully, so hide auth form, show other sections
     })
@@ -311,25 +370,13 @@ function login() {
     })
 }
 
-const logout_btn = document.getElementById("logout")
-logout_btn.addEventListener("click", logout)
-
-function logout() {
-  fetch("/logout", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      console.log(data)
-      // show auth form, hide other sections
-      toggleSections(true)
-    })
-    .catch((error) => {
-      console.error("Logout failed:", error)
-    })
+function updateNavbar(username) {
+  const greeting = document.getElementById("user-greeting")
+  if (username) {
+    greeting.textContent = `Hi ${username}` // 显示问候语和用户名
+  } else {
+    greeting.textContent = "" // 清除问候语
+  }
 }
 
 function toggleSections(showLogin) {
@@ -345,16 +392,15 @@ function toggleSections(showLogin) {
   document.getElementById("run-details").style.display = "none"
 }
 
-const logoutBtn = document.querySelector("#logout");
-const authSection = document.getElementById("auth");
+const logoutBtn = document.querySelector("#logout")
+const authSection = document.getElementById("auth")
 
-  logoutBtn.addEventListener("click", () => {
-    authSection.style.display = "block";
-    logoutBtn.style.display = "none";
+logoutBtn.addEventListener("click", () => {
+  authSection.style.display = "block"
+  logoutBtn.style.display = "none"
 
-    toggleSections(true); 
-  });
-
+  toggleSections(true)
+})
 
 function showDetailRunRoute(start, end) {
   const detailsMap = new mapboxgl.Map({
@@ -399,6 +445,8 @@ function showDetailRunRoute(start, end) {
       })
   })
 }
+
+/** Comments Section */
 
 const subBtn = document.getElementById("comSubmit")
 const comContent = document.getElementById("comments")

@@ -43,6 +43,16 @@ nav {
   color: var(--main-blue);
 }
 
+.navbar-logout {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+#user-greeting {
+  color: black;
+}
+
 .run-list-title {
   margin-left: 20px; /* Adjust based on your layout */
 }
