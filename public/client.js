@@ -15,14 +15,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("btn-back-to-list").addEventListener("click", () => {
     document.getElementById("run-details").style.display = "none"
-    document.getElementById("run-list").style.display = "flex"
+    document.getElementById("run-list-section").style.display = "block"
     document.getElementById("create-run").style.display = "block"
   })
 
   window.viewRunDetails = async (runId) => {
     // hide other sections
     document.getElementById("create-run").style.display = "none"
-    document.getElementById("run-list").style.display = "none"
+    document.getElementById("run-list-section").style.display = "none"
 
     // fetching run details from the server
     const response = await fetch(`/runs/${runId}`)
@@ -225,7 +225,8 @@ function initializeMapboxMaps() {
   startMap = new mapboxgl.Map({
     container: "start-map",
     style: "mapbox://styles/mapbox/streets-v11",
-    center: [-74.0066, 40.7135],
+    center: [-2.79902, 56.33871],
+
     zoom: 9,
   })
 
@@ -250,23 +251,28 @@ const loadRuns = async () => {
   runs.forEach((run) => {
     const now = new Date()
     const startTime = new Date(run.startTime)
+    let statusBadgeClass = "status-Upcoming"
     let status = "Upcoming" // Default status
     if (now > startTime) {
       status = "Expired" // If the current time is past the start time
+      statusClass = "status-Expired"
     }
+
+    const levelBadgeClass = `level-${run.level?.toLowerCase()}`
 
     const item = document.createElement("div")
     item.className = "run-item" // Add a class for styling
     item.innerHTML = `
-          <h3>${run.name}</h3>
-          <p>Start Time: ${startTime.toLocaleString()}</p>
-          <p>Start Point: ${run.startPointName}</p>
-          <p>End Point: ${run.endPointName}</p>
-          <p>Level: ${run.level}</p>
-          <p>Status: ${status}</p>
-          <p>Expected Pace: ${run.expectedPace}</p>
-          <button onclick="viewRunDetails('${run._id}')">See Detail</button>
-      `
+    <h3>${run.name}
+    <span class="badge ${levelBadgeClass}">${run.level}</span>
+    <span class="badge ${statusBadgeClass}">${status}</span>
+    </h3>
+    <p>Start Time: ${startTime.toLocaleString()}</p>
+    <p>Start Point: ${run.startPointName}</p>
+    <p>End Point: ${run.endPointName}</p>
+    <p>Expected Pace: ${run.expectedPace}</p>
+    <button onclick="viewRunDetails('${run._id}')">See Detail</button>
+`
     listElement.appendChild(item)
   })
 }
@@ -300,7 +306,7 @@ function login() {
     })
 }
 
-const logout_btn = document.getElementById("btnLogout")
+const logout_btn = document.getElementById("logout")
 logout_btn.addEventListener("click", logout)
 
 function logout() {
@@ -327,9 +333,9 @@ function toggleSections(showLogin) {
   document.getElementById("create-run").style.display = showLogin
     ? "none"
     : "block"
-  document.getElementById("run-list").style.display = showLogin
+  document.getElementById("run-list-section").style.display = showLogin
     ? "none"
-    : "flex"
+    : "block"
 
   document.getElementById("run-details").style.display = "none"
 }

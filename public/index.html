@@ -19,80 +19,95 @@
 
   <body>
     <!-- for logout -->
-    <div id="logout">
-      <button id="btnLogout">Logout</button>
-    </div>
-    <h1>Social Runners</h1> 
-    <!-- for login & register -->
-    <section id="auth">
-      <label> Username </label>
-      <input name="username" id="username" value="admin" />
-      <label> Password </label>
-      <input name="password" id="password" value="admin" />
-      <button id="log-in">Log in</button>
-      default value: admin (for quicker testing purpose)
-    </section>
-
-    <!-- for create runs form-->
-    <section id="create-run">
-      <form>
-        <label> Name </label>
-        <input name="name" id="name" />
-
-        <label> Description </label>
-        <textarea name="description" id="description"></textarea>
-
-        <label for="start-time"> Starting Time </label>
-        <input name="start-time" type="datetime-local" id="start-time" />
-
-        <div id="search-section">
-          <div id="start-search-area">
-            <label> Starting Point </label>
-            <input
-              type="text"
-              id="start-point-search"
-              placeholder="Enter a location"
-            />
-            <!-- this hidden input is for lat lon number form submit -->
-            <input type="hidden" name="start-point" id="start-point" />
-            <div id="start-point-suggestions"></div>
-          </div>
-
-          <div id="end-search-area">
-            <label> Ending Point </label>
-            <input
-              type="text"
-              id="end-point-search"
-              placeholder="Enter a location"
-            />
-            <input type="hidden" name="end-point" id="end-point" />
-            <div id="end-point-suggestions"></div>
-          </div>
+    <header>
+      <nav class="navbar">
+        <div class="navbar-logo">Social Runners</div>
+        <div class="navbar-logout">
+          <button id="logout">Logout</button>
         </div>
-        <div id="start-map" style="width: 600px; height: 300px"></div>
-        <label>Level</label>
-        <select name="level" id="level">
-          <option value="newbie">Newbie</option>
-          <option value="intermediate">Intermediate</option>
-          <option value="expert">Expert</option>
-        </select>
-        <label> Expected Pace (minute miles) </label>
-        <input name="expected-pace" id="expected-pace" />
-        <button id="create-run" type="submit">Create a run</button>
-      </form>
-    </section>
+      </nav>
+    </header>
 
-    <!-- for runs list -->
-    <section id="run-list">hello list</section>
+    <main>
+      <!-- for login & register -->
+      <section id="auth">
+        <div>
+          <label> Username </label>
+          <input name="username" id="username" value="admin" />
+        </div>
 
-    <!-- for run details -->
-    <section>
-      <div id="run-details" style="display: none">
-        <button id="btn-back-to-list">&#x2190; Back</button>
-        <div id="run-details-content"></div>
-        <div id="run-details-map" style="width: 800px; height: 400px"></div>
-      </div>
-    </section>
+        <div>
+          <label> Password </label>
+          <input name="password" id="password" value="admin" />
+        </div>
+
+        <button id="log-in">Log in</button>
+      </section>
+
+      <!-- for create runs form-->
+      <section id="create-run">
+        <form>
+          <label> Name </label>
+          <input name="name" id="name" />
+
+          <label> Description </label>
+          <textarea name="description" id="description"></textarea>
+
+          <label for="start-time"> Starting Time </label>
+          <input name="start-time" type="datetime-local" id="start-time" />
+
+          <div id="search-section">
+            <div id="start-search-area">
+              <label> Starting Point </label>
+              <input
+                type="text"
+                id="start-point-search"
+                placeholder="Enter a location"
+              />
+              <!-- this hidden input is for lat lon number form submit -->
+              <input type="hidden" name="start-point" id="start-point" />
+              <div id="start-point-suggestions"></div>
+            </div>
+
+            <div id="end-search-area">
+              <label> Ending Point </label>
+              <input
+                type="text"
+                id="end-point-search"
+                placeholder="Enter a location"
+              />
+              <input type="hidden" name="end-point" id="end-point" />
+              <div id="end-point-suggestions"></div>
+            </div>
+          </div>
+          <div id="start-map" style="width: 600px; height: 300px"></div>
+          <label>Level</label>
+          <select name="level" id="level">
+            <option selected value="newbie">Newbie</option>
+            <option value="intermediate">Intermediate</option>
+            <option value="expert">Expert</option>
+          </select>
+          <label> Expected Pace (minute miles) </label>
+          <input name="expected-pace" id="expected-pace" />
+          <button id="create-run" type="submit">Create a run</button>
+        </form>
+      </section>
+
+      <!-- for runs list -->
+      <section id="run-list-section">
+        <h2 class="run-list-title">Run List</h2>
+        <div id="run-list"><!-- Runs will be populated here --></div>
+      </section>
+
+      <!-- for run details -->
+      <section>
+        <div id="run-details" style="display: none">
+          <button id="btn-back-to-list">&#x2190; Back</button>
+          <div id="run-details-content"></div>
+          <div id="run-details-map" style="width: 800px; height: 400px"></div>
+        </div>
+      </section>
+    </main>
 
     <script src="./client.js"></script>
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.js"></script>
