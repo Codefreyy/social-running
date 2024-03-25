@@ -92,7 +92,6 @@ async function insertRuns(runsCollection) {
       },
       {
         _id: nanoid(),
-
         startTime: "2024-03-29T00:02",
         startPoint: "-0.127647,51.5073",
         startPointName: "London, Greater London, England, United Kingdom",
@@ -135,7 +134,29 @@ async function insertUsers(usersCollection) {
 }
 
 async function insertComments(commentsCollection) {
-  return commentsCollection
+  return commentsCollection.insertMany([
+    {
+      _id: nanoid(),
+      runId: "OquhcVgNuaOwH4LvOHWdC",
+      username: "user1",
+      content: "This is a great run!",
+      createdAt: new Date("2024-04-01T08:30:00Z"),
+    },
+    {
+      _id: nanoid(),
+      runId: "9XWvBcLBqwDYcwwIrD14h",
+      username: "user2",
+      content: "Can't wait for the next one!",
+      createdAt: new Date("2024-04-02T09:00:00Z"),
+    },
+    {
+      _id: nanoid(),
+      runId: "HltVMJz1X4H7S-VRKaTpu",
+      username: "user3",
+      content: "Had a wonderful time participating!",
+      createdAt: new Date("2024-04-03T10:30:00Z"),
+    },
+  ])
 }
 
 module.exports = { insertStarterData }

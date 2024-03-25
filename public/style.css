@@ -1,5 +1,6 @@
 :root {
   --main-blue: #5a9cf8;
+  --light-blue: #86b7fc;
 }
 
 body {
@@ -95,7 +96,7 @@ nav {
 }
 
 .run-item button:hover {
-  background-color: #1e90ff;
+  background-color: var(--light-blue);
 }
 
 .badge {
@@ -184,7 +185,7 @@ nav {
 }
 #log-in:hover,
 #logout:hover {
-  background-color: #87bcf5;
+  background-color: var(--light-blue);
 }
 
 #auth {
@@ -245,14 +246,15 @@ input[name="password"] {
   text-align: center;
   display: inline-block;
   justify-content: center;
-  background-color: rgb(139, 179, 181);
+  background-color: var(--main-blue);
   color: #f0f0f0;
+  border: none;
   font-size: 1em;
   border-radius: 7px;
 }
 
 #comSubmit:hover {
-  background-color: rgba(129, 216, 190, 0.7);
+  background-color: var(--light-blue);
 }
 
 .comArea {

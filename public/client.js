@@ -62,7 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // coordinates of start point and end point
     const startPointCoords = runDetails.startPoint.split(",").map(Number)
     const endPointCoords = runDetails.endPoint.split(",").map(Number)
-
+    console.log("comments", runId)
     await showComments(runId)
     showDetailRunRoute(startPointCoords, endPointCoords)
 
@@ -451,11 +451,13 @@ function showDetailRunRoute(start, end) {
 const subBtn = document.getElementById("comSubmit")
 const comContent = document.getElementById("comments")
 const comInput = document.getElementById("comInput")
+console.log({ comInput }, 122)
 const commentsSec = document.getElementById("commentsSec")
 
 async function showComments(runId) {
   const response = await fetch(`/comments?runId=${runId}`)
   const comments = await response.json()
+  console.log("comments", comments)
   const commentsSec = document.getElementById("commentsSec")
   commentsSec.innerHTML = ""
   comments.forEach((comment) => {
