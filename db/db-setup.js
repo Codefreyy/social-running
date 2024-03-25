@@ -3,6 +3,7 @@ const { nanoid } = require("nanoid")
 async function clearDatabase(runsCollection, usersCollection) {
   await runsCollection.deleteMany({})
   await usersCollection.deleteMany({})
+  await commentsCollection.deleteMany({})
 }
 
 async function insertStarterData(runsCollection, usersCollection) {
@@ -10,6 +11,7 @@ async function insertStarterData(runsCollection, usersCollection) {
 
   await insertRuns(runsCollection)
   await insertUsers(usersCollection)
+  await insertComments(commentsCollection)
 }
 
 async function insertRuns(runsCollection) {
@@ -85,6 +87,10 @@ async function insertUsers(usersCollection) {
       email: "user2@example.com",
     },
   ])
+}
+
+async function insertComments(commentsCollection){
+  return commentsCollection
 }
 
 module.exports = { insertStarterData }

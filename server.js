@@ -157,12 +157,15 @@ app.listen(port, () => {
 })
 
 app.post('/comments', async (req, res) => {
-  const content = req.body.text
+  const {content, runId, username} = req.body
   const commentText = {
     _id: nanoid(),
+    runId,
+    username,
     content,
     createdAt: new Date()
   }
+  console.log(req.body);
   try{
     await commentsCollection.insertOne(commentText)
     res.json({message: "comment saved"})
@@ -174,7 +177,8 @@ app.post('/comments', async (req, res) => {
 
 app.get('/comments', async (req, res) => {
   try{
-    const comments = await commentsCollection.find({}).toArray()
+    const {runId} = req.query
+    const comments = await commentsCollection.find({runId:runId}).toArray()
     res.json(comments)
   }catch(error){
     console.log(error)

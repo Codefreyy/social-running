@@ -4,6 +4,7 @@ let startMap = null
 let mapRoute = null
 let startPointMarker
 let endPointMarker
+let currentRunId = null
 
 document.addEventListener("DOMContentLoaded", () => {
   initializeMapboxMaps()
@@ -23,6 +24,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // hide other sections
     document.getElementById("create-run").style.display = "none"
     document.getElementById("run-list").style.display = "none"
+   
+    currentRunId = runId
 
     // fetching run details from the server
     const response = await fetch(`/runs/${runId}`)
@@ -44,10 +47,12 @@ document.addEventListener("DOMContentLoaded", () => {
 `
     document.getElementById("run-details").style.display = "block"
 
+
     // coordinates of start point and end point
     const startPointCoords = runDetails.startPoint.split(",").map(Number)
     const endPointCoords = runDetails.endPoint.split(",").map(Number)
 
+    await showComments(runId)
     showDetailRunRoute(startPointCoords, endPointCoords)
   }
 
@@ -291,6 +296,7 @@ function login() {
   })
     .then(parseResponse)
     .then((data) => {
+      localStorage.setItem('username', data.username)
       loadRuns()
       toggleSections(false) // login successfully, so hide auth form, show other sections
     })
@@ -378,15 +384,16 @@ function showDetailRunRoute(start, end) {
   })
 }
 
-document.addEventListener('DOMContentLoaded', async () => {
+// document.addEventListener('DOMContentLoaded', async () => {
   const subBtn = document.getElementById("comSubmit")
   const comContent = document.getElementById("comments")
   const comInput = document.getElementById("comInput")
   const commentsSec = document.getElementById("commentsSec")
 
-  async function showComments() {
-    const response = await fetch('/comments')
+  async function showComments(runId) {
+    const response = await fetch(`/comments?runId=${runId}`)
     const comments = await response.json()
+    const commentsSec = document.getElementById("commentsSec")
     commentsSec.innerHTML = ""
     comments.forEach(comment => {
       const comDetail = document.createElement("p")
@@ -397,20 +404,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.log(comments);
   }
   subBtn.addEventListener('click', async () => {
+    const username = localStorage.getItem('username')
+    console.log(username);
     const commentText = comInput.value
-    if (commentText) {
+    if (commentText && currentRunId && username) {
       const response = await fetch('/comments', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ text: commentText }),
+        body: JSON.stringify({ content: commentText, runId: currentRunId ,username}),
       });
       if (response.ok) {
         comInput.value = '';
-        showComments(); // Re-fetch and display all comments
+        showComments(currentRunId); // Re-fetch and display all comments
       } 
     }
   })
-  showComments()
-})
+  // showComments()
+// })
