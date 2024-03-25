@@ -384,7 +384,6 @@ function showDetailRunRoute(start, end) {
   })
 }
 
-// document.addEventListener('DOMContentLoaded', async () => {
   const subBtn = document.getElementById("comSubmit")
   const comContent = document.getElementById("comments")
   const comInput = document.getElementById("comInput")
@@ -421,5 +420,3 @@ function showDetailRunRoute(start, end) {
       } 
     }
   })
-  // showComments()
-// })
