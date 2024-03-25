@@ -345,6 +345,17 @@ function toggleSections(showLogin) {
   document.getElementById("run-details").style.display = "none"
 }
 
+const logoutBtn = document.querySelector("#logout");
+const authSection = document.getElementById("auth");
+
+  logoutBtn.addEventListener("click", () => {
+    authSection.style.display = "block";
+    logoutBtn.style.display = "none";
+
+    toggleSections(true); 
+  });
+
+
 function showDetailRunRoute(start, end) {
   const detailsMap = new mapboxgl.Map({
     container: "run-details-map",
