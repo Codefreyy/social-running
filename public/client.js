@@ -20,6 +20,21 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("create-run").style.display = "block"
   })
 
+  document.getElementById("expected-pace").addEventListener("input", (e) => {
+    console.log(e.target.value)
+    
+      const errorElemnt = document.getElementById("error-message")
+      console.log({errorElemnt})
+    if(!e.target.checkValidity()) {
+      console.log(e.target.checkValidity())
+      errorElemnt.style.display = "block"
+    } else {
+      document.getElementById("error-message").style.display = "none"
+    }
+    const expectedPace = e.target.value
+    console.log({expectedPace})
+  })
+
   window.viewRunDetails = async (runId) => {
     // hide other sections
     document.getElementById("create-run").style.display = "none"
@@ -252,9 +267,23 @@ async function onCreateRunFormSubmit(e) {
   const endPointName = document.getElementById("end-point-search").value //
   const expectedPace = document.getElementById("expected-pace").value
   const level = document.getElementById("level").value
+  // const currentExpectedPace = document.getElementById("expected-pace").value;
 
   const name = document.getElementById("name").value
   const description = document.getElementById("description").value
+   
+  if (!startTime ||!startPoint ||!endPoint ||!expectedPace ||!level) {
+    alert("Please fill in all the fields")
+    return
+  }
+
+
+  const value = expectedPace.value;
+
+  if (!/^\d*\.?\d*$/.test(value)) {
+        alert("Enter a valid number");
+        expectedPace.value = '';
+  }
 
   const runData = {
     startTime,

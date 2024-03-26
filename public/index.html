@@ -15,7 +15,12 @@
       href="https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.css"
       rel="stylesheet"
     />
-  </head>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+  
+</head>
   <body>
     <!-- for logout -->
     <header>
@@ -32,12 +37,12 @@
       <!-- for login & register -->
       <section id="auth">
         <div>
-          <label> Username </label>
+          <label class="custom-label"> Username </label>
           <input name="username" id="username" value="admin" />
         </div>
 
         <div>
-          <label> Password </label>
+          <label class="custom-label"> Password </label>
           <input name="password" id="password" value="admin" />
         </div>
 
@@ -47,18 +52,21 @@
       <!-- for create runs form-->
       <section id="create-run">
         <form>
-          <label> Name </label>
+          <label class="custom-label"> Name </label>
           <input name="name" id="name" />
+          <p></p>
 
-          <label> Description </label>
+          <label class="custom-label"> Description </label>
           <textarea name="description" id="description"></textarea>
+          <p></p>
 
-          <label for="start-time"> Starting Time </label>
+          <label for="start-time" class="custom-label"> Starting Time </label>
           <input name="start-time" type="datetime-local" id="start-time" />
+          <p></p>
 
           <div id="search-section">
             <div id="start-search-area">
-              <label> Starting Point </label>
+              <label class="custom-label"> Starting Point </label>
               <input
                 type="text"
                 id="start-point-search"
@@ -69,26 +77,32 @@
               <div id="start-point-suggestions"></div>
             </div>
 
-            <div id="end-search-area">
+            <div id="end-search-area" class="custom-label">
               <label> Ending Point </label>
               <input
                 type="text"
                 id="end-point-search"
                 placeholder="Enter a location"
               />
+              <p></p>
               <input type="hidden" name="end-point" id="end-point" />
               <div id="end-point-suggestions"></div>
             </div>
           </div>
           <div id="start-map" style="width: 600px; height: 300px"></div>
-          <label>Level</label>
+          <p></p>
+          <label class="custom-label">Level</label>
           <select name="level" id="level">
             <option selected value="newbie">Newbie</option>
             <option value="intermediate">Intermediate</option>
             <option value="expert">Expert</option>
           </select>
-          <label> Expected Pace (minute miles) </label>
-          <input name="expected-pace" id="expected-pace" />
+          <p></p>
+          <label class="custom-label"> Expected Pace (minute miles) </label>
+          <input name="expected-pace" id="expected-pace" pattern="\d+" />
+          <span  class="error-message" id="error-message">Please input number</span>
+      
+
           <button id="create-run" type="submit">Create a run</button>
         </form>
       </section>
