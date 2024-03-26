@@ -1,10 +1,19 @@
 :root {
-  --main-blue: #5a9cf8;
+  --main-blue: #2e86de;
 }
+
+
 
 body {
   
   margin: 0;
+}
+
+.raleway-bold {
+  font-family: "Raleway", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 700;
+  font-style: bold;
 }
 
 main {
@@ -13,10 +22,25 @@ main {
   width: 1200px;
   padding: 10px;
 }
+
 h2 {
+  color: #2e86de;
+  font-family: "Raleway", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 600;
   padding: 0;
   margin: 0;
+  font-size: 20px;
 }
+
+.custom-label {
+  font-family: "Raleway", sans-serif;  
+  font-size: 15px;                 
+  font-weight: 500;
+  font-style: medium;
+  color: #313131;                   
+}
+
 form {
   padding: 15px;
   margin: 15px;
@@ -30,7 +54,7 @@ header {
 }
 
 nav {
-  color: white;
+  color: rgb(255, 255, 255);
   display: flex;
   justify-content: space-between;
   padding: 10px 20px;
@@ -39,7 +63,9 @@ nav {
 }
 
 .navbar-logo {
-  font-size: 24px;
+  font-size: 30px;
+  font-family: "Raleway", sans-serif;
+  font-weight: 700;
   font-weight: bold;
   color: var(--main-blue);
 }
@@ -72,11 +98,14 @@ nav {
 
 .run-item p {
   margin: 10px 0;
-  color: #666;
+  color: #474747;
+  font-family: "Raleway", sans-serif;  
+  font-size: 12px;
 }
 
 .run-item button {
   color: white;
+  font-family: "Raleway", sans-serif;
   padding: 6px 10px;
   border: none;
   border-radius: 4px;
@@ -102,14 +131,20 @@ nav {
 .badge.level-newbie {
   border-color: #1e90ff;
   color: #1e90ff;
+  font-family: "Raleway", sans-serif;
+  font-weight: 600;
 }
 .badge.level-intermediate {
   border-color: #4169e1;
   color: #4169e1;
+  font-family: "Raleway", sans-serif;
+  font-weight: 300;
 }
 .badge.level-expert {
   border-color: #0000ff;
   color: #0000ff;
+  font-family: "Raleway", sans-serif;
+  font-weight: 700;
 }
 
 .badge.status-Upcoming {
@@ -211,6 +246,19 @@ input[name="password"] {
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 3px;
+}
+
+input:invalid {
+  border: 1px solid red;
+}
+
+#error-message {
+  color: red;
+  display: none;
+}
+
+#expected-pace {
+  margin-bottom: 30px;
 }
 
 .comment-section {

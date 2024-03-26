@@ -20,6 +20,21 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("create-run").style.display = "block"
   })
 
+  document.getElementById("expected-pace").addEventListener("input", (e) => {
+    console.log(e.target.value)
+    
+      const errorElemnt = document.getElementById("error-message")
+      console.log({errorElemnt})
+    if(!e.target.checkValidity()) {
+      console.log(e.target.checkValidity())
+      errorElemnt.style.display = "block"
+    } else {
+      document.getElementById("error-message").style.display = "none"
+    }
+    const expectedPace = e.target.value
+    console.log({expectedPace})
+  })
+
   window.viewRunDetails = async (runId) => {
     // hide other sections
     document.getElementById("create-run").style.display = "none"
@@ -204,10 +219,13 @@ async function onCreateRunFormSubmit(e) {
     return
   }
 
-//   if (!/^\d*\.?\d*$/.test(currentExpectedPace)) {
-//     alert("Enter the right number!");
-//     return; // 不符合要求时阻止表单提交
-// }
+
+  const value = expectedPace.value;
+
+  if (!/^\d*\.?\d*$/.test(value)) {
+        alert("Enter a valid number");
+        expectedPace.value = '';
+  }
 
   const runData = {
     startTime,
@@ -442,15 +460,3 @@ subBtn.addEventListener("click", async () => {
   }
 })
 
-// expectedPace.addEventListener('input', function() {
-//   // 获取输入框的当前值
-//   const value = expectedPace.value;
-
-//   // 检查输入值是否为有效的数字
-//   if (!/^\d*\.?\d*$/.test(value)) {
-//       // 如果不是有效数字，则显示警告
-//       alert("Enter a valid number");
-//       // 可选：清除输入框的值或恢复到上一个有效值
-//       expectedPace.value = '';
-//   }
-// });
