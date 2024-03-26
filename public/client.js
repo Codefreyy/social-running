@@ -344,31 +344,41 @@ function parseResponse(response) {
 }
 
 function login() {
-  username = document.getElementById("username")
-  password = document.getElementById("password")
-  user_key = btoa(username.value + ":" + password.value)
-  username.value = ""
-  password.value = ""
+  const login_username = document.getElementById("username").value;
+  const login_password = document.getElementById("password").value;
+  console.log(login_username + " " + login_password);
+
+  document.getElementById("username").value = "";
+  document.getElementById("password").value = "";
+
   // Send login credentials to the server
   fetch("/login", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: "Basic " + user_key,
     },
+    body: JSON.stringify({ username: login_username, password: login_password })
   })
-    .then(parseResponse)
-    .then((data) => {
-      localStorage.setItem("username", data.username)
-      updateNavbar(data.username)
-      loadRuns()
-      toggleSections(false) // login successfully, so hide auth form, show other sections
-    })
-    .catch((error) => {
-      console.error("Login failed:", error)
-      alert(`Logged in failed!`)
-    })
+  .then((response) => {
+    if (!response.ok) {
+      throw new Error("Login failed");
+    }
+    return response.json();
+  })
+  .then((data) => {
+    localStorage.setItem("username", data.username);
+    updateNavbar(data.username);
+    loadRuns();
+    toggleSections(false); // login successfully, so hide auth form, show other sections
+  })
+  .catch((error) => {
+    console.error("Login failed:", error);
+    alert(`Logged in failed! Please check your credentials.`);
+  });
 }
+
+
+
 
 function updateNavbar(username) {
   const greeting = document.getElementById("user-greeting")

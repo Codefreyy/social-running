@@ -46,14 +46,46 @@ client
     console.log("Giving up!", err.message)
   })
 
-const users = {
-  admin: "admin",
-  user1: "user1",
-  user2: "user2",
-}
+// const users = {
+//   admin: "admin",
+//   user1: "user1",
+//   user2: "user2",
+// }
+
 
 app.use(express.static("public"))
 app.use(express.json()) // parse the req body as json
+
+//Handling user login
+app.post("/login", async function(req, res){
+  console.log("login");
+  try {
+    const { username, password } = req.body;
+    console.log({ username, password });
+      // check if the user exists
+      // check if the user exists
+    const user = await usersCollection.findOne({ username });
+    console.log(`User : ${user && user.username}`);
+    
+    if (user) {
+      // Check if password matches
+      if (password === user.password) {
+        // Passwords match, send response
+        res.status(200).json({ username: user.username });
+      } else {
+        // Passwords don't match
+        res.status(400).json({ error: "Password doesn't match" });
+      }
+    } else {
+      // User not found
+      res.status(400).json({ error: "User doesn't exist" });
+    }
+  } catch (error) {
+    // Server error
+    console.error("Login error:", error.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 // get runs
 app.get("/runs", async (req, res) => {
@@ -178,23 +210,24 @@ db_temp = { username: null, password: null, email: null }
 
 //register the valid username, password pairs with the express-basic-auth object
 const authorise = expressBasicAuth({
-  users: users,
+  users: usersCollection,
   unauthorizedResponse: (req) =>
     req.auth ? "Credentials  rejected" : "No credentials provided",
   challenge: true, //make the browser ask for credentials if none/wrong are provided
 })
 
-app.post("/login", authorise, (req, res) => {
-  //get the user data
-  const username = req.auth.user
-  const password = req.auth.password
+// app.post("/login", authorise, (req, res) => {
+//   //get the user data
+//   const username = req.auth.user
+//   const password = req.auth.password
 
-  //update database
-  db_temp.username = username
-  db_temp.password = password
-  res.status(200).json(db_temp)
-  console.log(`user loged in : ${username} with the password ${password}`)
-})
+//   //update database
+//   db_temp.username = username
+//   db_temp.password = password
+//   res.status(200).json(db_temp)
+//   console.log(`user loged in : ${username} with the password ${password}`)
+// })
+
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`)
