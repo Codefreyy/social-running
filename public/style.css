@@ -1,5 +1,6 @@
 :root {
   --main-blue: #2e86de;
+  --light-blue: #86b7fc;
 }
 
 
@@ -70,6 +71,16 @@ nav {
   color: var(--main-blue);
 }
 
+.navbar-logout {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+#user-greeting {
+  color: black;
+}
+
 .run-list-title {
   margin-left: 20px; /* Adjust based on your layout */
 }
@@ -115,7 +126,7 @@ nav {
 }
 
 .run-item button:hover {
-  background-color: #1e90ff;
+  background-color: var(--light-blue);
 }
 
 .badge {
@@ -210,7 +221,7 @@ nav {
 }
 #log-in:hover,
 #logout:hover {
-  background-color: #87bcf5;
+  background-color: var(--light-blue);
 }
 
 #auth {
@@ -284,14 +295,15 @@ input:invalid {
   text-align: center;
   display: inline-block;
   justify-content: center;
-  background-color: rgb(139, 179, 181);
+  background-color: var(--main-blue);
   color: #f0f0f0;
+  border: none;
   font-size: 1em;
   border-radius: 7px;
 }
 
 #comSubmit:hover {
-  background-color: rgba(129, 216, 190, 0.7);
+  background-color: var(--light-blue);
 }
 
 .comArea {

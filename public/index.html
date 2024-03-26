@@ -27,6 +27,7 @@
       <nav class="navbar">
         <div class="navbar-logo">Social Runners</div>
         <div class="navbar-logout">
+          <span id="user-greeting"></span>
           <button id="logout">Logout</button>
         </div>
       </nav>
@@ -105,7 +106,8 @@
           <button id="create-run" type="submit">Create a run</button>
         </form>
       </section>
-
+      <button id ="find-run-btn">Find a Run</button>
+    
       <!-- for runs list -->
       <section id="run-list-section">
         <h2 class="run-list-title">Run List</h2>
@@ -118,32 +120,20 @@
           <button id="btn-back-to-list">&#x2190; Back</button>
           <div id="run-details-content"></div>
           <div id="run-details-map" style="width: 800px; height: 400px"></div>
+
+          <div class="comments">
+            <h2 id="titleCom">Comments</h2>
+            <div class="inputArea">
+              <input id="comInput" type="text" />
+              <button id="comSubmit">submit</button>
+            </div>
+            <div class="comArea">
+              <section id="commentsSec">showComments</section>
+            </div>
+          </div>
         </div>
       </section>
     </main>
-
-    <!-- for runs list -->
-    <section id="run-list"></section>
-
-    <!-- for run details -->
-    <section>
-      <div id="run-details" style="display: none">
-        <button id="btn-back-to-list">&#x2190; Back</button>
-        <div id="run-details-content"></div>
-        <div id="run-details-map" style="width: 800px; height: 400px"></div>
-
-        <div class="comments">
-          <h2 id="titleCom">Comments</h2>
-          <div class="inputArea">
-            <input id="comInput" type="text" />
-            <button id="comSubmit">submit</button>
-          </div>
-          <div class="comArea">
-            <section id="commentsSec">showComments</section>
-          </div>
-        </div>
-      </div>
-    </section>
 
     <script src="./client.js"></script>
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.js"></script>
