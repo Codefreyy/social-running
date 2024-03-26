@@ -194,9 +194,20 @@ async function onCreateRunFormSubmit(e) {
   const endPointName = document.getElementById("end-point-search").value //
   const expectedPace = document.getElementById("expected-pace").value
   const level = document.getElementById("level").value
+  // const currentExpectedPace = document.getElementById("expected-pace").value;
 
   const name = document.getElementById("name").value
   const description = document.getElementById("description").value
+   
+  if (!startTime ||!startPoint ||!endPoint ||!expectedPace ||!level) {
+    alert("Please fill in all the fields")
+    return
+  }
+
+//   if (!/^\d*\.?\d*$/.test(currentExpectedPace)) {
+//     alert("Enter the right number!");
+//     return; // 不符合要求时阻止表单提交
+// }
 
   const runData = {
     startTime,
@@ -345,6 +356,7 @@ function toggleSections(showLogin) {
   document.getElementById("run-details").style.display = "none"
 }
 
+
 function showDetailRunRoute(start, end) {
   const detailsMap = new mapboxgl.Map({
     container: "run-details-map",
@@ -429,3 +441,16 @@ subBtn.addEventListener("click", async () => {
     }
   }
 })
+
+// expectedPace.addEventListener('input', function() {
+//   // 获取输入框的当前值
+//   const value = expectedPace.value;
+
+//   // 检查输入值是否为有效的数字
+//   if (!/^\d*\.?\d*$/.test(value)) {
+//       // 如果不是有效数字，则显示警告
+//       alert("Enter a valid number");
+//       // 可选：清除输入框的值或恢复到上一个有效值
+//       expectedPace.value = '';
+//   }
+// });
