@@ -3,7 +3,7 @@
     url: "localhost",
     username: "webuser",
     password: "socialrunning",
-    port: "27017",
+    port: "24667", //etienne : 24667
     database: "mongodb_data",
     collection: "runs",
     users: "users",

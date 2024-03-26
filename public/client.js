@@ -169,7 +169,7 @@ document.addEventListener("DOMContentLoaded", () => {
     )
     const data = await response.json()
     const suggestions = data.features
-
+    
     const suggestionsList = document.getElementById("end-point-suggestions")
     suggestionsList.innerHTML = "" // Clear existing suggestions
     suggestionsList.style.display = "block"
@@ -194,7 +194,7 @@ document.addEventListener("DOMContentLoaded", () => {
       suggestionsList.appendChild(option)
     })
   })
-})
+
 
 function showRoute() {
   const start = startPointMarker.getLngLat()
@@ -489,4 +489,43 @@ subBtn.addEventListener("click", async () => {
       showComments(currentRunId) // Re-fetch and display all comments
     }
   }
+})
+
+
+document.getElementById("find-run-btn").addEventListener("click",findRun);
+
+async function findRun() {
+  user_level = prompt("Enter level : ").toString();
+  user_pace = parseInt(prompt("Enter average pace : "));
+  console.log("level : "+user_level+"  pace : "+user_pace);
+
+  const response = await fetch("/runs")
+  const runs = await response.json()
+
+  let maxCompatibilityScore = -1000;
+
+  runs.forEach((run) => {
+    let compatibilityScore = 0;
+
+    // Check for level compatibility
+    if (run.level === user_level) {
+        compatibilityScore += 3;
+    }
+      
+    //pace compatibility
+    var pace_diff = Math.abs(user_pace - run.expectedPace);
+    // Calculate the score based on the inverse proportionality
+    compatibilityScore += 6 / (pace_diff + 1);
+    console.log(compatibilityScore);
+    // Update max compatibility score and recommended run ID if current run has higher score
+    if (compatibilityScore > maxCompatibilityScore) {
+      maxCompatibilityScore = compatibilityScore;
+      recommendedRunId = run._id;
+      recommendedRunName = run.name;
+      console.log("new best run : "+recommendedRunName);
+
+    }
+  });
+  alert("The best run to join for your profile is : " + recommendedRunName + "with a compatibility score of "+maxCompatibilityScore);
+}
 })
