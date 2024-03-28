@@ -409,6 +409,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }),
     })
       .then((response) => {
+        console.log(response, response.ok)
         if (!response.ok) {
           throw new Error("Login failed")
         }
@@ -483,6 +484,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const authSection = document.getElementById("auth")
 
   logoutBtn.addEventListener("click", () => {
+    // clear localstorage
+    localStorage.removeItem("username")
+
+    // remove user greeting
+    updateNavbar(null)
+
     authSection.style.display = "flex"
     logoutBtn.style.display = "none"
 
