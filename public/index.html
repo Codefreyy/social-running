@@ -16,11 +16,13 @@
       rel="stylesheet"
     />
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-  
-</head>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap"
+      rel="stylesheet"
+    />
+  </head>
   <body>
     <!-- for logout -->
     <header>
@@ -47,6 +49,7 @@
         </div>
 
         <button id="log-in">Log in</button>
+        <button id="sign-up">Sign up</button>
       </section>
 
       <!-- for create runs form-->
@@ -100,17 +103,18 @@
           <p></p>
           <label class="custom-label"> Expected Pace (minute miles) </label>
           <input name="expected-pace" id="expected-pace" pattern="\d+" />
-          <span  class="error-message" id="error-message">Please input number</span>
-      
+          <span class="error-message" id="error-message"
+            >Please input number</span
+          >
 
           <button id="create-run" type="submit">Create a run</button>
         </form>
       </section>
-      <button id ="find-run-btn">Find a Run</button>
-    
+
       <!-- for runs list -->
       <section id="run-list-section">
         <h2 class="run-list-title">Run List</h2>
+        <button id="find-run-btn">Find a Run</button>
         <div id="run-list"><!-- Runs will be populated here --></div>
       </section>
 

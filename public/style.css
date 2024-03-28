@@ -3,10 +3,7 @@
   --light-blue: #86b7fc;
 }
 
-
-
 body {
-  
   margin: 0;
 }
 
@@ -35,11 +32,11 @@ h2 {
 }
 
 .custom-label {
-  font-family: "Raleway", sans-serif;  
-  font-size: 15px;                 
+  font-family: "Raleway", sans-serif;
+  font-size: 15px;
   font-weight: 500;
   font-style: medium;
-  color: #313131;                   
+  color: #313131;
 }
 
 form {
@@ -110,7 +107,7 @@ nav {
 .run-item p {
   margin: 10px 0;
   color: #474747;
-  font-family: "Raleway", sans-serif;  
+  font-family: "Raleway", sans-serif;
   font-size: 12px;
 }
 
@@ -210,7 +207,8 @@ nav {
 }
 
 #log-in,
-#logout {
+#logout,
+#sign-up {
   padding: 10px 20px;
   border: none;
   border-radius: 5px;
@@ -220,7 +218,8 @@ nav {
   transition: background-color 0.2s ease-in-out;
 }
 #log-in:hover,
-#logout:hover {
+#logout:hover,
+#sign-up:hover {
   background-color: var(--light-blue);
 }
 
