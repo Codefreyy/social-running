@@ -48,24 +48,23 @@
           <input name="password" id="password" value="admin" />
         </div>
 
-        <button id="log-in">Log in</button>
-        <button id="sign-up">Sign up</button>
+        <div class="auth-footer">
+          <button id="log-in">Log in</button>
+          <button id="sign-up">Sign up</button>
+        </div>
       </section>
 
       <!-- for create runs form-->
       <section id="create-run">
+        <h2>Initiate a run</h2>
         <form>
           <label class="custom-label"> Name </label>
-          <input name="name" id="name" />
-          <p></p>
+          <input name="name" id="name" placeholder="Run's Name" />
 
           <label class="custom-label"> Description </label>
-          <textarea name="description" id="description"></textarea>
-          <p></p>
-
+          <textarea name="description" id="description" rows="5"></textarea>
           <label for="start-time" class="custom-label"> Starting Time </label>
           <input name="start-time" type="datetime-local" id="start-time" />
-          <p></p>
 
           <div id="search-section">
             <div id="start-search-area">
@@ -87,20 +86,17 @@
                 id="end-point-search"
                 placeholder="Enter a location"
               />
-              <p></p>
               <input type="hidden" name="end-point" id="end-point" />
               <div id="end-point-suggestions"></div>
             </div>
           </div>
           <div id="start-map" style="width: 600px; height: 300px"></div>
-          <p></p>
           <label class="custom-label">Level</label>
           <select name="level" id="level">
             <option selected value="newbie">Newbie</option>
             <option value="intermediate">Intermediate</option>
             <option value="expert">Expert</option>
           </select>
-          <p></p>
           <label class="custom-label"> Expected Pace (minute miles) </label>
           <input name="expected-pace" id="expected-pace" pattern="\d+" />
           <span class="error-message" id="error-message"

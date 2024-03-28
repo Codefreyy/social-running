@@ -74,6 +74,7 @@ async function insertRuns(runsCollection) {
         endPointName: "Hebei Qu, Tianjin, China",
         expectedPace: 9,
         name: "Run Captital",
+        level: "expert",
         description: "Will be fun!",
       },
       {

@@ -111,6 +111,13 @@ async function createNewUser(username, password) {
 app.post("/register", async (req, res) => {
   try {
     const { username, password } = req.body
+    // check if user exists
+    const existingUser = await usersCollection.findOne({ username })
+    if (existingUser) {
+      return res
+        .status(400)
+        .json({ success: false, message: "User already exists" })
+    }
     const userId = await createNewUser(username, password)
     console.log({ userId })
     res.status(200).json({ success: true, userId: userId })
@@ -141,6 +148,7 @@ app.post("/runs", async (req, res) => {
     endPoint,
     expectedPace,
     name,
+    level,
     description,
     startPointName,
     endPointName,
@@ -154,6 +162,7 @@ app.post("/runs", async (req, res) => {
     endPointName,
     expectedPace,
     name,
+    level,
     description,
     createdAt: new Date(),
   }

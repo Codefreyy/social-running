@@ -55,11 +55,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const detailsSection = document.getElementById("run-details-content")
     detailsSection.innerHTML = `
     <div class="run-details-card">
+       <div class="run-details-header"> 
         <h2>${runDetails.name}</h2>
-    <button id="joinRun" data-run-id="${runDetails._id}">${
-      username ? "Join" : "Login to Join"
+       <div>
+       <button id="joinRun" data-run-id="${runDetails._id}">${
+      username ? "Click to Join" : "Login to Join"
     }</button>
-    <div>Participants: <span id="participantCount">0</span></div>
+      <div><span id="participantCount">0</span>People Already Join!</div></div>
+      </div>
         <p>Description: ${runDetails.description}</p>
         <p>Start Time: ${new Date(runDetails.startTime).toLocaleString()}</p>
         <p>Start Point: ${
@@ -266,13 +269,21 @@ document.addEventListener("DOMContentLoaded", () => {
   async function onCreateRunFormSubmit(e) {
     e.preventDefault()
     const startTime = document.getElementById("start-time").value
+    const startTimeDate = new Date(startTime)
+    const currentDateTime = new Date()
+    startTimeDate.setSeconds(0)
+
+    console.log(startTimeDate, currentDateTime, startTimeDate < currentDateTime)
+    if (startTimeDate < currentDateTime) {
+      alert("Start time cannot be earlier than current time")
+      return
+    }
     const startPoint = document.getElementById("start-point").value
     const endPoint = document.getElementById("end-point").value
     const startPointName = document.getElementById("start-point-search").value // 获取地点的名称
     const endPointName = document.getElementById("end-point-search").value //
     const expectedPace = document.getElementById("expected-pace").value
     const level = document.getElementById("level").value
-    // const currentExpectedPace = document.getElementById("expected-pace").value;
 
     const name = document.getElementById("name").value
     const description = document.getElementById("description").value
@@ -282,11 +293,8 @@ document.addEventListener("DOMContentLoaded", () => {
       return
     }
 
-    const value = expectedPace.value
-
-    if (!/^\d*\.?\d*$/.test(value)) {
+    if (!/^\d+(\.\d+)?$/.test(expectedPace)) {
       alert("Enter a valid number")
-      expectedPace.value = ""
     }
 
     const runData = {
@@ -308,10 +316,15 @@ document.addEventListener("DOMContentLoaded", () => {
       },
       body: JSON.stringify(runData),
     })
-
     const result = await response.json()
-    console.log(result)
-    loadRuns() // Refresh the list after adding
+
+    if (response.status == 200) {
+      alert("Create Run Successfully!")
+      loadRuns()
+    } else {
+      alert(`Create run faild: ${result?.error}`)
+    }
+    console.log("result", response)
   }
 
   function initializeMapboxMaps() {
@@ -344,6 +357,7 @@ document.addEventListener("DOMContentLoaded", () => {
     listElement.className = "runs-grid" // Assign a class for styling the grid
 
     runs.forEach((run) => {
+      console.log({ run })
       const now = new Date()
       const startTime = new Date(run.startTime)
       let statusBadgeClass = "status-Upcoming"
@@ -359,9 +373,11 @@ document.addEventListener("DOMContentLoaded", () => {
       item.className = "run-item" // Add a class for styling
       item.innerHTML = `
     <h3>${run.name}
-    <span class="badge ${levelBadgeClass}">${run.level}</span>
-    <span class="badge ${statusBadgeClass}">${status}</span>
+   
     </h3>
+    <div>
+    <span class="badge ${levelBadgeClass}">${run.level}</span>
+    <span class="badge ${statusBadgeClass}">${status}</span></div>
     <p>Start Time: ${startTime.toLocaleString()}</p>
     <p>Start Point: ${run.startPointName}</p>
     <p>End Point: ${run.endPointName}</p>
@@ -425,8 +441,13 @@ document.addEventListener("DOMContentLoaded", () => {
       .then((response) => response.json())
       .then((data) => {
         console.log("Registration successful", data)
-        login(username, password)
-        alert("Registration successful.")
+        console.log(!data.success)
+        if (!data.success) {
+          alert(`Registration failed: ${data.message}`)
+        } else {
+          login(username, password)
+          alert("Registration successful.")
+        }
       })
       .catch((error) => {
         console.error("Registration failed:", error)
@@ -444,7 +465,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function toggleSections(showLogin) {
-    document.getElementById("auth").style.display = showLogin ? "block" : "none"
+    document.getElementById("auth").style.display = showLogin ? "flex" : "none"
     document.getElementById("logout").style.display = showLogin
       ? "none"
       : "block"
@@ -462,7 +483,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const authSection = document.getElementById("auth")
 
   logoutBtn.addEventListener("click", () => {
-    authSection.style.display = "block"
+    authSection.style.display = "flex"
     logoutBtn.style.display = "none"
 
     toggleSections(true)
