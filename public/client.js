@@ -61,7 +61,7 @@ document.addEventListener("DOMContentLoaded", () => {
        <button id="joinRun" data-run-id="${runDetails._id}">${
       username ? "Click to Join" : "Login to Join"
     }</button>
-      <div><span id="participantCount">0</span>People Already Join!</div></div>
+      <div><span id="participantCount">0 </span>People Already Join!</div></div>
       </div>
         <p>Description: ${runDetails.description}</p>
         <p>Start Time: ${new Date(runDetails.startTime).toLocaleString()}</p>

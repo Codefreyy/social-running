@@ -15,7 +15,7 @@ async function insertStarterData(
   usersCollection,
   commentsCollection
 ) {
-  await clearDatabase(runsCollection, usersCollection) // clear the database first after connection, in case old data interference
+  // await clearDatabase(runsCollection, usersCollection) // clear the database first after connection, in case old data interference
 
   await insertRuns(runsCollection)
   await insertUsers(usersCollection)
@@ -117,19 +117,16 @@ async function insertUsers(usersCollection) {
       _id: nanoid(),
       username: "admin",
       password: "admin",
-      email: "admin@example.com",
     },
     {
       _id: nanoid(),
       username: "user1",
       password: "user1",
-      email: "user1@example.com",
     },
     {
       _id: nanoid(),
       username: "user2",
       password: "user2",
-      email: "user2@example.com",
     },
   ])
 }

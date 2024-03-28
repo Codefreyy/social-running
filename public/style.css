@@ -316,6 +316,7 @@ input:invalid {
   font-size: 20px;
   font-weight: 800;
   color: orange;
+  margin-right: 5px;
 }
 
 .comment-section {

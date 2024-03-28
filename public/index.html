@@ -59,7 +59,7 @@
         <h2>Initiate a run</h2>
         <form>
           <label class="custom-label"> Name </label>
-          <input name="name" id="name" placeholder="Run's Name" />
+          <input name="name" id="name" />
 
           <label class="custom-label"> Description </label>
           <textarea name="description" id="description" rows="5"></textarea>
@@ -111,6 +111,13 @@
       <section id="run-list-section">
         <h2 class="run-list-title">Run List</h2>
         <button id="find-run-btn">Find a Run</button>
+        <label>Filter by level</label>
+        <select id="filter-by-level">
+          <option value="all">All</option>
+          <option value="newbie">Newbie</option>
+          <option value="intermediate">Intermediate</option>
+          <option value="expert">Expert</option>
+        </select>
         <div id="run-list"><!-- Runs will be populated here --></div>
       </section>
 
