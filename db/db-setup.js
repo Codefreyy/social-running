@@ -15,7 +15,7 @@ async function insertStarterData(
   usersCollection,
   commentsCollection
 ) {
-  // await clearDatabase(runsCollection, usersCollection) // clear the database first after connection, in case old data interference
+  await clearDatabase(runsCollection, usersCollection) // clear the database first after connection, in case old data interference
 
   await insertRuns(runsCollection)
   await insertUsers(usersCollection)

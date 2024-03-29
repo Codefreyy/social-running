@@ -428,8 +428,14 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function handleSignUp() {
-    const username = document.getElementById("username").value
-    const password = document.getElementById("password").value
+    const username = document.getElementById("username").value.trim()
+    const password = document.getElementById("password").value.trim()
+    console.log("user", username, password)
+    console.log(!username,!password)
+    if(!username ||!password) {
+      alert("Please fill in all the fields")
+      return
+    }
 
     // 发送注册请求到服务器
     fetch("/register", {
