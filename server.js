@@ -186,13 +186,23 @@ app.post("/runs/:id/join", async (req, res) => {
   console.log(runId, username)
 
   try {
-    const updatedInfo = await runsCollection.updateOne(
-      { _id: runId },
-      { $addToSet: { participants: username } } // Use $addToSet to avoid duplicate entries
-    )
-    if (updatedInfo.matchedCount === 0) {
-      return res.status(404).json({ error: "Run not found" })
+    // First, find the user to get their _id
+    const user = await usersCollection.findOne({ username })
+    if (!user) {
+      return res.status(404).json({ error: "User not found" })
     }
+
+    // Add the user to the run's participants list
+    const updatedRunInfo = await runsCollection.updateOne(
+      { _id: runId },
+      { $addToSet: { participants: username } }
+    )
+
+    const updatedUserInfo = await usersCollection.updateOne(
+      { _id: user._id },
+      { $addToSet: { joinedRuns: runId } }
+    )
+
     res.json({ message: "Successfully joined the run" })
   } catch (error) {
     console.error(error)
@@ -271,38 +281,38 @@ app.get("/comments", async (req, res) => {
   }
 })
 
-
-
 // Get runs with filtering by level
 app.get("/runs", async (req, res) => {
   try {
-    let filter = {}; // Default filter to retrieve all runs
+    let filter = {} // Default filter to retrieve all runs
 
     // Check if a level query parameter is provided
     if (req.query.level) {
-      const level = req.query.level.toLowerCase();
-      console.log('Received level filter:', level); // Log the received level filter
+      const level = req.query.level.toLowerCase()
+      console.log("Received level filter:", level) // Log the received level filter
       // Filter runs based on the level
-      if (level === "newbie" || level === "intermediate" || level === "expert") {
-        filter.level = level; // Set the filter level
-      } else if (level == 'all') {
+      if (
+        level === "newbie" ||
+        level === "intermediate" ||
+        level === "expert"
+      ) {
+        filter.level = level // Set the filter level
+      } else if (level == "all") {
         filter = {}
       } else {
-        return res.status(400).json({ error: "Invalid level parameter" });
-
+        return res.status(400).json({ error: "Invalid level parameter" })
       }
-
     }
 
     const results = await runsCollection
       .find(filter)
       .sort({ createdAt: -1 })
-      .toArray();
+      .toArray()
 
-    console.log('Filtered runs:', results); // Log the filtered runs
-    res.json(results);
+    console.log("Filtered runs:", results) // Log the filtered runs
+    res.json(results)
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "An error occurred" });
+    console.error(error)
+    res.status(500).json({ error: "An error occurred" })
   }
-});
+})
