@@ -594,44 +594,129 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("find-run-btn").addEventListener("click", findRun)
 
   async function findRun() {
-    user_level = prompt("Enter level : ").toString()
-    user_pace = parseInt(prompt("Enter average pace : "))
-    console.log("level : " + user_level + "  pace : " + user_pace)
+    // Initialise the maximum compatibility score
+    var max_score = -1;
+    
+    var recommendedRunId;
+    var recommendedRunName;
+  
+    // Get the username of the connected user
+    // MAYBE GET IT FROM DATABASE ?
+    const username = localStorage.getItem("username");
+    try {
+      const response = await fetch(`/users/${username}/joinedRuns`);
+      const user_runs_json = await response.json();
+      const user_runs = user_runs_json.joinedRuns //turn it into an array
 
-    const response = await fetch("/runs")
-    const runs = await response.json()
+      // Print user_runs to console
+      console.log("User runs:", user_runs);
+      console.log(`${user_runs.length} runs joined by ${username}`);
+      // Check if the user has participated in enough runs
+      if (user_runs.length >= 1) {
+  
+        // Calculate the user level (using mod i.e. the value that appears the most)
+        function userLevel(array) {
+          let object = {};
+          // Count the number of appearances of each different value of level
+          for (let i = 0; i < array.length; i++) {
+            if (object[array[i].level]) {
+              object[array[i].level] += 1;
+            } else {
+              object[array[i].level] = 1;
+            }
+          }
+          // Assign a value guaranteed to be smaller than any number in the array
+          let biggestValue = -1;
+          let biggestValuesKey = -1;
+          // Finding the biggest value and its corresponding key
+          Object.keys(object).forEach(key => {
+            let val = object[key];
+            if (val > biggestValue) {
+              biggestValue = val;
+              biggestValuesKey = key;
+            }
+          })
+          return biggestValuesKey
+        }
+  
+        // Calculate the user average pace
+        function avgPace(array) {
+          const sum_pace = array.reduce((total, next) => total + next.expectedPace, 0);
+          const avg_pace = (sum_pace / array.length);
+          return avg_pace
+        }
+  
+        // async function NumParticipants(runId) {
+        //   const response = await fetch(`/runs/${runId}/participants`)
+        //   if (response.ok) {
+        //     const data = await response.json()
+        //     data.participantCount
+        //   }
+        // }
+  
+        // function AvgNumParticipant(array) {
+        //   let participant_array = [];
+  
+        //   array.forEach((run) => {
+        //     console.log(NumParticipants(run._id));
+        //     participant_array.append(NumParticipants(run._id));
+        //   })
+  
+        //   sum = participant_array.reduce((total, next) => total + next, 0);
+        //   const avg = (sum_pace / participant_array.length);
+  
+        //   return avg
+        // }
 
-    let maxCompatibilityScore = -1000
-
-    runs.forEach((run) => {
-      let compatibilityScore = 0
-
-      // Check for level compatibility
-      if (run.level === user_level) {
-        compatibilityScore += 3
+        // Get the user level
+        const user_level = userLevel(user_runs);
+        const user_avg_pace = avgPace(user_runs);
+        //const user_avg_num_participant = await AvgNumParticipant(user_runs);
+        console.log(`user_level : ${user_level} and user_pace : ${user_avg_pace}`);
+         //and user_part : ${user_avg_num_participant}`);
+  
+        // TO ADD: avg start time and address
+  
+        user_runs.forEach((run) => {
+  
+          let score = 0;
+  
+          // Level compatibility
+          if (run.level === user_level) {
+            score += 3;
+          }
+  
+          // Pace compatibility
+          let pace_diff = Math.abs(user_avg_pace - run.expectedPace);
+          // Calculate the score based on the inverse proportionality
+          score += 6 / (pace_diff + 1);
+  
+          // // Number participants compatibility
+          // let participants_diff = Math.abs(user_avg_num_participant - NumParticipants(run._id));
+          // // Calculate the score based on the inverse proportionality
+          // score += 2 / (participants_diff + 1);
+          
+          console.log(`score ${score}`);
+          // Update max compatibility score and recommended run ID if the current run has a higher score
+          if (score > max_score) {
+            max_score = score;
+            recommendedRunId = run._id;
+            recommendedRunName = run.name;
+            console.log("new best run : " + recommendedRunName);
+          }
+        });
+  
+        if (recommendedRunId) {
+          alert(`The best run to join for your profile is: ${recommendedRunName} with a compatibility score of ${max_score}`);
+        } else {
+          alert("No suitable runs found for your profile.");
+        }
       }
-
-      //pace compatibility
-      var pace_diff = Math.abs(user_pace - run.expectedPace)
-      // Calculate the score based on the inverse proportionality
-      compatibilityScore += 6 / (pace_diff + 1)
-      console.log(compatibilityScore)
-      // Update max compatibility score and recommended run ID if current run has higher score
-      if (compatibilityScore > maxCompatibilityScore) {
-        maxCompatibilityScore = compatibilityScore
-        recommendedRunId = run._id
-        recommendedRunName = run.name
-        console.log("new best run : " + recommendedRunName)
-      }
-    })
-    alert(
-      "The best run to join for your profile is : " +
-        recommendedRunName +
-        "with a compatibility score of " +
-        maxCompatibilityScore
-    )
+    } catch (error) {
+      console.error("Error finding runs:", error);
+      alert("An error occurred while finding runs. Please try again later.");
+    }
   }
-})
 
 
 
@@ -697,4 +782,4 @@ document.addEventListener("DOMContentLoaded", () => {
     displayRuns(selectedLevel);
   });
 });
-
+});
