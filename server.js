@@ -46,60 +46,86 @@ client
     console.log("Giving up!", err.message)
   })
 
-// const users = {
-//   admin: "admin",
-//   user1: "user1",
-//   user2: "user2",
-// }
-
-
 app.use(express.static("public"))
 app.use(express.json()) // parse the req body as json
 
 //Handling user login
-app.post("/login", async function(req, res){
-  console.log("login");
+app.post("/login", async function (req, res) {
+  console.log("login")
   try {
-    const { username, password } = req.body;
-    console.log({ username, password });
-      // check if the user exists
-      // check if the user exists
-    const user = await usersCollection.findOne({ username });
-    console.log(`User : ${user && user.username}`);
-    
+    const { username, password } = req.body
+    console.log({ username, password })
+    // check if the user exists
+    // check if the user exists
+    const user = await usersCollection.findOne({ username })
+    console.log(`User : ${user && user.username}`)
+
     if (user) {
       // Check if password matches
       if (password === user.password) {
         // Passwords match, send response
-        res.status(200).json({ username: user.username });
+        res.status(200).json({ username: user.username })
       } else {
         // Passwords don't match
-        res.status(400).json({ error: "Password doesn't match" });
+        res.status(400).json({ error: "Password doesn't match" })
       }
     } else {
       // User not found
-      res.status(400).json({ error: "User doesn't exist" });
+      res.status(400).json({ error: "User doesn't exist" })
     }
   } catch (error) {
     // Server error
-    console.error("Login error:", error.message);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
-
-// get runs
-app.get("/runs", async (req, res) => {
-  try {
-    const results = await runsCollection
-      .find({})
-      .sort({ createdAt: -1 })
-      .toArray()
-    res.json(results)
-  } catch (error) {
-    console.error(error)
-    res.status(500).json({ error: "An error occurred" })
+    console.error("Login error:", error.message)
+    res.status(500).json({ error: "Internal server error" })
   }
 })
+
+// handling user register
+
+async function createNewUser(username, password) {
+  if (
+    typeof username !== "string" ||
+    typeof password !== "string" ||
+    password.length > 30 ||
+    username.length > 30
+  ) {
+    throw new Error("Invalid username or password length.")
+  }
+
+  let userIdNanoid = nanoid(7) // 生成用户ID
+
+  try {
+    await usersCollection.insertOne({
+      userId: userIdNanoid,
+      username: username,
+      password: password,
+    })
+    console.log(`${userIdNanoid} registered`)
+    return userIdNanoid // 返回生成的用户ID
+  } catch (error) {
+    console.error(" Register Error ")
+    throw new Error(" Register Error ")
+  }
+}
+
+app.post("/register", async (req, res) => {
+  try {
+    const { username, password } = req.body
+    // check if user exists
+    const existingUser = await usersCollection.findOne({ username })
+    if (existingUser) {
+      return res
+        .status(400)
+        .json({ success: false, message: "User already exists" })
+    }
+    const userId = await createNewUser(username, password)
+    console.log({ userId })
+    res.status(200).json({ success: true, userId: userId })
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message })
+  }
+})
+
 
 // Create new runs
 app.post("/runs", async (req, res) => {
@@ -109,6 +135,7 @@ app.post("/runs", async (req, res) => {
     endPoint,
     expectedPace,
     name,
+    level,
     description,
     startPointName,
     endPointName,
@@ -122,6 +149,7 @@ app.post("/runs", async (req, res) => {
     endPointName,
     expectedPace,
     name,
+    level,
     description,
     createdAt: new Date(),
   }
@@ -208,27 +236,6 @@ app.get("/users/:username/joinedRuns", async (req, res) => {
 //temporary db for testing purposes
 db_temp = { username: null, password: null, email: null }
 
-//register the valid username, password pairs with the express-basic-auth object
-const authorise = expressBasicAuth({
-  users: usersCollection,
-  unauthorizedResponse: (req) =>
-    req.auth ? "Credentials  rejected" : "No credentials provided",
-  challenge: true, //make the browser ask for credentials if none/wrong are provided
-})
-
-// app.post("/login", authorise, (req, res) => {
-//   //get the user data
-//   const username = req.auth.user
-//   const password = req.auth.password
-
-//   //update database
-//   db_temp.username = username
-//   db_temp.password = password
-//   res.status(200).json(db_temp)
-//   console.log(`user loged in : ${username} with the password ${password}`)
-// })
-
-
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`)
 })
@@ -264,3 +271,39 @@ app.get("/comments", async (req, res) => {
       .json({ message: "An error occurred while getting comments" })
   }
 })
+
+
+
+// Get runs with filtering by level
+app.get("/runs", async (req, res) => {
+  try {
+    let filter = {}; // Default filter to retrieve all runs
+    
+    // Check if a level query parameter is provided
+    if (req.query.level) {
+      const level = req.query.level.toLowerCase();
+      console.log('Received level filter:', level); // Log the received level filter
+      // Filter runs based on the level
+      if (level === "newbie" || level === "intermediate" || level === "expert") {
+        filter.level = level; // Set the filter level
+      } else if (level == 'all') {
+        filter = {}
+      } else {
+        return res.status(400).json({ error: "Invalid level parameter" });
+
+      }
+
+    }
+
+    const results = await runsCollection
+      .find(filter)
+      .sort({ createdAt: -1 })
+      .toArray();
+    
+    console.log('Filtered runs:', results); // Log the filtered runs
+    res.json(results);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "An error occurred" });
+  }
+});

@@ -22,17 +22,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("expected-pace").addEventListener("input", (e) => {
     console.log(e.target.value)
-    
-      const errorElemnt = document.getElementById("error-message")
-      console.log({errorElemnt})
-    if(!e.target.checkValidity()) {
+
+    const errorElemnt = document.getElementById("error-message")
+    console.log({ errorElemnt })
+    if (!e.target.checkValidity()) {
       console.log(e.target.checkValidity())
       errorElemnt.style.display = "block"
     } else {
       document.getElementById("error-message").style.display = "none"
     }
     const expectedPace = e.target.value
-    console.log({expectedPace})
+    console.log({ expectedPace })
   })
 
   window.viewRunDetails = async (runId) => {
@@ -55,11 +55,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const detailsSection = document.getElementById("run-details-content")
     detailsSection.innerHTML = `
     <div class="run-details-card">
+       <div class="run-details-header"> 
         <h2>${runDetails.name}</h2>
-    <button id="joinRun" data-run-id="${runDetails._id}">${
-      username ? "Join" : "Login to Join"
+       <div>
+       <button id="joinRun" data-run-id="${runDetails._id}">${
+      username ? "Click to Join" : "Login to Join"
     }</button>
-    <div>Participants: <span id="participantCount">0</span></div>
+      <div><span id="participantCount">0 </span>People Already Join!</div></div>
+      </div>
         <p>Description: ${runDetails.description}</p>
         <p>Start Time: ${new Date(runDetails.startTime).toLocaleString()}</p>
         <p>Start Point: ${
@@ -108,6 +111,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  document.getElementById("sign-up").addEventListener("click", handleSignUp)
+
   async function fetchJoinedRuns(username) {
     if (!username) return []
     const response = await fetch(
@@ -130,7 +135,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   login_btn = document.getElementById("log-in")
-  login_btn.addEventListener("click", login)
+  login_btn.addEventListener("click", () => {
+    const login_username = document.getElementById("username").value
+    const login_password = document.getElementById("password").value
+    login(login_username, login_password)
+  })
 
   // map search
   const startPointSearch = document.getElementById("start-point-search")
@@ -184,7 +193,7 @@ document.addEventListener("DOMContentLoaded", () => {
     )
     const data = await response.json()
     const suggestions = data.features
-    
+
     const suggestionsList = document.getElementById("end-point-suggestions")
     suggestionsList.innerHTML = "" // Clear existing suggestions
     suggestionsList.style.display = "block"
@@ -210,256 +219,27 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   })
 
+  function showRoute() {
+    const start = startPointMarker.getLngLat()
+    const end = endPointMarker.getLngLat()
+    if (!start || !end) return
 
-function showRoute() {
-  const start = startPointMarker.getLngLat()
-  const end = endPointMarker.getLngLat()
-  if (!start || !end) return
-
-  // using Mapbox Directions API query routes
-  const directionsQuery = `https://api.mapbox.com/directions/v5/mapbox/driving/${start.lng},${start.lat};${end.lng},${end.lat}?geometries=geojson&access_token=${MY_MAPBOXGL_TOKEN}`
-
-  fetch(directionsQuery)
-    .then((response) => response.json())
-    .then((data) => {
-      const route = data.routes[0].geometry
-
-      // remove already existing route
-      if (mapRoute) {
-        startMap.removeLayer("route")
-        startMap.removeSource("route")
-      }
-
-      // add new routes to the map
-      startMap.addSource("route", {
-        type: "geojson",
-        data: {
-          type: "Feature",
-          properties: {},
-          geometry: route,
-        },
-      })
-
-      startMap.addLayer({
-        id: "route",
-        type: "line",
-        source: "route",
-        layout: {
-          "line-join": "round",
-          "line-cap": "round",
-        },
-        paint: {
-          "line-color": "#888",
-          "line-width": 8,
-        },
-      })
-
-      mapRoute = true // mark route added
-    })
-}
-
-async function onCreateRunFormSubmit(e) {
-  e.preventDefault()
-  const startTime = document.getElementById("start-time").value
-  const startPoint = document.getElementById("start-point").value
-  const endPoint = document.getElementById("end-point").value
-  const startPointName = document.getElementById("start-point-search").value // 获取地点的名称
-  const endPointName = document.getElementById("end-point-search").value //
-  const expectedPace = document.getElementById("expected-pace").value
-  const level = document.getElementById("level").value
-  // const currentExpectedPace = document.getElementById("expected-pace").value;
-
-  const name = document.getElementById("name").value
-  const description = document.getElementById("description").value
-   
-  if (!startTime ||!startPoint ||!endPoint ||!expectedPace ||!level) {
-    alert("Please fill in all the fields")
-    return
-  }
-
-
-  const value = expectedPace.value;
-
-  if (!/^\d*\.?\d*$/.test(value)) {
-        alert("Enter a valid number");
-        expectedPace.value = '';
-  }
-
-  const runData = {
-    startTime,
-    startPoint,
-    startPointName,
-    endPointName,
-    endPoint,
-    expectedPace,
-    name,
-    level,
-    description,
-  }
-
-  const response = await fetch("/runs", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(runData),
-  })
-
-  const result = await response.json()
-  console.log(result)
-  loadRuns() // Refresh the list after adding
-}
-
-function initializeMapboxMaps() {
-  mapboxgl.accessToken = MY_MAPBOXGL_TOKEN
-
-  startMap = new mapboxgl.Map({
-    container: "start-map",
-    style: "mapbox://styles/mapbox/streets-v11",
-    center: [-2.79902, 56.33871],
-
-    zoom: 9,
-  })
-
-  // Add map controls for user interaction
-  startMap.addControl(new mapboxgl.NavigationControl())
-
-  // Event listeners for map clicks to set the start and end points
-  startMap.on("click", function (e) {
-    const coords = [e.lngLat.lng, e.lngLat.lat]
-    document.getElementById("start-point").value = coords.join(",")
-  })
-}
-
-const loadRuns = async () => {
-  const response = await fetch("/runs")
-  const runs = await response.json()
-
-  const listElement = document.getElementById("run-list")
-  listElement.innerHTML = "" // Clear the list before adding new elements
-  listElement.className = "runs-grid" // Assign a class for styling the grid
-
-  runs.forEach((run) => {
-    const now = new Date()
-    const startTime = new Date(run.startTime)
-    let statusBadgeClass = "status-Upcoming"
-    let status = "Upcoming" // Default status
-    if (now > startTime) {
-      status = "Expired" // If the current time is past the start time
-      statusClass = "status-Expired"
-    }
-
-    const levelBadgeClass = `level-${run.level?.toLowerCase()}`
-
-    const item = document.createElement("div")
-    item.className = "run-item" // Add a class for styling
-    item.innerHTML = `
-    <h3>${run.name}
-    <span class="badge ${levelBadgeClass}">${run.level}</span>
-    <span class="badge ${statusBadgeClass}">${status}</span>
-    </h3>
-    <p>Start Time: ${startTime.toLocaleString()}</p>
-    <p>Start Point: ${run.startPointName}</p>
-    <p>End Point: ${run.endPointName}</p>
-    <p>Expected Pace: ${run.expectedPace}</p>
-    <button onclick="viewRunDetails('${run._id}')">See Detail</button>
-`
-    listElement.appendChild(item)
-  })
-}
-
-function parseResponse(response) {
-  return response.json()
-}
-
-function login() {
-  const login_username = document.getElementById("username").value;
-  const login_password = document.getElementById("password").value;
-  console.log(login_username + " " + login_password);
-
-  document.getElementById("username").value = "";
-  document.getElementById("password").value = "";
-
-  // Send login credentials to the server
-  fetch("/login", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ username: login_username, password: login_password })
-  })
-  .then((response) => {
-    if (!response.ok) {
-      throw new Error("Login failed");
-    }
-    return response.json();
-  })
-  .then((data) => {
-    localStorage.setItem("username", data.username);
-    updateNavbar(data.username);
-    loadRuns();
-    toggleSections(false); // login successfully, so hide auth form, show other sections
-  })
-  .catch((error) => {
-    console.error("Login failed:", error);
-    alert(`Logged in failed! Please check your credentials.`);
-  });
-}
-
-
-
-
-function updateNavbar(username) {
-  const greeting = document.getElementById("user-greeting")
-  if (username) {
-    greeting.textContent = `Hi ${username} !` // 显示问候语和用户名
-  } else {
-    greeting.textContent = "" // 清除问候语
-  }
-}
-
-function toggleSections(showLogin) {
-  document.getElementById("auth").style.display = showLogin ? "block" : "none"
-  document.getElementById("logout").style.display = showLogin ? "none" : "block"
-  document.getElementById("create-run").style.display = showLogin
-    ? "none"
-    : "block"
-  document.getElementById("run-list-section").style.display = showLogin
-    ? "none"
-    : "block"
-
-  document.getElementById("run-details").style.display = "none"
-}
-
-const logoutBtn = document.querySelector("#logout")
-const authSection = document.getElementById("auth")
-
-logoutBtn.addEventListener("click", () => {
-  authSection.style.display = "block"
-  logoutBtn.style.display = "none"
-
-  toggleSections(true)
-})
-
-function showDetailRunRoute(start, end) {
-  const detailsMap = new mapboxgl.Map({
-    container: "run-details-map",
-    style: "mapbox://styles/mapbox/streets-v11",
-    center: [start[0], start[1]],
-    zoom: 12,
-  })
-
-  detailsMap.on("load", () => {
-    new mapboxgl.Marker({ color: "green" }).setLngLat(start).addTo(detailsMap)
-    new mapboxgl.Marker({ color: "red" }).setLngLat(end).addTo(detailsMap)
-
-    const directionsQuery = `https://api.mapbox.com/directions/v5/mapbox/walking/${start[0]},${start[1]};${end[0]},${end[1]}?geometries=geojson&access_token=${MY_MAPBOXGL_TOKEN}`
+    // using Mapbox Directions API query routes
+    const directionsQuery = `https://api.mapbox.com/directions/v5/mapbox/driving/${start.lng},${start.lat};${end.lng},${end.lat}?geometries=geojson&access_token=${MY_MAPBOXGL_TOKEN}`
 
     fetch(directionsQuery)
       .then((response) => response.json())
       .then((data) => {
         const route = data.routes[0].geometry
-        detailsMap.addSource("route", {
+
+        // remove already existing route
+        if (mapRoute) {
+          startMap.removeLayer("route")
+          startMap.removeSource("route")
+        }
+
+        // add new routes to the map
+        startMap.addSource("route", {
           type: "geojson",
           data: {
             type: "Feature",
@@ -468,7 +248,7 @@ function showDetailRunRoute(start, end) {
           },
         })
 
-        detailsMap.addLayer({
+        startMap.addLayer({
           id: "route",
           type: "line",
           source: "route",
@@ -478,93 +258,437 @@ function showDetailRunRoute(start, end) {
           },
           paint: {
             "line-color": "#888",
-            "line-width": 6,
+            "line-width": 8,
           },
         })
+
+        mapRoute = true // mark route added
       })
-  })
-}
+  }
 
-/** Comments Section */
+  async function onCreateRunFormSubmit(e) {
+    e.preventDefault()
+    const startTime = document.getElementById("start-time").value
+    const startTimeDate = new Date(startTime)
+    const currentDateTime = new Date()
+    startTimeDate.setSeconds(0)
 
-const subBtn = document.getElementById("comSubmit")
-const comContent = document.getElementById("comments")
-const comInput = document.getElementById("comInput")
-console.log({ comInput }, 122)
-const commentsSec = document.getElementById("commentsSec")
+    console.log(startTimeDate, currentDateTime, startTimeDate < currentDateTime)
+    if (startTimeDate < currentDateTime) {
+      alert("Start time cannot be earlier than current time")
+      return
+    }
+    const startPoint = document.getElementById("start-point").value
+    const endPoint = document.getElementById("end-point").value
+    const startPointName = document.getElementById("start-point-search").value // 获取地点的名称
+    const endPointName = document.getElementById("end-point-search").value //
+    const expectedPace = document.getElementById("expected-pace").value
+    const level = document.getElementById("level").value
 
-async function showComments(runId) {
-  const response = await fetch(`/comments?runId=${runId}`)
-  const comments = await response.json()
-  console.log("comments", comments)
-  const commentsSec = document.getElementById("commentsSec")
-  commentsSec.innerHTML = ""
-  comments.forEach((comment) => {
-    const comDetail = document.createElement("p")
-    const date = new Date(comment.createdAt).toLocaleString()
-    comDetail.textContent = `${comment.username}: ${comment.content} (${date})`
-    commentsSec.appendChild(comDetail)
-  })
-  console.log(comments)
-}
-subBtn.addEventListener("click", async () => {
-  const username = localStorage.getItem("username")
-  console.log(username)
-  const commentText = comInput.value
-  if (commentText && currentRunId && username) {
-    const response = await fetch("/comments", {
+    const name = document.getElementById("name").value
+    const description = document.getElementById("description").value
+
+    if (!startTime || !startPoint || !endPoint || !expectedPace || !level) {
+      alert("Please fill in all the fields")
+      return
+    }
+
+    if (!/^\d+(\.\d+)?$/.test(expectedPace)) {
+      alert("Enter a valid number")
+    }
+
+    const runData = {
+      startTime,
+      startPoint,
+      startPointName,
+      endPointName,
+      endPoint,
+      expectedPace,
+      name,
+      level,
+      description,
+    }
+
+    const response = await fetch("/runs", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(runData),
+    })
+    const result = await response.json()
+
+    if (response.status == 200) {
+      alert("Create Run Successfully!")
+      loadRuns()
+    } else {
+      alert(`Create run faild: ${result?.error}`)
+    }
+    console.log("result", response)
+  }
+
+  function initializeMapboxMaps() {
+    mapboxgl.accessToken = MY_MAPBOXGL_TOKEN
+
+    startMap = new mapboxgl.Map({
+      container: "start-map",
+      style: "mapbox://styles/mapbox/streets-v11",
+      center: [-2.79902, 56.33871],
+
+      zoom: 9,
+    })
+
+    // Add map controls for user interaction
+    startMap.addControl(new mapboxgl.NavigationControl())
+
+    // Event listeners for map clicks to set the start and end points
+    startMap.on("click", function (e) {
+      const coords = [e.lngLat.lng, e.lngLat.lat]
+      document.getElementById("start-point").value = coords.join(",")
+    })
+  }
+
+  const loadRuns = async () => {
+    const response = await fetch("/runs")
+    const runs = await response.json()
+
+    const listElement = document.getElementById("run-list")
+    listElement.innerHTML = "" // Clear the list before adding new elements
+    listElement.className = "runs-grid" // Assign a class for styling the grid
+
+    runs.forEach((run) => {
+      console.log({ run })
+      const now = new Date()
+      const startTime = new Date(run.startTime)
+      let statusBadgeClass = "status-Upcoming"
+      let status = "Upcoming" // Default status
+      if (now > startTime) {
+        status = "Expired" // If the current time is past the start time
+        statusClass = "status-Expired"
+      }
+
+      const levelBadgeClass = `level-${run.level?.toLowerCase()}`
+
+      const item = document.createElement("div")
+      item.className = "run-item" // Add a class for styling
+      item.innerHTML = `
+    <h3>${run.name}
+   
+    </h3>
+    <div>
+    <span class="badge ${levelBadgeClass}">${run.level}</span>
+    <span class="badge ${statusBadgeClass}">${status}</span></div>
+    <p>Start Time: ${startTime.toLocaleString()}</p>
+    <p>Start Point: ${run.startPointName}</p>
+    <p>End Point: ${run.endPointName}</p>
+    <p>Expected Pace: ${run.expectedPace}</p>
+    <button onclick="viewRunDetails('${run._id}')">See Detail</button>
+`
+      listElement.appendChild(item)
+    })
+  }
+
+  function parseResponse(response) {
+    return response.json()
+  }
+
+  function login(username, password) {
+    console.log("user", username, password)
+    document.getElementById("username").value = ""
+    document.getElementById("password").value = ""
+
+    // Send login credentials to the server
+    fetch("/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        content: commentText,
-        runId: currentRunId,
         username,
+        password,
       }),
     })
-    if (response.ok) {
-      comInput.value = ""
-      showComments(currentRunId) // Re-fetch and display all comments
+      .then((response) => {
+        console.log(response, response.ok)
+        if (!response.ok) {
+          throw new Error("Login failed")
+        }
+        return response.json()
+      })
+      .then((data) => {
+        localStorage.setItem("username", data.username)
+        updateNavbar(data.username)
+        loadRuns()
+        toggleSections(false) // login successfully, so hide auth form, show other sections
+      })
+      .catch((error) => {
+        console.error("Login failed:", error)
+        alert(`Logged in failed! Please check your credentials.`)
+      })
+  }
+
+  function handleSignUp() {
+    const username = document.getElementById("username").value
+    const password = document.getElementById("password").value
+
+    // 发送注册请求到服务器
+    fetch("/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ username, password }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Registration successful", data)
+        console.log(!data.success)
+        if (!data.success) {
+          alert(`Registration failed: ${data.message}`)
+        } else {
+          login(username, password)
+          alert("Registration successful.")
+        }
+      })
+      .catch((error) => {
+        console.error("Registration failed:", error)
+        alert("Registration failed")
+      })
+  }
+
+  function updateNavbar(username) {
+    const greeting = document.getElementById("user-greeting")
+    if (username) {
+      greeting.textContent = `Hi ${username}` // 显示问候语和用户名
+    } else {
+      greeting.textContent = "" // 清除问候语
     }
+  }
+
+  function toggleSections(showLogin) {
+    document.getElementById("auth").style.display = showLogin ? "flex" : "none"
+    document.getElementById("logout").style.display = showLogin
+      ? "none"
+      : "block"
+    document.getElementById("create-run").style.display = showLogin
+      ? "none"
+      : "block"
+    document.getElementById("run-list-section").style.display = showLogin
+      ? "none"
+      : "block"
+
+    document.getElementById("run-details").style.display = "none"
+  }
+
+  const logoutBtn = document.querySelector("#logout")
+  const authSection = document.getElementById("auth")
+
+  logoutBtn.addEventListener("click", () => {
+    // clear localstorage
+    localStorage.removeItem("username")
+
+    // remove user greeting
+    updateNavbar(null)
+
+    authSection.style.display = "flex"
+    logoutBtn.style.display = "none"
+
+    toggleSections(true)
+  })
+
+  function showDetailRunRoute(start, end) {
+    const detailsMap = new mapboxgl.Map({
+      container: "run-details-map",
+      style: "mapbox://styles/mapbox/streets-v11",
+      center: [start[0], start[1]],
+      zoom: 12,
+    })
+
+    detailsMap.on("load", () => {
+      new mapboxgl.Marker({ color: "green" }).setLngLat(start).addTo(detailsMap)
+      new mapboxgl.Marker({ color: "red" }).setLngLat(end).addTo(detailsMap)
+
+      const directionsQuery = `https://api.mapbox.com/directions/v5/mapbox/walking/${start[0]},${start[1]};${end[0]},${end[1]}?geometries=geojson&access_token=${MY_MAPBOXGL_TOKEN}`
+
+      fetch(directionsQuery)
+        .then((response) => response.json())
+        .then((data) => {
+          const route = data.routes[0].geometry
+          detailsMap.addSource("route", {
+            type: "geojson",
+            data: {
+              type: "Feature",
+              properties: {},
+              geometry: route,
+            },
+          })
+
+          detailsMap.addLayer({
+            id: "route",
+            type: "line",
+            source: "route",
+            layout: {
+              "line-join": "round",
+              "line-cap": "round",
+            },
+            paint: {
+              "line-color": "#888",
+              "line-width": 6,
+            },
+          })
+        })
+    })
+  }
+
+  /** Comments Section */
+
+  const subBtn = document.getElementById("comSubmit")
+  const comContent = document.getElementById("comments")
+  const comInput = document.getElementById("comInput")
+  console.log({ comInput }, 122)
+  const commentsSec = document.getElementById("commentsSec")
+
+  async function showComments(runId) {
+    const response = await fetch(`/comments?runId=${runId}`)
+    const comments = await response.json()
+    console.log("comments", comments)
+    const commentsSec = document.getElementById("commentsSec")
+    commentsSec.innerHTML = ""
+    comments.forEach((comment) => {
+      const comDetail = document.createElement("p")
+      const date = new Date(comment.createdAt).toLocaleString()
+      comDetail.textContent = `${comment.username}: ${comment.content} (${date})`
+      commentsSec.appendChild(comDetail)
+    })
+    console.log(comments)
+  }
+  subBtn.addEventListener("click", async () => {
+    const username = localStorage.getItem("username")
+    console.log(username)
+    const commentText = comInput.value
+    if (commentText && currentRunId && username) {
+      const response = await fetch("/comments", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          content: commentText,
+          runId: currentRunId,
+          username,
+        }),
+      })
+      if (response.ok) {
+        comInput.value = ""
+        showComments(currentRunId) // Re-fetch and display all comments
+      }
+    }
+  })
+
+  document.getElementById("find-run-btn").addEventListener("click", findRun)
+
+  async function findRun() {
+    user_level = prompt("Enter level : ").toString()
+    user_pace = parseInt(prompt("Enter average pace : "))
+    console.log("level : " + user_level + "  pace : " + user_pace)
+
+    const response = await fetch("/runs")
+    const runs = await response.json()
+
+    let maxCompatibilityScore = -1000
+
+    runs.forEach((run) => {
+      let compatibilityScore = 0
+
+      // Check for level compatibility
+      if (run.level === user_level) {
+        compatibilityScore += 3
+      }
+
+      //pace compatibility
+      var pace_diff = Math.abs(user_pace - run.expectedPace)
+      // Calculate the score based on the inverse proportionality
+      compatibilityScore += 6 / (pace_diff + 1)
+      console.log(compatibilityScore)
+      // Update max compatibility score and recommended run ID if current run has higher score
+      if (compatibilityScore > maxCompatibilityScore) {
+        maxCompatibilityScore = compatibilityScore
+        recommendedRunId = run._id
+        recommendedRunName = run.name
+        console.log("new best run : " + recommendedRunName)
+      }
+    })
+    alert(
+      "The best run to join for your profile is : " +
+        recommendedRunName +
+        "with a compatibility score of " +
+        maxCompatibilityScore
+    )
   }
 })
 
 
-document.getElementById("find-run-btn").addEventListener("click",findRun);
 
-async function findRun() {
-  user_level = prompt("Enter level : ").toString();
-  user_pace = parseInt(prompt("Enter average pace : "));
-  console.log("level : "+user_level+"  pace : "+user_pace);
 
-  const response = await fetch("/runs")
-  const runs = await response.json()
+// JavaScript code for filtering
+document.addEventListener("DOMContentLoaded", () => {
+  const filterSelect = document.getElementById("filter-by-level");
+  const runList = document.getElementById("run-list");
 
-  let maxCompatibilityScore = -1000;
+  // Function to fetch and display runs, optionally filtered by level
+  async function displayRuns(level = "all") {
+    try {
+      const response = await fetch(`/runs?level=${level}`); // Fetch runs from server
+      const runs = await response.json();
 
-  runs.forEach((run) => {
-    let compatibilityScore = 0;
+      if (!response.ok) {
+        throw new Error(`Error fetching runs: ${response.statusText}`); // Handle non-200 responses
+      }
 
-    // Check for level compatibility
-    if (run.level === user_level) {
-        compatibilityScore += 3;
+      runList.innerHTML = ""; // Clear previous list items
+
+      runs.forEach((run) => {
+        const now = new Date()
+        const startTime = new Date(run.startTime)
+        let statusBadgeClass = "status-Upcoming"
+        let status = "Upcoming" // Default status
+        if (now > startTime) {
+          status = "Expired" // If the current time is past the start time
+          statusClass = "status-Expired"
+        }
+  
+        const levelBadgeClass = `level-${run.level?.toLowerCase()}`
+        // Create and append a list item for each run
+        const item = document.createElement("div")
+        item.className = "run-item" // Add a class for styling
+        item.innerHTML = `
+      <h3>${run.name}
+     
+      </h3>
+      <div>
+      <span class="badge ${levelBadgeClass}">${run.level}</span>
+      <span class="badge ${statusBadgeClass}">${status}</span></div>
+      <p>Start Time: ${startTime.toLocaleString()}</p>
+      <p>Start Point: ${run.startPointName}</p>
+      <p>End Point: ${run.endPointName}</p>
+      <p>Expected Pace: ${run.expectedPace}</p>
+      <button onclick="viewRunDetails('${run._id}')">See Detail</button>
+  `
+        runList.appendChild(item);
+      });
+    } catch (error) {
+      console.error("Error fetching runs:", error);
+      runList.textContent = "Error loading runs. Please try again later."; // Display error message
     }
-      
-    //pace compatibility
-    var pace_diff = Math.abs(user_pace - run.expectedPace);
-    // Calculate the score based on the inverse proportionality
-    compatibilityScore += 6 / (pace_diff + 1);
-    console.log(compatibilityScore);
-    // Update max compatibility score and recommended run ID if current run has higher score
-    if (compatibilityScore > maxCompatibilityScore) {
-      maxCompatibilityScore = compatibilityScore;
-      recommendedRunId = run._id;
-      recommendedRunName = run.name;
-      console.log("new best run : "+recommendedRunName);
+  }
 
-    }
+  // Initial run list display
+  displayRuns();
+
+  // Event listener for filter changes
+  filterSelect.addEventListener("change", (event) => {
+    const selectedLevel = event.target.value;
+    displayRuns(selectedLevel);
   });
-  alert("The best run to join for your profile is : " + recommendedRunName + "with a compatibility score of "+maxCompatibilityScore);
-}
-})
+});
+
