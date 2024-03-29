@@ -28,10 +28,11 @@ h2 {
   color: #2e86de;
   font-family: "Raleway", sans-serif;
   font-optical-sizing: auto;
-  font-weight: 600;
+  font-weight: 700;
+  font-style: medium;
   padding: 0;
   margin: 0;
-  font-size: 20px;
+  font-size: 28px;
 }
 
 .custom-label {
@@ -39,7 +40,8 @@ h2 {
   font-size: 15px;                 
   font-weight: 500;
   font-style: medium;
-  color: #313131;                   
+  color: #313131;
+  margin-right: 10px;                   
 }
 
 form {
@@ -75,10 +77,16 @@ nav {
   display: flex;
   gap: 5px;
   align-items: center;
+  font-family: "Raleway", sans-serif;
+  font-weight: regular;
 }
 
 #user-greeting {
-  color: black;
+  color: rgb(63, 72, 121);
+  font-family: "Raleway", sans-serif;
+  font-weight: 400;
+  font-weight: light;
+  margin-right: 15px;
 }
 
 .run-list-title {
@@ -104,6 +112,9 @@ nav {
 
 .run-item h3 {
   color: #333;
+  font-family: "Raleway", sans-serif;
+  font-weight: 700;
+  font-weight: bold;
   margin-top: 0;
 }
 
@@ -149,18 +160,20 @@ nav {
   border-color: #4169e1;
   color: #4169e1;
   font-family: "Raleway", sans-serif;
-  font-weight: 300;
+  font-weight: 600;
 }
 .badge.level-expert {
   border-color: #0000ff;
   color: #0000ff;
   font-family: "Raleway", sans-serif;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .badge.status-Upcoming {
-  border-color: #008000;
-  color: #008000;
+  border-color: rgb(186, 220, 88);
+  color: rgb(106, 176, 76);
+  font-family: "Raleway", sans-serif;
+  font-weight: 600;
 }
 .badge.status-Expired {
   border-color: #ff0000;
@@ -171,6 +184,8 @@ nav {
   top: 9px;
   background-color: transparent;
   border: none;
+  font-family: "Raleway", sans-serif;
+  font-weight: 600;
   color: #007bff;
   cursor: pointer;
   font-size: 16px;
@@ -260,11 +275,11 @@ input[name="password"] {
 }
 
 input:invalid {
-  border: 1px solid red;
+  border: 1px solid rgb(241, 56, 56);
 }
 
 #error-message {
-  color: red;
+  color: rgb(241, 56, 56);
   display: none;
 }
 

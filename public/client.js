@@ -412,7 +412,7 @@ function login() {
 function updateNavbar(username) {
   const greeting = document.getElementById("user-greeting")
   if (username) {
-    greeting.textContent = `Hi ${username}` // 显示问候语和用户名
+    greeting.textContent = `Hi ${username} !` // 显示问候语和用户名
   } else {
     greeting.textContent = "" // 清除问候语
   }
