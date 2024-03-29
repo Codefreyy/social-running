@@ -117,6 +117,7 @@ async function insertUsers(usersCollection) {
       _id: nanoid(),
       username: "admin",
       password: "admin",
+      joinedRuns: ["runid1", "runid"],
     },
     {
       _id: nanoid(),

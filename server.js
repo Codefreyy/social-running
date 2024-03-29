@@ -126,7 +126,6 @@ app.post("/register", async (req, res) => {
   }
 })
 
-
 // Create new runs
 app.post("/runs", async (req, res) => {
   const {
@@ -278,7 +277,7 @@ app.get("/comments", async (req, res) => {
 app.get("/runs", async (req, res) => {
   try {
     let filter = {}; // Default filter to retrieve all runs
-    
+
     // Check if a level query parameter is provided
     if (req.query.level) {
       const level = req.query.level.toLowerCase();
@@ -299,7 +298,7 @@ app.get("/runs", async (req, res) => {
       .find(filter)
       .sort({ createdAt: -1 })
       .toArray();
-    
+
     console.log('Filtered runs:', results); // Log the filtered runs
     res.json(results);
   } catch (error) {

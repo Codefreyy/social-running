@@ -5,10 +5,18 @@ let mapRoute = null
 let startPointMarker
 let endPointMarker
 let currentRunId = null
+const filterSelect = document.getElementById("filter-by-level")
+const runList = document.getElementById("run-list")
 
 document.addEventListener("DOMContentLoaded", () => {
   initializeMapboxMaps()
   toggleSections(true) //ensure that when page loads, only show the auth form
+
+  filterSelect.addEventListener("change", (event) => {
+    const selectedLevel = event.target.value
+    console.log({ selectedLevel })
+    displayRuns(selectedLevel)
+  })
 
   document
     .getElementById("create-run")
@@ -288,8 +296,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const name = document.getElementById("name").value
     const description = document.getElementById("description").value
 
-    if (!startTime || !startPoint || !endPoint || !expectedPace || !level) {
+    if (!startTime || !expectedPace || !level) {
       alert("Please fill in all the fields")
+      return
+    }
+
+    if (!startPoint || !endPoint) {
+      alert("Please input valid start point and end point!")
       return
     }
 
@@ -431,8 +444,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const username = document.getElementById("username").value.trim()
     const password = document.getElementById("password").value.trim()
     console.log("user", username, password)
-    console.log(!username,!password)
-    if(!username ||!password) {
+    console.log(!username, !password)
+    if (!username || !password) {
       alert("Please fill in all the fields")
       return
     }
@@ -595,57 +608,59 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function findRun() {
     // Initialise the maximum compatibility score
-    var max_score = -1;
-    
-    var recommendedRunId;
-    var recommendedRunName;
-  
+    var max_score = -1
+
+    var recommendedRunId
+    var recommendedRunName
+
     // Get the username of the connected user
     // MAYBE GET IT FROM DATABASE ?
-    const username = localStorage.getItem("username");
+    const username = localStorage.getItem("username")
     try {
-      const response = await fetch(`/users/${username}/joinedRuns`);
-      const user_runs_json = await response.json();
+      const response = await fetch(`/users/${username}/joinedRuns`)
+      const user_runs_json = await response.json()
       const user_runs = user_runs_json.joinedRuns //turn it into an array
 
       // Print user_runs to console
-      console.log("User runs:", user_runs);
-      console.log(`${user_runs.length} runs joined by ${username}`);
+      console.log("User runs:", user_runs)
+      console.log(`${user_runs.length} runs joined by ${username}`)
       // Check if the user has participated in enough runs
       if (user_runs.length >= 1) {
-  
         // Calculate the user level (using mod i.e. the value that appears the most)
         function userLevel(array) {
-          let object = {};
+          let object = {}
           // Count the number of appearances of each different value of level
           for (let i = 0; i < array.length; i++) {
             if (object[array[i].level]) {
-              object[array[i].level] += 1;
+              object[array[i].level] += 1
             } else {
-              object[array[i].level] = 1;
+              object[array[i].level] = 1
             }
           }
           // Assign a value guaranteed to be smaller than any number in the array
-          let biggestValue = -1;
-          let biggestValuesKey = -1;
+          let biggestValue = -1
+          let biggestValuesKey = -1
           // Finding the biggest value and its corresponding key
-          Object.keys(object).forEach(key => {
-            let val = object[key];
+          Object.keys(object).forEach((key) => {
+            let val = object[key]
             if (val > biggestValue) {
-              biggestValue = val;
-              biggestValuesKey = key;
+              biggestValue = val
+              biggestValuesKey = key
             }
           })
           return biggestValuesKey
         }
-  
+
         // Calculate the user average pace
         function avgPace(array) {
-          const sum_pace = array.reduce((total, next) => total + next.expectedPace, 0);
-          const avg_pace = (sum_pace / array.length);
+          const sum_pace = array.reduce(
+            (total, next) => total + next.expectedPace,
+            0
+          )
+          const avg_pace = sum_pace / array.length
           return avg_pace
         }
-  
+
         // async function NumParticipants(runId) {
         //   const response = await fetch(`/runs/${runId}/participants`)
         //   if (response.ok) {
@@ -653,133 +668,118 @@ document.addEventListener("DOMContentLoaded", () => {
         //     data.participantCount
         //   }
         // }
-  
+
         // function AvgNumParticipant(array) {
         //   let participant_array = [];
-  
+
         //   array.forEach((run) => {
         //     console.log(NumParticipants(run._id));
         //     participant_array.append(NumParticipants(run._id));
         //   })
-  
+
         //   sum = participant_array.reduce((total, next) => total + next, 0);
         //   const avg = (sum_pace / participant_array.length);
-  
+
         //   return avg
         // }
 
         // Get the user level
-        const user_level = userLevel(user_runs);
-        const user_avg_pace = avgPace(user_runs);
+        const user_level = userLevel(user_runs)
+        const user_avg_pace = avgPace(user_runs)
         //const user_avg_num_participant = await AvgNumParticipant(user_runs);
-        console.log(`user_level : ${user_level} and user_pace : ${user_avg_pace}`);
-         //and user_part : ${user_avg_num_participant}`);
-  
+        console.log(
+          `user_level : ${user_level} and user_pace : ${user_avg_pace}`
+        )
+        //and user_part : ${user_avg_num_participant}`);
+
         // TO ADD: avg start time and address
-  
+
         user_runs.forEach((run) => {
-  
-          let score = 0;
-  
+          let score = 0
+
           // Level compatibility
           if (run.level === user_level) {
-            score += 3;
+            score += 3
           }
-  
+
           // Pace compatibility
-          let pace_diff = Math.abs(user_avg_pace - run.expectedPace);
+          let pace_diff = Math.abs(user_avg_pace - run.expectedPace)
           // Calculate the score based on the inverse proportionality
-          score += 6 / (pace_diff + 1);
-  
+          score += 6 / (pace_diff + 1)
+
           // // Number participants compatibility
           // let participants_diff = Math.abs(user_avg_num_participant - NumParticipants(run._id));
           // // Calculate the score based on the inverse proportionality
           // score += 2 / (participants_diff + 1);
-          
-          console.log(`score ${score}`);
+
+          console.log(`score ${score}`)
           // Update max compatibility score and recommended run ID if the current run has a higher score
           if (score > max_score) {
-            max_score = score;
-            recommendedRunId = run._id;
-            recommendedRunName = run.name;
-            console.log("new best run : " + recommendedRunName);
+            max_score = score
+            recommendedRunId = run._id
+            recommendedRunName = run.name
+            console.log("new best run : " + recommendedRunName)
           }
-        });
-  
+        })
+
         if (recommendedRunId) {
-          alert(`The best run to join for your profile is: ${recommendedRunName} with a compatibility score of ${max_score}`);
+          alert(
+            `The best run to join for your profile is: ${recommendedRunName} with a compatibility score of ${max_score}`
+          )
         } else {
-          alert("No suitable runs found for your profile.");
+          alert("No suitable runs found for your profile.")
         }
       }
     } catch (error) {
-      console.error("Error finding runs:", error);
-      alert("An error occurred while finding runs. Please try again later.");
+      console.error("Error finding runs:", error)
+      alert("An error occurred while finding runs. Please try again later.")
     }
   }
+})
 
+async function displayRuns(level = "all") {
+  try {
+    console.log({ level })
+    const response = await fetch(`/runs?level=${level}`) // Fetch runs from server
+    const runs = await response.json()
 
+    if (!response.ok) {
+      throw new Error(`Error fetching runs: ${response.statusText}`) // Handle non-200 responses
+    }
 
+    runList.innerHTML = "" // Clear previous list items
 
-// JavaScript code for filtering
-document.addEventListener("DOMContentLoaded", () => {
-  const filterSelect = document.getElementById("filter-by-level");
-  const runList = document.getElementById("run-list");
-
-  // Function to fetch and display runs, optionally filtered by level
-  async function displayRuns(level = "all") {
-    try {
-      const response = await fetch(`/runs?level=${level}`); // Fetch runs from server
-      const runs = await response.json();
-
-      if (!response.ok) {
-        throw new Error(`Error fetching runs: ${response.statusText}`); // Handle non-200 responses
+    runs.forEach((run) => {
+      const now = new Date()
+      const startTime = new Date(run.startTime)
+      let statusBadgeClass = "status-Upcoming"
+      let status = "Upcoming" // Default status
+      if (now > startTime) {
+        status = "Expired" // If the current time is past the start time
+        statusClass = "status-Expired"
       }
 
-      runList.innerHTML = ""; // Clear previous list items
-
-      runs.forEach((run) => {
-        const now = new Date()
-        const startTime = new Date(run.startTime)
-        let statusBadgeClass = "status-Upcoming"
-        let status = "Upcoming" // Default status
-        if (now > startTime) {
-          status = "Expired" // If the current time is past the start time
-          statusClass = "status-Expired"
-        }
-  
-        const levelBadgeClass = `level-${run.level?.toLowerCase()}`
-        // Create and append a list item for each run
-        const item = document.createElement("div")
-        item.className = "run-item" // Add a class for styling
-        item.innerHTML = `
-      <h3>${run.name}
-     
-      </h3>
-      <div>
-      <span class="badge ${levelBadgeClass}">${run.level}</span>
-      <span class="badge ${statusBadgeClass}">${status}</span></div>
-      <p>Start Time: ${startTime.toLocaleString()}</p>
-      <p>Start Point: ${run.startPointName}</p>
-      <p>End Point: ${run.endPointName}</p>
-      <p>Expected Pace: ${run.expectedPace}</p>
-      <button onclick="viewRunDetails('${run._id}')">See Detail</button>
-  `
-        runList.appendChild(item);
-      });
-    } catch (error) {
-      console.error("Error fetching runs:", error);
-      runList.textContent = "Error loading runs. Please try again later."; // Display error message
-    }
+      const levelBadgeClass = `level-${run.level?.toLowerCase()}`
+      // Create and append a list item for each run
+      const item = document.createElement("div")
+      item.className = "run-item" // Add a class for styling
+      item.innerHTML = `
+  <h3>${run.name}
+ 
+  </h3>
+  <div>
+  <span class="badge ${levelBadgeClass}">${run.level}</span>
+  <span class="badge ${statusBadgeClass}">${status}</span></div>
+  <p>Start Time: ${startTime.toLocaleString()}</p>
+  <p>Start Point: ${run.startPointName}</p>
+  <p>End Point: ${run.endPointName}</p>
+  <p>Expected Pace: ${run.expectedPace}</p>
+  <button onclick="viewRunDetails('${run._id}')">See Detail</button>
+`
+      runList.appendChild(item)
+    })
+  } catch (error) {
+    console.error("Error fetching runs:", error)
+    runList.textContent = "Error loading runs. Please try again later." // Display error message
   }
-
-  // Initial run list display
-  displayRuns();
-
-  // Event listener for filter changes
-  filterSelect.addEventListener("change", (event) => {
-    const selectedLevel = event.target.value;
-    displayRuns(selectedLevel);
-  });
-});
-});
+}
