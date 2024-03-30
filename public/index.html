@@ -23,6 +23,7 @@
       rel="stylesheet"
     />
   </head>
+
   <body>
     <!-- for logout -->
     <header>
@@ -57,14 +58,29 @@
       <!-- for create runs form-->
       <section id="create-run">
         <h2>Initiate a run</h2>
-        <form>
-          <label class="custom-label"> Name </label>
-          <input name="name" id="name" />
 
-          <label class="custom-label"> Description </label>
-          <textarea name="description" id="description" rows="5"></textarea>
-          <label for="start-time" class="custom-label"> Starting Time </label>
-          <input name="start-time" type="datetime-local" id="start-time" />
+        <form>
+          <div class="form-row">
+            <div class="input-group">
+              <label class="custom-label"> Name </label>
+              <input name="name" id="name" />
+
+              <label for="start-time" class="custom-label"> Starting Time </label>
+              <input name="start-time" type="datetime-local" id="start-time" />
+            </div>
+
+            <div id="start-map" style="width: 743px; height: 300px"></div>
+          <br>
+          <label class="custom-label">Level</label>
+          <select name="level" id="level" class="custom-select">
+            <option selected value="newbie">Newbie</option>
+            <option value="intermediate">Intermediate</option>
+            <option value="expert">Expert</option>
+          </select>
+          <label class="custom-label"> Expected Pace (minute miles) </label>
+          <input name="expected-pace" id="expected-pace" pattern="\d+" />
+          <span class="error-message" id="error-message"
+            >Please input number</span>
 
           <div id="search-section">
             <div id="start-search-area">
@@ -90,19 +106,11 @@
               <div id="end-point-suggestions"></div>
             </div>
           </div>
-          <div id="start-map" style="width: 600px; height: 300px"></div>
-          <label class="custom-label">Level</label>
-          <select name="level" id="level">
-            <option selected value="newbie">Newbie</option>
-            <option value="intermediate">Intermediate</option>
-            <option value="expert">Expert</option>
-          </select>
-          <label class="custom-label"> Expected Pace (minute miles) </label>
-          <input name="expected-pace" id="expected-pace" pattern="\d+" />
-          <span class="error-message" id="error-message"
-            >Please input number</span
-          >
-
+          
+          <label class="custom-label"> Description </label>
+          <textarea name="description" id="description" rows="5"></textarea>
+          
+          <br>
           <button id="create-run" type="submit">Create a run</button>
         </form>
       </section>
@@ -130,6 +138,7 @@
           <div id="run-details-content"></div>
           <div id="run-details-map" style="width: 800px; height: 400px"></div>
 
+          <br>
           <div class="comments">
             <h2 id="titleCom">Comments</h2>
             <div class="inputArea">
