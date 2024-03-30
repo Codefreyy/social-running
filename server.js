@@ -304,6 +304,17 @@ app.get("/runs", async (req, res) => {
       }
     }
 
+    // Check if a pace query parameter is provided
+    if (req.query.pace) {
+      const pace = parseFloat(req.query.pace)
+      if (!isNaN(pace)) {
+        // Assuming expectedPace is stored as a number in your collection
+        filter.expectedPace = { $lte: pace } // Filter for runs with expectedPace less than or equal to the provided pace
+      } else {
+        return res.status(400).json({ error: "Invalid pace parameter" })
+      }
+    }
+
     const results = await runsCollection
       .find(filter)
       .sort({ createdAt: -1 })

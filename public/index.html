@@ -106,27 +106,44 @@
           <button id="create-run" type="submit">Create a run</button>
         </form>
       </section>
-      <br>
-    
+      <br />
 
       <!-- for runs list -->
       <section id="run-list-section">
         <h2 class="run-list-title">Run List</h2>
-        <label>Filter by level</label>
-        <select id="filter-by-level">
-          <option value="all">All</option>
-          <option value="newbie">Newbie</option>
-          <option value="intermediate">Intermediate</option>
-          <option value="expert">Expert</option>
-        </select>
-        <div id="run-list"><!-- Runs will be populated here --></div>
-      </section>
+        <section id="filter-run-section">
+          <div>
+            <label>Level</label>
+            <select id="filter-by-level">
+              <option value="all">All</option>
+              <option value="newbie">Newbie</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="expert">Expert</option>
+            </select>
+          </div>
+          <div>
+            <label>Pace (minute miles):</label>
+            <select id="filter-by-pace">
+              <option value="all">All</option>
+              <option value="5">5 min/mile or faster</option>
+              <option value="6">6 min/mile</option>
+              <option value="7">7 min/mile</option>
+              <option value="8">8 min/mile</option>
+              <option value="9">9 min/mile</option>
+              <option value="10">10 min/mile</option>
+              <option value="11">11 min/mile</option>
+              <option value="12">12 min/mile or slower</option>
+            </select>
+          </div>
+        </section>
 
-      <!-- for recommended runs -->
-      <section id="reco-run-section">
-        <h2 class="reco-run-title">Recommended Runs For You</h2>
-        <button id="find-run-btn">Find Runs</button>
-        <div id="reco-run"><!-- Runs will be populated here --></div>
+        <div id="run-list"><!-- Runs will be populated here --></div>
+        <!-- for recommended runs -->
+        <section id="reco-run-section">
+          <h2 class="reco-run-title">Recommended Runs For You</h2>
+          <button id="find-run-btn">Find Runs</button>
+          <div id="reco-run"><!-- Runs will be populated here --></div>
+        </section>
       </section>
 
       <!-- for run details -->

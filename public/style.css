@@ -38,7 +38,7 @@ h2 {
   font-weight: 500;
   font-style: medium;
   color: #313131;
-  margin-right: 10px;                   
+  margin-right: 10px;
 }
 
 form {
@@ -387,4 +387,40 @@ input:invalid {
 #create-run form input,
 form textarea {
   margin-bottom: 20px;
+}
+
+/** Filter run **/
+#filter-run-section {
+  display: flex;
+  justify-content: space-between;
+  padding: 20px;
+  background-color: #f7f7f7; /* 浅灰色背景提升扁平化风格 */
+  border-bottom: 2px solid #e0e0e0; /* 添加底部边框以区分筛选栏和列表 */
+}
+
+#filter-run-section > div {
+  display: flex;
+  align-items: center;
+}
+
+#filter-run-section label {
+  font-size: 16px;
+  color: #333;
+  margin-right: 10px;
+}
+
+#filter-run-section select {
+  font-size: 14px;
+  padding: 8px 12px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  background-color: white;
+  color: #333;
+  outline: none;
+}
+
+#filter-run-section select:hover,
+#filter-run-section select:focus {
+  border-color: #999;
+  cursor: pointer; /* 改变鼠标指针形状为手型，提高用户交互体验 */
 }
