@@ -401,10 +401,6 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   }
 
-  function parseResponse(response) {
-    return response.json()
-  }
-
   function login(username, password) {
     console.log("user", username, password)
     document.getElementById("username").value = ""
@@ -607,43 +603,51 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("find-run-btn").addEventListener("click", findRun)
 
   async function findRun() {
-    // Initialise the maximum compatibility score
-    var max_score = -1
 
-    var recommendedRunId
-    var recommendedRunName
+    var reco_runs = []; 
 
     // Get the username of the connected user
-    // MAYBE GET IT FROM DATABASE ?
-    const username = localStorage.getItem("username")
-    try {
-      const response = await fetch(`/users/${username}/joinedRuns`)
-      const user_runs_json = await response.json()
-      const user_runs = user_runs_json.joinedRuns //turn it into an array
+    const username = localStorage.getItem("username");
 
-      // Print user_runs to console
-      console.log("User runs:", user_runs)
-      console.log(`${user_runs.length} runs joined by ${username}`)
+    try {
+      //fetch all the runs the user participated in
+      const response = await fetch(`/users/${username}/joinedRuns`);
+      const user_runs_json = await response.json();
+      //extract the array
+      const user_runs = user_runs_json.joinedRuns;
+
       // Check if the user has participated in enough runs
       if (user_runs.length >= 1) {
+
+        //CALCULATE THE USER STATISTICS
+
         // Calculate the user level (using mod i.e. the value that appears the most)
+        //help ; https://stackoverflow.com/questions/1053843/get-the-element-with-the-highest-occurrence-in-an-array
         function userLevel(array) {
-          let object = {}
+          let object = {};
           // Count the number of appearances of each different value of level
           for (let i = 0; i < array.length; i++) {
             if (object[array[i].level]) {
-              object[array[i].level] += 1
+              object[array[i].level] += 1;
             } else {
-              object[array[i].level] = 1
+              object[array[i].level] = 1;
             }
           }
           // Assign a value guaranteed to be smaller than any number in the array
-          let biggestValue = -1
-          let biggestValuesKey = -1
+          let biggestValue = -1;
+          let biggestValuesKey = -1;
           // Finding the biggest value and its corresponding key
           Object.keys(object).forEach((key) => {
-            let val = object[key]
-            if (val > biggestValue) {
+            let val = object[key];
+
+            //if there are 2 levels with the same level of occurences we always prefer the easier level
+            if (val === biggestValue) {
+              if (level(key) - level(biggestValuesKey) < 0) {
+                biggestValue = val
+                biggestValuesKey = key
+              }
+            }
+            else if (val > biggestValue) {
               biggestValue = val
               biggestValuesKey = key
             }
@@ -651,88 +655,147 @@ document.addEventListener("DOMContentLoaded", () => {
           return biggestValuesKey
         }
 
+        // Level compatibility
+        //we associate a number to each level for calculation purposes
+        function level(level) {
+          if (level === "expert") {
+            return 3
+          }
+          else if (level === "intermediate") {
+            return 2
+          }
+          else if (level ===  "newbie") {
+            return 1
+          }
+          else {
+            return 0
+          }         
+        }
+
         // Calculate the user average pace
+        //help for .reduce : https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reduce
         function avgPace(array) {
-          const sum_pace = array.reduce(
-            (total, next) => total + next.expectedPace,
-            0
-          )
+          const sum_pace = array.reduce((total, next) => total + next.expectedPace,0)
           const avg_pace = sum_pace / array.length
           return avg_pace
         }
 
-        // async function NumParticipants(runId) {
-        //   const response = await fetch(`/runs/${runId}/participants`)
-        //   if (response.ok) {
-        //     const data = await response.json()
-        //     data.participantCount
-        //   }
-        // }
+        //we calculate the average number of participants for the runs the user participated in
+        function avgNumParticipant(array) {
+          const sum_nb = array.reduce((total, next) => total + next.participants.length, 0);
+          const avg_nb = (sum_nb / array.length);
+          return avg_nb
+        }
 
-        // function AvgNumParticipant(array) {
-        //   let participant_array = [];
+        //calculate the average start time
+        function avgStartTime(array) {
+          const sum = array.reduce((total, next) => total + new Date(next.startTime).getHours(), 0);
+          const avg_time = (sum / array.length);
+          return avg_time
+        }
 
-        //   array.forEach((run) => {
-        //     console.log(NumParticipants(run._id));
-        //     participant_array.append(NumParticipants(run._id));
-        //   })
+        //Get the user stats
+        const user_level = userLevel(user_runs);
+        const user_avg_pace = avgPace(user_runs);
+        const user_avg_num_participant =  avgNumParticipant(user_runs);
+        const user_avg_startTime = avgStartTime(user_runs);
 
-        //   sum = participant_array.reduce((total, next) => total + next, 0);
-        //   const avg = (sum_pace / participant_array.length);
-
-        //   return avg
-        // }
-
-        // Get the user level
-        const user_level = userLevel(user_runs)
-        const user_avg_pace = avgPace(user_runs)
-        //const user_avg_num_participant = await AvgNumParticipant(user_runs);
-        console.log(
-          `user_level : ${user_level} and user_pace : ${user_avg_pace}`
-        )
-        //and user_part : ${user_avg_num_participant}`);
+        //we display the users stats for testing purposes
+        console.log(`User : level : ${user_level} / pace : ${user_avg_pace} / participants : ${user_avg_num_participant} / start time : ${user_avg_startTime}`);
 
         // TO ADD: avg start time and address
 
-        user_runs.forEach((run) => {
-          let score = 0
+        //get the runs the user has not participated in yet
+        const response = await fetch("/runs")
+        const runs = await response.json()
+        filtered_runs = runs.filter((run)=> {return !run.participants.includes(username)});
 
-          // Level compatibility
-          if (run.level === user_level) {
-            score += 3
-          }
+        if (filtered_runs.length >= 1) {
+          //Now that we have the user statistics we compute the compatibility score for each run the user did not participated in
+          filtered_runs.forEach((run) => {
+            //initialise the variables fro the compatibility score
+            let score = 0;
+            const max_level_score = 3;
+            const max_pace_score = 6;
+            const max_participants_score = 2;
+            const max_startTime_score = 4;
+            
+            //Level compatibility
+            score += max_level_score - Math.abs(level(run.level) - level(user_level));
+            
+            // Pace compatibility
+            let pace_diff = Math.abs(user_avg_pace - run.expectedPace);
+            score += max_pace_score / (pace_diff + 1);
 
-          // Pace compatibility
-          let pace_diff = Math.abs(user_avg_pace - run.expectedPace)
-          // Calculate the score based on the inverse proportionality
-          score += 6 / (pace_diff + 1)
+            // Number participants compatibility
+            let participants_diff = Math.abs(user_avg_num_participant - run.participants.length);
+            score += max_participants_score / (participants_diff + 1);
 
-          // // Number participants compatibility
-          // let participants_diff = Math.abs(user_avg_num_participant - NumParticipants(run._id));
-          // // Calculate the score based on the inverse proportionality
-          // score += 2 / (participants_diff + 1);
+            //start time compatibility(in hours)
+            let startTime_diff = Math.abs(user_avg_startTime - new Date(run.startTime).getHours());
+            console.log("startTime_diff" + startTime_diff);
+            // Calculate the score based on the inverse proportionality for startTime
+            score += max_startTime_score / (startTime_diff + 1);
 
-          console.log(`score ${score}`)
-          // Update max compatibility score and recommended run ID if the current run has a higher score
-          if (score > max_score) {
-            max_score = score
-            recommendedRunId = run._id
-            recommendedRunName = run.name
-            console.log("new best run : " + recommendedRunName)
-          }
-        })
+            // Calculate total achievable score
+            const total_max_score = max_pace_score + max_participants_score + max_level_score + max_startTime_score;
 
-        if (recommendedRunId) {
-          alert(
-            `The best run to join for your profile is: ${recommendedRunName} with a compatibility score of ${max_score}`
-          )
-        } else {
-          alert("No suitable runs found for your profile.")
+            // Calculate percentage
+            const percent_score = (score / total_max_score) * 100;
+            // Ensure the percentage is within the range [0, 100] and with 2 decimals
+            var final_percent_score = Math.min(Math.max(percent_score, 0), 100).toFixed(2);
+
+            //add the run to an array
+            reco_runs.push({score: final_percent_score, info : run});
+          })
         }
+        else {
+          alert("You participated in all the runs> We are unable to recommend new runs !");
+        }
+
+        //we sort the array in deacrising order based on the score
+        reco_runs.sort((a,b) => b.score - a.score);
+        console.log(reco_runs);
+
+        //we display the recommended runs in the html page
+        const listElement = document.getElementById("reco-run")
+        listElement.innerHTML = "" // Clear the list before adding new elements
+        listElement.className = "runs-grid" // Assign a class for styling the grid
+
+        reco_runs.forEach((run) => {
+          const now = new Date()
+          const startTime = new Date(run.info.startTime)
+          let statusBadgeClass = "status-Upcoming"
+          let status = "Upcoming" // Default status
+          if (now > startTime) {
+            status = "Expired" // If the current time is past the start time
+            statusClass = "status-Expired"
+          }
+
+          const levelBadgeClass = `level-${run.info.level?.toLowerCase()}`
+
+          const item = document.createElement("div")
+          item.className = "run-item" // Add a class for styling
+          item.innerHTML = `
+              <h3>${run.info.name}
+            
+              </h3>
+              <div>
+              <span class="badge ${levelBadgeClass}">${run.info.level}</span>
+              <span class="badge ${statusBadgeClass}">${status}</span></div>
+              <p>Start Time: ${startTime.toLocaleString()}</p>
+              <p>Start Point: ${run.info.startPointName}</p>
+              <p>End Point: ${run.info.endPointName}</p>
+              <p>Expected Pace: ${run.info.expectedPace}</p>
+              <p>Recommendation score: ${run.score}%</p>
+              <button onclick="viewRunDetails('${run.info._id}')">See Detail</button>
+              `
+          listElement.appendChild(item)
+        })
       }
     } catch (error) {
-      console.error("Error finding runs:", error)
-      alert("An error occurred while finding runs. Please try again later.")
+      console.error("Error finding runs:", error);
+      alert("An error occurred while finding runs. Please try again later.");
     }
   }
 })
