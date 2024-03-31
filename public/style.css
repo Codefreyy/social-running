@@ -1,19 +1,17 @@
 :root {
   --main-blue: #2e86de;
   --light-blue: #86b7fc;
-  --pale-blue: #D7EAF2;
-  --yellow:#f6e58d;
-  --light-green: #AED59D;
+  --pale-blue: #d7eaf2;
+  --yellow: #f6e58d;
+  --light-green: #aed59d;
   --green: #6ab04c;
-  --coral: #E88787;
-  --melon: #EEB2AF;
-  --pale: #E4F2F0;
-
+  --coral: #e88787;
+  --melon: #eeb2af;
+  --pale: #e4f2f0;
 }
 
 body {
   margin: 0;
-  
 }
 
 .raleway-bold {
@@ -31,7 +29,7 @@ main {
 }
 
 h2 {
-  color: #00AAEE;
+  color: #00aaee;
   font-family: "Raleway", sans-serif;
   font-optical-sizing: auto;
   font-weight: 600;
@@ -56,7 +54,6 @@ h4 {
   color: #313131;
 }
 
-
 .custom-select {
   font-family: "Raleway", sans-serif;
   font-style: regular;
@@ -68,7 +65,7 @@ h4 {
 
 #search-section {
   display: flex;
-  align-items: center; 
+  align-items: center;
 }
 
 .search-area {
@@ -76,7 +73,6 @@ h4 {
   align-items: center; /* Vertically center align the label and input */
   margin-right: 10px; /* Add some margin to the right */
 }
-
 
 header {
   border-bottom: 1px solid #dddfe5;
@@ -256,7 +252,7 @@ button {
   cursor: pointer;
   font-family: "Raleway", sans-serif;
   font-weight: 500;
-  background-color: var(--light-blue);
+  background-color: var(--main-blue);
   font-size: 16px;
   color: white;
   align-items: center;
@@ -300,12 +296,11 @@ button {
   display: flex;
   flex-direction: column;
   gap: 15px;
-
 }
 
 .input-group {
   display: flex;
-  gap:20%;
+  gap: 20%;
 }
 
 #form {
@@ -439,11 +434,12 @@ input:invalid {
   width: 743px;
   max-height: 300px;
   overflow-y: auto;
-  resize:none
+  resize: none;
 }
 
 #create-run form input,
-form textarea, form select{
+form textarea,
+form select {
   margin-bottom: 20px;
   background-color: #f9f9f9;
   width: 180px;
