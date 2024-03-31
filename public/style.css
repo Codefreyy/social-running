@@ -90,7 +90,8 @@ nav {
   margin-left: 20px; /* Adjust based on your layout */
 }
 
-.runs-grid {
+.runs-grid,
+#user-runs {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-start;
@@ -423,4 +424,53 @@ form textarea {
 #filter-run-section select:focus {
   border-color: #999;
   cursor: pointer; /* 改变鼠标指针形状为手型，提高用户交互体验 */
+}
+
+/** user space **/
+
+#user-space-section {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  max-width: 1000px;
+  margin: 10px auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.user-space-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+#user-space-section h2 {
+  margin: 0;
+  color: #333;
+  font-weight: 600;
+}
+
+#back-to-main {
+  padding: 8px 16px;
+  background-color: var(--main-blue);
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#back-to-main:hover {
+  background-color: #0056b3;
+}
+
+.user-details,
+.joined-runs {
+  margin-bottom: 20px;
+}
+
+#user-name {
+  font-size: 18px;
+  color: #555;
 }

@@ -10,7 +10,7 @@ const runList = document.getElementById("run-list")
 
 document.addEventListener("DOMContentLoaded", () => {
   initializeMapboxMaps()
-  toggleSections(true) //ensure that when page loads, only show the auth form
+  showAuthSection(true) //ensure that when page loads, only show the auth form
 
   filterSelect.addEventListener("change", (event) => {
     const selectedLevel = event.target.value
@@ -435,7 +435,7 @@ document.addEventListener("DOMContentLoaded", () => {
         localStorage.setItem("username", data.username)
         updateNavbar(data.username)
         loadRuns()
-        toggleSections(false) // login successfully, so hide auth form, show other sections
+        showAuthSection(false) // login successfully, so hide auth form, show other sections
       })
       .catch((error) => {
         console.error("Login failed:", error)
@@ -478,16 +478,85 @@ document.addEventListener("DOMContentLoaded", () => {
       })
   }
 
-  function updateNavbar(username) {
+  async function updateNavbar(username) {
     const greeting = document.getElementById("user-greeting")
     if (username) {
-      greeting.textContent = `Hi ${username}` // 显示问候语和用户名
+      greeting.textContent = `Hi ${username}`
+      showUserSpaceButton(username)
     } else {
       greeting.textContent = "" // 清除问候语
     }
   }
 
-  function toggleSections(showLogin) {
+  async function displayUserRuns(username) {
+    // 从后端获取用户参与的跑步列表
+    const response = await fetch(`/users/${username}/joinedRuns`)
+    const { joinedRuns } = await response.json()
+
+    console.log({ joinedRuns })
+
+    // 清空现有的跑步列表
+    const userRunsElement = document.getElementById("user-runs")
+    userRunsElement.innerHTML = ""
+
+    // 为每个跑步创建一个列表项
+    joinedRuns.forEach((run) => {
+      const runElement = document.createElement("div")
+      runElement.className = "run-item"
+      runElement.innerHTML = `
+            <h3>${run.name}</h3>
+            <p>Start Time: ${new Date(run.startTime).toLocaleString()}</p>
+            <p>Start Point: ${run.startPointName}</p>
+            <p>End Point: ${run.endPointName}</p>
+            <p>Expected Pace: ${run.expectedPace}</p>
+            <button onclick="viewRunDetails('${run._id}')">See Detail</button>
+        `
+      userRunsElement.appendChild(runElement)
+    })
+
+    debugger
+  }
+
+  function showUserSpaceButton(username) {
+    const userSpaceBtn = document.createElement("button")
+    userSpaceBtn.id = "user-space-btn"
+    userSpaceBtn.textContent = "User Space"
+    document.querySelector(".navbar-logout").appendChild(userSpaceBtn)
+    userSpaceBtn.addEventListener("click", async () => {
+      // display username
+      document.getElementById("user-name").textContent = `Username: ${username}`
+
+      document.getElementById("create-run").style.display = "block"
+      document.getElementById("run-list-section").style.display = "block"
+      document.getElementById("user-space-section").style.display = "none"
+      toggleUserSpace(true)
+      await displayUserRuns(username)
+
+      document
+        .getElementById("back-to-main")
+        .addEventListener("click", function () {
+          // 返回主页面
+          toggleUserSpace(false)
+        })
+
+      // fetch and show user previous run list
+    })
+  }
+
+  function toggleUserSpace(showUserSpace) {
+    if (showUserSpace) {
+      document.getElementById("create-run").style.display = "none"
+      document.getElementById("run-list-section").style.display = "none"
+      document.getElementById("run-details").style.display = "none"
+      document.getElementById("user-space-section").style.display = "flex"
+    } else {
+      document.getElementById("create-run").style.display = "block"
+      document.getElementById("run-list-section").style.display = "block"
+      document.getElementById("user-space-section").style.display = "none"
+    }
+  }
+
+  function showAuthSection(showLogin) {
     document.getElementById("auth").style.display = showLogin ? "flex" : "none"
     document.getElementById("logout").style.display = showLogin
       ? "none"
@@ -500,6 +569,11 @@ document.addEventListener("DOMContentLoaded", () => {
       : "block"
 
     document.getElementById("run-details").style.display = "none"
+    document.getElementById("user-space-section").style.display = "none"
+    const userspaceBtn = document.getElementById("user-space-btn")
+    if (userspaceBtn) {
+      userspaceBtn.style.display = "none"
+    }
   }
 
   const logoutBtn = document.querySelector("#logout")
@@ -515,7 +589,7 @@ document.addEventListener("DOMContentLoaded", () => {
     authSection.style.display = "flex"
     logoutBtn.style.display = "none"
 
-    toggleSections(true)
+    showAuthSection(true)
   })
 
   function showDetailRunRoute(start, end) {

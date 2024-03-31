@@ -147,21 +147,36 @@
       </section>
 
       <!-- for run details -->
-      <section>
-        <div id="run-details" style="display: none">
-          <button id="btn-back-to-list">&#x2190; Back</button>
-          <div id="run-details-content"></div>
-          <div id="run-details-map" style="width: 800px; height: 400px"></div>
+      <section id="run-details" style="display: none">
+        <button id="btn-back-to-list">&#x2190; Back</button>
+        <div id="run-details-content"></div>
+        <div id="run-details-map" style="width: 800px; height: 400px"></div>
 
-          <div class="comments">
-            <h2 id="titleCom">Comments</h2>
-            <div class="inputArea">
-              <input id="comInput" type="text" />
-              <button id="comSubmit">submit</button>
-            </div>
-            <div class="comArea">
-              <section id="commentsSec">showComments</section>
-            </div>
+        <div class="comments">
+          <h2 id="titleCom">Comments</h2>
+          <div class="inputArea">
+            <input id="comInput" type="text" />
+            <button id="comSubmit">submit</button>
+          </div>
+          <div class="comArea">
+            <section id="commentsSec">showComments</section>
+          </div>
+        </div>
+      </section>
+
+      <!-- user space -->
+      <section id="user-space-section" style="display: none">
+        <div class="user-space-header">
+          <h2>User Space</h2>
+          <button id="back-to-main">Return</button>
+        </div>
+        <div class="user-details">
+          <h4 id="user-name">Username: <span></span></h4>
+        </div>
+        <div class="joined-runs">
+          <h3>Joined Runs</h3>
+          <div id="user-runs">
+            <!-- The list of runs the user has participated in will be dynamically populated here -->
           </div>
         </div>
       </section>
