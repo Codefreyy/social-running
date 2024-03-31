@@ -39,50 +39,64 @@
     <main>
       <!-- for login & register -->
       <section id="auth">
-        <div>
-          <label class="custom-label"> Username </label>
-          <input name="username" id="username" value="admin" />
-        </div>
-
-        <div>
-          <label class="custom-label"> Password </label>
-          <input name="password" id="password" value="admin" />
-        </div>
-
-        <div class="auth-footer">
-          <button id="log-in">Log in</button>
-          <button id="sign-up">Sign up</button>
+        <div id="form">
+          <div>
+            <label class="custom-label"> Username </label>
+            <input name="username" id="username" value="admin" />
+          </div>
+  
+          <div>
+            <label class="custom-label"> Password </label>
+            <input type="password" name="password" id="password" value="admin" />
+          </div>
+  
+          <div class="auth-footer">
+            <button id="log-in">Log in</button>
+            <button id="sign-up">Sign up</button>
+          </div>
         </div>
       </section>
 
       <!-- for create runs form-->
       <section id="create-run">
         <h2>Initiate a run</h2>
-
+        <p>Fill in the form to initiate your run.</p>
+        <br/>
         <form>
-          <div class="form-row">
+       
             <div class="input-group">
+             <div>
               <label class="custom-label"> Name </label>
-              <input name="name" id="name" />
+              <input name="name" id="name" required />
 
+             </div>
+             <div>
               <label for="start-time" class="custom-label"> Starting Time </label>
-              <input name="start-time" type="datetime-local" id="start-time" />
+              <input name="start-time" type="datetime-local" id="start-time"  required/>
+             </div>
             </div>
 
-            <div id="start-map" style="width: 743px; height: 300px"></div>
-          <br>
-          <label class="custom-label">Level</label>
-          <select name="level" id="level" class="custom-select">
-            <option selected value="newbie">Newbie</option>
-            <option value="intermediate">Intermediate</option>
-            <option value="expert">Expert</option>
-          </select>
-          <label class="custom-label"> Expected Pace (minute miles) </label>
-          <input name="expected-pace" id="expected-pace" pattern="\d+" />
-          <span class="error-message" id="error-message"
-            >Please input number</span>
+            <div class="input-group">
 
-          <div id="search-section">
+           <div>
+            <label class="custom-label">Level</label>
+            <select name="level" id="level" class="custom-select" required>
+              <option selected value="newbie">Newbie</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="expert">Expert</option>
+            </select>
+           </div>
+            <div>
+              <label class="custom-label"> Expected Pace (minute miles) </label>
+              <input name="expected-pace" id="expected-pace" pattern="\d+" required />
+              <span class="error-message" id="error-message"
+              >Please input number</span>
+            </div>
+            </div>
+
+ 
+
+          <div id="search-section" class="input-group">
             <div id="start-search-area">
               <label class="custom-label"> Starting Point </label>
               <input
@@ -105,49 +119,90 @@
               <input type="hidden" name="end-point" id="end-point" />
               <div id="end-point-suggestions"></div>
             </div>
+
           </div>
+
+          <div id="start-map" style="width: 743px; height: 300px"></div>
+        </br>
+        <div>
+          <textarea name="description" id="description" rows="5" placeholder="Add description here..."></textarea>
+
+        </div>
           
-          <label class="custom-label"> Description </label>
-          <textarea name="description" id="description" rows="5"></textarea>
-          
-          <br>
           <button id="create-run" type="submit">Create a run</button>
         </form>
       </section>
-      <br>
-    
+      <br />
 
       <!-- for runs list -->
       <section id="run-list-section">
         <h2 class="run-list-title">Run List</h2>
-        <button id="find-run-btn">Find a Run</button>
-        <label>Filter by level</label>
-        <select id="filter-by-level">
-          <option value="all">All</option>
-          <option value="newbie">Newbie</option>
-          <option value="intermediate">Intermediate</option>
-          <option value="expert">Expert</option>
-        </select>
+        <section id="filter-run-section">
+          <div>
+            <label>Level</label>
+            <select id="filter-by-level">
+              <option value="all">All</option>
+              <option value="newbie">Newbie</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="expert">Expert</option>
+            </select>
+          </div>
+          <div>
+            <label>Pace (minute miles):</label>
+            <select id="filter-by-pace">
+              <option value="all">All</option>
+              <option value="5">5 min/mile or faster</option>
+              <option value="6">6 min/mile</option>
+              <option value="7">7 min/mile</option>
+              <option value="8">8 min/mile</option>
+              <option value="9">9 min/mile</option>
+              <option value="10">10 min/mile</option>
+              <option value="11">11 min/mile</option>
+              <option value="12">12 min/mile or slower</option>
+            </select>
+          </div>
+        </section>
+
         <div id="run-list"><!-- Runs will be populated here --></div>
+        <!-- for recommended runs -->
+        <section id="reco-run-section">
+          <h2 class="reco-run-title">Recommended Runs For You</h2>
+          <button id="find-run-btn">Find Runs</button>
+          <div id="reco-run"><!-- Runs will be populated here --></div>
+        </section>
       </section>
 
       <!-- for run details -->
-      <section>
-        <div id="run-details" style="display: none">
-          <button id="btn-back-to-list">&#x2190; Back</button>
-          <div id="run-details-content"></div>
-          <div id="run-details-map" style="width: 800px; height: 400px"></div>
+      <section id="run-details" style="display: none">
+        <button id="btn-back-to-list">&#x2190; Back</button>
+        <div id="run-details-content"></div>
+        <div id="run-details-map" style="width: 800px; height: 400px"></div>
 
-          <br>
-          <div class="comments">
-            <h2 id="titleCom">Comments</h2>
-            <div class="inputArea">
-              <input id="comInput" type="text" />
-              <button id="comSubmit">submit</button>
-            </div>
-            <div class="comArea">
-              <section id="commentsSec">showComments</section>
-            </div>
+        <div class="comments">
+          <h2 id="titleCom">Comments</h2>
+          <div class="inputArea">
+            <input id="comInput" type="text" />
+            <button id="comSubmit">submit</button>
+          </div>
+          <div class="comArea">
+            <section id="commentsSec">showComments</section>
+          </div>
+        </div>
+      </section>
+
+      <!-- user space -->
+      <section id="user-space-section" style="display: none">
+        <div class="user-space-header">
+          <h2>User Space</h2>
+          <button id="back-to-main">Return</button>
+        </div>
+        <div class="user-details">
+          <h4 id="user-name">Username: <span></span></h4>
+        </div>
+        <div class="joined-runs">
+          <h3>Joined Runs</h3>
+          <div id="user-runs">
+            <!-- The list of runs the user has participated in will be dynamically populated here -->
           </div>
         </div>
       </section>

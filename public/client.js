@@ -10,13 +10,20 @@ const runList = document.getElementById("run-list")
 
 document.addEventListener("DOMContentLoaded", () => {
   initializeMapboxMaps()
-  toggleSections(true) //ensure that when page loads, only show the auth form
+  showAuthSection(true) //ensure that when page loads, only show the auth form
 
   filterSelect.addEventListener("change", (event) => {
     const selectedLevel = event.target.value
-    console.log({ selectedLevel })
     displayRuns(selectedLevel)
   })
+
+  document
+    .getElementById("filter-by-pace")
+    .addEventListener("change", function () {
+      const selectedLevel = document.getElementById("filter-by-level").value
+      const selectedPace = this.value
+      displayRuns(selectedLevel, selectedPace)
+    })
 
   document
     .getElementById("create-run")
@@ -401,10 +408,6 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   }
 
-  function parseResponse(response) {
-    return response.json()
-  }
-
   function login(username, password) {
     console.log("user", username, password)
     document.getElementById("username").value = ""
@@ -432,7 +435,7 @@ document.addEventListener("DOMContentLoaded", () => {
         localStorage.setItem("username", data.username)
         updateNavbar(data.username)
         loadRuns()
-        toggleSections(false) // login successfully, so hide auth form, show other sections
+        showAuthSection(false) // login successfully, so hide auth form, show other sections
       })
       .catch((error) => {
         console.error("Login failed:", error)
@@ -475,16 +478,85 @@ document.addEventListener("DOMContentLoaded", () => {
       })
   }
 
-  function updateNavbar(username) {
+  async function updateNavbar(username) {
     const greeting = document.getElementById("user-greeting")
     if (username) {
-      greeting.textContent = `Hi ${username}` // 显示问候语和用户名
+      greeting.textContent = `Hi ${username}`
+      showUserSpaceButton(username)
     } else {
       greeting.textContent = "" // 清除问候语
     }
   }
 
-  function toggleSections(showLogin) {
+  async function displayUserRuns(username) {
+    // 从后端获取用户参与的跑步列表
+    const response = await fetch(`/users/${username}/joinedRuns`)
+    const { joinedRuns } = await response.json()
+
+    console.log({ joinedRuns })
+
+    // 清空现有的跑步列表
+    const userRunsElement = document.getElementById("user-runs")
+    userRunsElement.innerHTML = ""
+
+    // 为每个跑步创建一个列表项
+    joinedRuns.forEach((run) => {
+      const runElement = document.createElement("div")
+      runElement.className = "run-item"
+      runElement.innerHTML = `
+            <h3>${run.name}</h3>
+            <p>Start Time: ${new Date(run.startTime).toLocaleString()}</p>
+            <p>Start Point: ${run.startPointName}</p>
+            <p>End Point: ${run.endPointName}</p>
+            <p>Expected Pace: ${run.expectedPace}</p>
+            <button onclick="viewRunDetails('${run._id}')">See Detail</button>
+        `
+      userRunsElement.appendChild(runElement)
+    })
+
+    debugger
+  }
+
+  function showUserSpaceButton(username) {
+    const userSpaceBtn = document.createElement("button")
+    userSpaceBtn.id = "user-space-btn"
+    userSpaceBtn.textContent = "User Space"
+    document.querySelector(".navbar-logout").appendChild(userSpaceBtn)
+    userSpaceBtn.addEventListener("click", async () => {
+      // display username
+      document.getElementById("user-name").textContent = `Username: ${username}`
+
+      document.getElementById("create-run").style.display = "block"
+      document.getElementById("run-list-section").style.display = "block"
+      document.getElementById("user-space-section").style.display = "none"
+      toggleUserSpace(true)
+      await displayUserRuns(username)
+
+      document
+        .getElementById("back-to-main")
+        .addEventListener("click", function () {
+          // 返回主页面
+          toggleUserSpace(false)
+        })
+
+      // fetch and show user previous run list
+    })
+  }
+
+  function toggleUserSpace(showUserSpace) {
+    if (showUserSpace) {
+      document.getElementById("create-run").style.display = "none"
+      document.getElementById("run-list-section").style.display = "none"
+      document.getElementById("run-details").style.display = "none"
+      document.getElementById("user-space-section").style.display = "flex"
+    } else {
+      document.getElementById("create-run").style.display = "block"
+      document.getElementById("run-list-section").style.display = "block"
+      document.getElementById("user-space-section").style.display = "none"
+    }
+  }
+
+  function showAuthSection(showLogin) {
     document.getElementById("auth").style.display = showLogin ? "flex" : "none"
     document.getElementById("logout").style.display = showLogin
       ? "none"
@@ -497,6 +569,11 @@ document.addEventListener("DOMContentLoaded", () => {
       : "block"
 
     document.getElementById("run-details").style.display = "none"
+    document.getElementById("user-space-section").style.display = "none"
+    const userspaceBtn = document.getElementById("user-space-btn")
+    if (userspaceBtn) {
+      userspaceBtn.style.display = "none"
+    }
   }
 
   const logoutBtn = document.querySelector("#logout")
@@ -512,7 +589,7 @@ document.addEventListener("DOMContentLoaded", () => {
     authSection.style.display = "flex"
     logoutBtn.style.display = "none"
 
-    toggleSections(true)
+    showAuthSection(true)
   })
 
   function showDetailRunRoute(start, end) {
@@ -607,26 +684,24 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("find-run-btn").addEventListener("click", findRun)
 
   async function findRun() {
-    // Initialise the maximum compatibility score
-    var max_score = -1
-
-    var recommendedRunId
-    var recommendedRunName
+    var reco_runs = []
 
     // Get the username of the connected user
-    // MAYBE GET IT FROM DATABASE ?
     const username = localStorage.getItem("username")
+
     try {
+      //fetch all the runs the user participated in
       const response = await fetch(`/users/${username}/joinedRuns`)
       const user_runs_json = await response.json()
-      const user_runs = user_runs_json.joinedRuns //turn it into an array
+      //extract the array
+      const user_runs = user_runs_json.joinedRuns
 
-      // Print user_runs to console
-      console.log("User runs:", user_runs)
-      console.log(`${user_runs.length} runs joined by ${username}`)
       // Check if the user has participated in enough runs
       if (user_runs.length >= 1) {
+        //CALCULATE THE USER STATISTICS
+
         // Calculate the user level (using mod i.e. the value that appears the most)
+        //help ; https://stackoverflow.com/questions/1053843/get-the-element-with-the-highest-occurrence-in-an-array
         function userLevel(array) {
           let object = {}
           // Count the number of appearances of each different value of level
@@ -643,7 +718,14 @@ document.addEventListener("DOMContentLoaded", () => {
           // Finding the biggest value and its corresponding key
           Object.keys(object).forEach((key) => {
             let val = object[key]
-            if (val > biggestValue) {
+
+            //if there are 2 levels with the same level of occurences we always prefer the easier level
+            if (val === biggestValue) {
+              if (level(key) - level(biggestValuesKey) < 0) {
+                biggestValue = val
+                biggestValuesKey = key
+              }
+            } else if (val > biggestValue) {
               biggestValue = val
               biggestValuesKey = key
             }
@@ -651,7 +733,22 @@ document.addEventListener("DOMContentLoaded", () => {
           return biggestValuesKey
         }
 
+        // Level compatibility
+        //we associate a number to each level for calculation purposes
+        function level(level) {
+          if (level === "expert") {
+            return 3
+          } else if (level === "intermediate") {
+            return 2
+          } else if (level === "newbie") {
+            return 1
+          } else {
+            return 0
+          }
+        }
+
         // Calculate the user average pace
+        //help for .reduce : https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reduce
         function avgPace(array) {
           const sum_pace = array.reduce(
             (total, next) => total + next.expectedPace,
@@ -661,74 +758,143 @@ document.addEventListener("DOMContentLoaded", () => {
           return avg_pace
         }
 
-        // async function NumParticipants(runId) {
-        //   const response = await fetch(`/runs/${runId}/participants`)
-        //   if (response.ok) {
-        //     const data = await response.json()
-        //     data.participantCount
-        //   }
-        // }
+        //we calculate the average number of participants for the runs the user participated in
+        function avgNumParticipant(array) {
+          const sum_nb = array.reduce(
+            (total, next) => total + next.participants.length,
+            0
+          )
+          const avg_nb = sum_nb / array.length
+          return avg_nb
+        }
 
-        // function AvgNumParticipant(array) {
-        //   let participant_array = [];
+        //calculate the average start time
+        function avgStartTime(array) {
+          const sum = array.reduce(
+            (total, next) => total + new Date(next.startTime).getHours(),
+            0
+          )
+          const avg_time = sum / array.length
+          return avg_time
+        }
 
-        //   array.forEach((run) => {
-        //     console.log(NumParticipants(run._id));
-        //     participant_array.append(NumParticipants(run._id));
-        //   })
-
-        //   sum = participant_array.reduce((total, next) => total + next, 0);
-        //   const avg = (sum_pace / participant_array.length);
-
-        //   return avg
-        // }
-
-        // Get the user level
+        //Get the user stats
         const user_level = userLevel(user_runs)
         const user_avg_pace = avgPace(user_runs)
-        //const user_avg_num_participant = await AvgNumParticipant(user_runs);
+        const user_avg_num_participant = avgNumParticipant(user_runs)
+        const user_avg_startTime = avgStartTime(user_runs)
+
+        //we display the users stats for testing purposes
         console.log(
-          `user_level : ${user_level} and user_pace : ${user_avg_pace}`
+          `User : level : ${user_level} / pace : ${user_avg_pace} / participants : ${user_avg_num_participant} / start time : ${user_avg_startTime}`
         )
-        //and user_part : ${user_avg_num_participant}`);
 
         // TO ADD: avg start time and address
 
-        user_runs.forEach((run) => {
-          let score = 0
-
-          // Level compatibility
-          if (run.level === user_level) {
-            score += 3
-          }
-
-          // Pace compatibility
-          let pace_diff = Math.abs(user_avg_pace - run.expectedPace)
-          // Calculate the score based on the inverse proportionality
-          score += 6 / (pace_diff + 1)
-
-          // // Number participants compatibility
-          // let participants_diff = Math.abs(user_avg_num_participant - NumParticipants(run._id));
-          // // Calculate the score based on the inverse proportionality
-          // score += 2 / (participants_diff + 1);
-
-          console.log(`score ${score}`)
-          // Update max compatibility score and recommended run ID if the current run has a higher score
-          if (score > max_score) {
-            max_score = score
-            recommendedRunId = run._id
-            recommendedRunName = run.name
-            console.log("new best run : " + recommendedRunName)
-          }
+        //get the runs the user has not participated in yet
+        const response = await fetch("/runs")
+        const runs = await response.json()
+        filtered_runs = runs.filter((run) => {
+          return !run.participants.includes(username)
         })
 
-        if (recommendedRunId) {
-          alert(
-            `The best run to join for your profile is: ${recommendedRunName} with a compatibility score of ${max_score}`
-          )
+        if (filtered_runs.length >= 1) {
+          //Now that we have the user statistics we compute the compatibility score for each run the user did not participated in
+          filtered_runs.forEach((run) => {
+            //initialise the variables fro the compatibility score
+            let score = 0
+            const max_level_score = 3
+            const max_pace_score = 6
+            const max_participants_score = 2
+            const max_startTime_score = 4
+
+            //Level compatibility
+            score +=
+              max_level_score - Math.abs(level(run.level) - level(user_level))
+
+            // Pace compatibility
+            let pace_diff = Math.abs(user_avg_pace - run.expectedPace)
+            score += max_pace_score / (pace_diff + 1)
+
+            // Number participants compatibility
+            let participants_diff = Math.abs(
+              user_avg_num_participant - run.participants.length
+            )
+            score += max_participants_score / (participants_diff + 1)
+
+            //start time compatibility(in hours)
+            let startTime_diff = Math.abs(
+              user_avg_startTime - new Date(run.startTime).getHours()
+            )
+            console.log("startTime_diff" + startTime_diff)
+            // Calculate the score based on the inverse proportionality for startTime
+            score += max_startTime_score / (startTime_diff + 1)
+
+            // Calculate total achievable score
+            const total_max_score =
+              max_pace_score +
+              max_participants_score +
+              max_level_score +
+              max_startTime_score
+
+            // Calculate percentage
+            const percent_score = (score / total_max_score) * 100
+            // Ensure the percentage is within the range [0, 100] and with 2 decimals
+            var final_percent_score = Math.min(
+              Math.max(percent_score, 0),
+              100
+            ).toFixed(2)
+
+            //add the run to an array
+            reco_runs.push({ score: final_percent_score, info: run })
+          })
         } else {
-          alert("No suitable runs found for your profile.")
+          alert(
+            "You participated in all the runs> We are unable to recommend new runs !"
+          )
         }
+
+        //we sort the array in deacrising order based on the score
+        reco_runs.sort((a, b) => b.score - a.score)
+        console.log(reco_runs)
+
+        //we display the recommended runs in the html page
+        const listElement = document.getElementById("reco-run")
+        listElement.innerHTML = "" // Clear the list before adding new elements
+        listElement.className = "runs-grid" // Assign a class for styling the grid
+
+        reco_runs.forEach((run) => {
+          const now = new Date()
+          const startTime = new Date(run.info.startTime)
+          let statusBadgeClass = "status-Upcoming"
+          let status = "Upcoming" // Default status
+          if (now > startTime) {
+            status = "Expired" // If the current time is past the start time
+            statusClass = "status-Expired"
+          }
+
+          const levelBadgeClass = `level-${run.info.level?.toLowerCase()}`
+
+          const item = document.createElement("div")
+          item.className = "run-item" // Add a class for styling
+          item.innerHTML = `
+              <h3>${run.info.name}
+            
+              </h3>
+              <div>
+              <span class="badge ${levelBadgeClass}">${run.info.level}</span>
+              <span class="badge ${statusBadgeClass}">${status}</span></div>
+              <p>Start Time: ${startTime.toLocaleString()}</p>
+              <p>Start Point: ${run.info.startPointName}</p>
+              <p>End Point: ${run.info.endPointName}</p>
+              <p>Expected Pace: ${run.info.expectedPace}</p>
+              <p>Recommendation score: ${run.score}%</p>
+              <button onclick="viewRunDetails('${
+                run.info._id
+              }')">See Detail</button>
+              `
+          listElement.appendChild(item)
+        })
       }
     } catch (error) {
       console.error("Error finding runs:", error)
@@ -737,18 +903,24 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 })
 
-async function displayRuns(level = "all") {
-  try {
-    console.log({ level })
-    const response = await fetch(`/runs?level=${level}`) // Fetch runs from server
-    const runs = await response.json()
+async function displayRuns(level = "all", pace = "all") {
+  let query = `/runs?level=${level}`
+  if (pace !== "all") {
+    query += `&pace=${pace}`
+  }
 
+  try {
+    const response = await fetch(query)
     if (!response.ok) {
       throw new Error(`Error fetching runs: ${response.statusText}`) // Handle non-200 responses
     }
-
+    const runs = await response.json()
     runList.innerHTML = "" // Clear previous list items
 
+    if (runs.length == 0) {
+      runList.textContent = "Oops, no runs found."
+      return
+    }
     runs.forEach((run) => {
       const now = new Date()
       const startTime = new Date(run.startTime)
@@ -764,22 +936,20 @@ async function displayRuns(level = "all") {
       const item = document.createElement("div")
       item.className = "run-item" // Add a class for styling
       item.innerHTML = `
-  <h3>${run.name}
- 
-  </h3>
-  <div>
-  <span class="badge ${levelBadgeClass}">${run.level}</span>
-  <span class="badge ${statusBadgeClass}">${status}</span></div>
-  <p>Start Time: ${startTime.toLocaleString()}</p>
-  <p>Start Point: ${run.startPointName}</p>
-  <p>End Point: ${run.endPointName}</p>
-  <p>Expected Pace: ${run.expectedPace}</p>
-  <button onclick="viewRunDetails('${run._id}')">See Detail</button>
-`
+        <h3>${run.name}
+        </h3>
+        <div>
+        <span class="badge ${levelBadgeClass}">${run.level}</span>
+        <span class="badge ${statusBadgeClass}">${status}</span></div>
+        <p>Start Time: ${startTime.toLocaleString()}</p>
+        <p>Start Point: ${run.startPointName}</p>
+        <p>End Point: ${run.endPointName}</p>
+        <p>Expected Pace: ${run.expectedPace}</p>
+        <button onclick="viewRunDetails('${run._id}')">See Detail</button>
+      `
       runList.appendChild(item)
     })
   } catch (error) {
     console.error("Error fetching runs:", error)
-    runList.textContent = "Error loading runs. Please try again later." // Display error message
   }
 }
