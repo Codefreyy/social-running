@@ -23,21 +23,32 @@ document.addEventListener("DOMContentLoaded", () => {
 })
 
 function setupEventListeners() {
-  logoutBtn.addEventListener("click", () => {
-    // clear localstorage
-    localStorage.removeItem("username")
-
-    const userSpaceBtn = document.getElementById("user-space-btn")
-    if (userSpaceBtn) {
-      userSpaceBtn.remove() // Or set display to 'none'
+  logoutBtn.addEventListener("click", async () => {
+    const sessionId = sessionStorage.getItem("sessionId")
+    const username = sessionStorage.getItem("username")
+    try {
+      const response = await fetch("/logout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ sessionId, username }),
+      })
+      if (response.ok) {
+        //Clear the sessionId stored by the client after successful logout
+        sessionStorage.clear()
+        // Update UI status
+        updateNavbar(null)
+        showAuthSection(true)
+        authSection.style.display = "flex"
+        logoutBtn.style.display = "none"
+      } else {
+        throw new Error("Logout failed")
+      }
+    } catch (error) {
+      console.error("Logout error:", error)
+      // 处理登出错误，可能需要告知用户重试
     }
-
-    // remove user greeting & user space
-    updateNavbar(null)
-    showAuthSection(true)
-
-    authSection.style.display = "flex"
-    logoutBtn.style.display = "none"
   })
 
   filterSelect.addEventListener("change", (event) => {
@@ -81,7 +92,8 @@ function setupEventListeners() {
   window.viewRunDetails = showRunDetailPage
 
   subBtn.addEventListener("click", async () => {
-    const username = localStorage.getItem("username")
+    const username = sessionStorage.getItem("username")
+
     console.log(username)
     const commentText = comInput.value
     if (commentText && currentRunId && username) {
@@ -203,7 +215,8 @@ const showRunDetailPage = async (runId) => {
   const runDetails = await response.json()
 
   // update join button
-  const username = localStorage.getItem("username")
+  const username = sessionStorage.getItem("username")
+
   const joinedRuns = await fetchJoinedRuns(username)
   const hasJoined = joinedRuns.includes(runId)
 
@@ -243,13 +256,14 @@ const showRunDetailPage = async (runId) => {
     .getElementById("joinRun")
     .addEventListener("click", async function () {
       const runId = this.getAttribute("data-run-id")
-      const username = localStorage.getItem("username")
+      const sessionId = sessionStorage.getItem("sessionId")
+      const username = sessionStorage.getItem("username")
       const response = await fetch(`/runs/${runId}/join`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ username: username }),
+        body: JSON.stringify({ username, sessionId }),
       })
       if (response.ok) {
         // Refresh the participant count
@@ -317,9 +331,10 @@ async function displayRuns(level = "all", pace = "all") {
 }
 
 async function fetchJoinedRuns(username) {
+  const sessionId = sessionStorage.getItem("sessionId")
   if (!username) return []
   const response = await fetch(
-    `/users/${encodeURIComponent(username)}/joinedRuns`
+    `/users/${encodeURIComponent(username)}/joinedRuns?sessionId=${sessionId}`
   )
   if (response.ok) {
     const { joinedRuns } = await response.json()
@@ -513,9 +528,10 @@ const loadRuns = async () => {
 }
 
 function login(username, password) {
-  console.log("user", username, password)
   document.getElementById("username").value = ""
   document.getElementById("password").value = ""
+
+  const sessionId = generateUUID()
 
   // Send login credentials to the server
   fetch("/login", {
@@ -526,6 +542,7 @@ function login(username, password) {
     body: JSON.stringify({
       username,
       password,
+      sessionId,
     }),
   })
     .then((response) => {
@@ -536,7 +553,8 @@ function login(username, password) {
       return response.json()
     })
     .then((data) => {
-      localStorage.setItem("username", data.username)
+      sessionStorage.setItem("sessionId", data.sessionId)
+      sessionStorage.setItem("username", data.username)
       updateNavbar(data.username)
       loadRuns()
       showAuthSection(false) // login successfully, so hide auth form, show other sections
@@ -593,6 +611,7 @@ async function updateNavbar(username) {
       userSpaceBtn.style.display = "none"
     }
     greeting.textContent = "" // 清除问候语
+    debugger
   }
 }
 
@@ -626,13 +645,20 @@ async function displayUserRuns(username) {
 }
 
 function showUserSpaceButton(username) {
-  const userSpaceBtn = document.createElement("button")
-  userSpaceBtn.id = "user-space-btn"
+  // check if button exists
+  let userSpaceBtn = document.getElementById("user-space-btn")
+  if (!userSpaceBtn) {
+    // if not, create one
+    userSpaceBtn = document.createElement("button")
+    userSpaceBtn.id = "user-space-btn"
+    document.querySelector(".navbar-logout").appendChild(userSpaceBtn)
+  }
+
   userSpaceBtn.textContent = "User Space"
-  document.querySelector(".navbar-logout").appendChild(userSpaceBtn)
-  userSpaceBtn.style.display = "block"
+  userSpaceBtn.style.display = "block" // 确保按钮是可见的
+
+  userSpaceBtn.onclick = null // remove previous one
   userSpaceBtn.addEventListener("click", async () => {
-    // display username
     document.getElementById("user-name").textContent = `Username: ${username}`
 
     document.getElementById("create-run").style.display = "block"
@@ -647,8 +673,6 @@ function showUserSpaceButton(username) {
         // 返回主页面
         toggleUserSpace(false)
       })
-
-    // fetch and show user previous run list
   })
 }
 
@@ -747,7 +771,7 @@ async function findRun() {
   var reco_runs = []
 
   // Get the username of the connected user
-  const username = localStorage.getItem("username")
+  const username = sessionStorage.getItem("username")
 
   try {
     //fetch all the runs the user participated in
@@ -960,4 +984,11 @@ async function findRun() {
     console.error("Error finding runs:", error)
     alert("An error occurred while finding runs. Please try again later.")
   }
+}
+
+function generateUUID() {
+  return "xxxx-xxxx-xxxx-xxxx".replace(/[x]/g, function (c) {
+    const r = (Math.random() * 16) | 0
+    return r.toString(16)
+  })
 }

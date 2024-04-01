@@ -51,31 +51,40 @@ app.use(express.json()) // parse the req body as json
 
 //Handling user login
 app.post("/login", async function (req, res) {
-  console.log("login")
+  const { username, password, sessionId } = req.body
   try {
-    const { username, password } = req.body
-    console.log({ username, password })
-    // check if the user exists
-    // check if the user exists
     const user = await usersCollection.findOne({ username })
-    console.log(`User : ${user && user.username}`)
-
-    if (user) {
-      // Check if password matches
-      if (password === user.password) {
-        // Passwords match, send response
-        res.status(200).json({ username: user.username })
-      } else {
-        // Passwords don't match
-        res.status(400).json({ error: "Password doesn't match" })
-      }
+    if (user && password === user.password) {
+      // Update the user document with the sessionId
+      await usersCollection.updateOne({ username }, { $set: { sessionId } })
+      res.status(200).json({ username: user.username, sessionId })
     } else {
-      // User not found
-      res.status(400).json({ error: "User doesn't exist" })
+      res.status(400).json({ error: "Invalid credentials" })
     }
   } catch (error) {
     // Server error
-    console.error("Login error:", error.message)
+    res.status(500).json({ error: "Internal server error" })
+  }
+})
+
+// Handling user logout
+app.post("/logout", async (req, res) => {
+  const { username, sessionId } = req.body
+  try {
+    const user = await usersCollection.findOne({ username })
+    console.log(username, sessionId, "session")
+
+    if (user && user.sessionId === sessionId) {
+      await usersCollection.updateOne(
+        { username },
+        { $unset: { sessionId: "" } }
+      )
+      res.status(200).json({ message: "Logged out successfully" })
+    } else {
+      res.status(403).json({ error: "Invalid session or user" })
+    }
+  } catch (error) {
+    console.error(error)
     res.status(500).json({ error: "Internal server error" })
   }
 })
@@ -181,27 +190,28 @@ app.get("/runs/:id", async (req, res) => {
 // POST /runs/:id/join - Join a run
 app.post("/runs/:id/join", async (req, res) => {
   const runId = req.params.id
-  const username = req.body.username
+  const { username, sessionId } = req.body
 
   console.log(runId, username)
 
   try {
     // First, find the user to get their _id
     const user = await usersCollection.findOne({ username })
-    if (!user) {
-      return res.status(404).json({ error: "User not found" })
+    if (!user || user.sessionId !== sessionId) {
+      return res
+        .status(403)
+        .json({ error: "Session ID mismatch or user not found" })
     }
-
     // Add the user to the run's participants list
     const updatedRunInfo = await runsCollection.updateOne(
       { _id: runId },
       { $addToSet: { participants: username } }
     )
 
-    const updatedUserInfo = await usersCollection.updateOne(
-      { _id: user._id },
-      { $addToSet: { joinedRuns: runId } }
-    )
+    // const updatedUserInfo = await usersCollection.updateOne(
+    //   { _id: user._id },
+    //   { $addToSet: { joinedRuns: runId } }
+    // )
 
     res.json({ message: "Successfully joined the run" })
   } catch (error) {
