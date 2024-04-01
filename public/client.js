@@ -1,10 +1,13 @@
 const MY_MAPBOXGL_TOKEN =
   "pk.eyJ1Ijoiam95eXl5eXl5IiwiYSI6ImNsdHZ3NjAyNzE4MmoycXFwdzVwYXpvNGwifQ.rLajkAaYDentEmhdczyRyw"
-let startMap = null
+let map = null
+let markers = {}
 let mapRoute = null
+let routeLayerID = "route" // Unique ID for the route layer
 let startPointMarker
 let endPointMarker
 let currentRunId = null
+let levelDistributionChart = null
 const filterSelect = document.getElementById("filter-by-level")
 const runList = document.getElementById("run-list")
 const logoutBtn = document.querySelector("#logout")
@@ -17,27 +20,98 @@ const comInput = document.getElementById("comInput")
 const commentsSec = document.getElementById("commentsSec")
 
 document.addEventListener("DOMContentLoaded", () => {
-  initializeMapboxMaps()
+  initializeMap()
   setupEventListeners()
   showAuthSection(true) //ensure that when page loads, only show the auth form
 })
 
 function setupEventListeners() {
-  logoutBtn.addEventListener("click", () => {
-    // clear localstorage
-    localStorage.removeItem("username")
+  document
+    .getElementById("add-meeting-point")
+    .addEventListener("click", function () {
+      const container = document.getElementById("meeting-points-container")
+      const inputGroup = document.createElement("div")
+      inputGroup.className = "meeting-point-input-groups"
+      inputGroup.innerHTML = `
+      <div class="meeting-point-input-group">
+      <input type="text" placeholder="Enter meeting point" class="meeting-point-search" required/>
+      <button type="button" class="remove-meeting-point sm-button">Remove</button>
+      </div>
+      <div class="meeting-point-suggestions">
 
-    const userSpaceBtn = document.getElementById("user-space-btn")
-    if (userSpaceBtn) {
-      userSpaceBtn.remove() // Or set display to 'none'
+    </div>
+    `
+      container.appendChild(inputGroup)
+
+      const searchInput = inputGroup.querySelector(".meeting-point-search")
+      const suggestionsBox = inputGroup.querySelector(
+        ".meeting-point-suggestions"
+      )
+
+      searchInput.addEventListener("input", async (e) => {
+        const searchText = e.target.value
+        if (searchText.length < 3) return // Wait for at least 3 characters
+
+        const suggestions = await fetchMeetingPointSuggestions(searchText)
+        suggestionsBox.innerHTML = "" // Clear existing suggestions
+        suggestionsBox.style.display = "block"
+        suggestions.forEach((place) => {
+          const option = document.createElement("div")
+          option.className = "suggestion"
+          option.textContent = place.place_name
+          option.addEventListener("click", () => {
+            searchInput.value = place.place_name
+            // Optionally store coordinates in a hidden input for form submission
+            suggestionsBox.innerHTML = "" // Clear suggestions after selection
+            suggestionsBox.style.display = "none"
+          })
+          suggestionsBox.appendChild(option)
+        })
+      })
+
+      inputGroup
+        .querySelector(".remove-meeting-point")
+        .addEventListener("click", function () {
+          inputGroup.remove()
+        })
+    })
+
+  async function fetchMeetingPointSuggestions(searchText) {
+    const response = await fetch(
+      `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+        searchText
+      )}.json?access_token=${MY_MAPBOXGL_TOKEN}`
+    )
+    const data = await response.json()
+    return data.features // Assuming features contain the suggestions
+  }
+
+  logoutBtn.addEventListener("click", async () => {
+    const sessionId = sessionStorage.getItem("sessionId")
+    const username = sessionStorage.getItem("username")
+    try {
+      const response = await fetch("/logout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ sessionId, username }),
+      })
+      if (response.ok) {
+        //Clear the sessionId stored by the client after successful logout
+        sessionStorage.clear()
+        // Update UI status
+        updateNavbar(null)
+        showAuthSection(true)
+        authSection.style.display = "flex"
+        logoutBtn.style.display = "none"
+      } else {
+        throw new Error("Logout failed")
+      }
+    } catch (error) {
+      console.error("Logout error:", error)
+      // 处理登出错误，可能需要告知用户重试
     }
-
-    // remove user greeting & user space
-    updateNavbar(null)
-    showAuthSection(true)
-
-    authSection.style.display = "flex"
-    logoutBtn.style.display = "none"
   })
 
   filterSelect.addEventListener("change", (event) => {
@@ -81,7 +155,8 @@ function setupEventListeners() {
   window.viewRunDetails = showRunDetailPage
 
   subBtn.addEventListener("click", async () => {
-    const username = localStorage.getItem("username")
+    const username = sessionStorage.getItem("username")
+
     console.log(username)
     const commentText = comInput.value // Get the comment text entered by the user in the comment input box (comInput).
     // If the comment text, current run activity ID (currentRunId) and user name all exist, the internal code is executed.
@@ -141,13 +216,10 @@ function setupEventListeners() {
         suggestionsList.innerHTML = "" // Clear suggestions after selection
         suggestionsList.style.display = "none"
 
-        // Update the map with the new marker
-        if (startPointMarker) startPointMarker.remove() // Remove existing marker
-        startPointMarker = new mapboxgl.Marker({ color: "green" })
-          .setLngLat(place.center)
-          .addTo(startMap) // Assuming startMap is your map instance
-        startMap.flyTo({ center: place.center, zoom: 10 })
-        showRoute()
+        addOrUpdateMarker(place.center, "start")
+        if (markers["start"] && markers["end"]) {
+          showRoute()
+        }
       }
       suggestionsList.appendChild(option)
     })
@@ -179,13 +251,12 @@ function setupEventListeners() {
         suggestionsList.innerHTML = "" // Clear suggestions after selection
         suggestionsList.style.display = "none"
 
-        // Update the map with the new marker
-        if (endPointMarker) endPointMarker.remove() // Remove existing marker
-        endPointMarker = new mapboxgl.Marker({ color: "red" })
-          .setLngLat(place.center)
-          .addTo(startMap)
-        startMap.flyTo({ center: place.center, zoom: 10 })
-        showRoute()
+        addOrUpdateMarker(place.center, "end")
+
+        // Check if both start and end markers are set and show the route
+        if (markers["start"] && markers["end"]) {
+          showRoute()
+        }
       }
       suggestionsList.appendChild(option)
     })
@@ -196,20 +267,26 @@ const showRunDetailPage = async (runId) => {
   // hide other sections
   document.getElementById("create-run").style.display = "none"
   document.getElementById("run-list-section").style.display = "none"
-
+  document.getElementById("user-space-section").style.display = "none"
   currentRunId = runId
 
   // fetching run details from the server
   const response = await fetch(`/runs/${runId}`)
   const runDetails = await response.json()
 
+  console.log({ runDetails })
+
   // update join button
-  const username = localStorage.getItem("username")
+  const username = sessionStorage.getItem("username")
+
   const joinedRuns = await fetchJoinedRuns(username)
   const hasJoined = joinedRuns.includes(runId)
 
   // constructing details section content
   const detailsSection = document.getElementById("run-details-content")
+  const meetingPointsText = runDetails?.meetingPoints
+    ? runDetails.meetingPoints.join(",")
+    : "Not set"
   detailsSection.innerHTML = `
 <div class="run-details-card">
    <div class="run-details-header"> 
@@ -219,10 +296,11 @@ const showRunDetailPage = async (runId) => {
     }</button>
   <div><span id="participantCount">0 </span>People Already Join!</div></div>
   </div>
-    <p>Description: ${runDetails.description}</p>
+    <p>${runDetails.description}</p>
     <p>Start Time: ${new Date(runDetails.startTime).toLocaleString()}</p>
     <p>Start Point: ${runDetails.startPointName || runDetails.startPoint}</p> 
     <p>End Point: ${runDetails.endPointName || runDetails.endPoint}</p> 
+    <p>Meeting Points: ${meetingPointsText}</p>
     <p>Expected Pace: ${runDetails.expectedPace} minute miles</p>
 </div>
 `
@@ -245,13 +323,14 @@ const showRunDetailPage = async (runId) => {
     .getElementById("joinRun")
     .addEventListener("click", async function () {
       const runId = this.getAttribute("data-run-id")
-      const username = localStorage.getItem("username")
+      const sessionId = sessionStorage.getItem("sessionId")
+      const username = sessionStorage.getItem("username")
       const response = await fetch(`/runs/${runId}/join`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ username: username }),
+        body: JSON.stringify({ username, sessionId }),
       })
       if (response.ok) {
         // Refresh the participant count
@@ -319,9 +398,10 @@ async function displayRuns(level = "all", pace = "all") {
 }
 
 async function fetchJoinedRuns(username) {
+  const sessionId = sessionStorage.getItem("sessionId")
   if (!username) return []
   const response = await fetch(
-    `/users/${encodeURIComponent(username)}/joinedRuns`
+    `/users/${encodeURIComponent(username)}/joinedRuns?sessionId=${sessionId}`
   )
   if (response.ok) {
     const { joinedRuns } = await response.json()
@@ -341,49 +421,19 @@ async function fetchParticipants(runId) {
 }
 
 function showRoute() {
-  const start = startPointMarker.getLngLat()
-  const end = endPointMarker.getLngLat()
-  if (!start || !end) return
+  const startLngLat = markers["start"].getLngLat()
+  const endLngLat = markers["end"].getLngLat()
+
+  if (!startLngLat || !endLngLat) return
 
   // using Mapbox Directions API query routes
-  const directionsQuery = `https://api.mapbox.com/directions/v5/mapbox/driving/${start.lng},${start.lat};${end.lng},${end.lat}?geometries=geojson&access_token=${MY_MAPBOXGL_TOKEN}`
+  const directionsQuery = `https://api.mapbox.com/directions/v5/mapbox/driving/${startLngLat.lng},${startLngLat.lat};${endLngLat.lng},${endLngLat.lat}?geometries=geojson&access_token=${MY_MAPBOXGL_TOKEN}`
 
   fetch(directionsQuery)
     .then((response) => response.json())
     .then((data) => {
       const route = data.routes[0].geometry
-
-      // remove already existing route
-      if (mapRoute) {
-        startMap.removeLayer("route")
-        startMap.removeSource("route")
-      }
-
-      // add new routes to the map
-      startMap.addSource("route", {
-        type: "geojson",
-        data: {
-          type: "Feature",
-          properties: {},
-          geometry: route,
-        },
-      })
-
-      startMap.addLayer({
-        id: "route",
-        type: "line",
-        source: "route",
-        layout: {
-          "line-join": "round",
-          "line-cap": "round",
-        },
-        paint: {
-          "line-color": "#888",
-          "line-width": 8,
-        },
-      })
-
-      mapRoute = true // mark route added
+      updateRouteOnMap(route)
     })
 }
 
@@ -392,6 +442,10 @@ async function onCreateRunFormSubmit(e) {
   const startTime = document.getElementById("start-time").value
   const startTimeDate = new Date(startTime)
   const currentDateTime = new Date()
+  const meetingPoints = [
+    ...document.querySelectorAll(".meeting-point-search"),
+  ].map((input) => input.value)
+  console.log({ meetingPoints })
   startTimeDate.setSeconds(0)
 
   console.log(startTimeDate, currentDateTime, startTimeDate < currentDateTime)
@@ -433,6 +487,7 @@ async function onCreateRunFormSubmit(e) {
     name,
     level,
     description,
+    meetingPoints,
   }
 
   const response = await fetch("/runs", {
@@ -472,6 +527,18 @@ function initializeMapboxMaps() {
     const coords = [e.lngLat.lng, e.lngLat.lat]
     document.getElementById("start-point").value = coords.join(",")
   })
+}
+
+function initializeMap() {
+  mapboxgl.accessToken = MY_MAPBOXGL_TOKEN
+  map = new mapboxgl.Map({
+    container: "start-map", // Container ID
+    style: "mapbox://styles/mapbox/streets-v11", // Style URL
+    center: [-2.79902, 56.33871], // Starting position [lng, lat]
+    zoom: 9, // Starting zoom level
+  })
+
+  map.addControl(new mapboxgl.NavigationControl()) // Add zoom and rotation controls to the map.
 }
 
 const loadRuns = async () => {
@@ -515,9 +582,10 @@ const loadRuns = async () => {
 }
 
 function login(username, password) {
-  console.log("user", username, password)
   document.getElementById("username").value = ""
   document.getElementById("password").value = ""
+
+  const sessionId = generateUUID()
 
   // Send login credentials to the server
   fetch("/login", {
@@ -528,6 +596,7 @@ function login(username, password) {
     body: JSON.stringify({
       username,
       password,
+      sessionId,
     }),
   })
     .then((response) => {
@@ -538,7 +607,8 @@ function login(username, password) {
       return response.json()
     })
     .then((data) => {
-      localStorage.setItem("username", data.username)
+      sessionStorage.setItem("sessionId", data.sessionId)
+      sessionStorage.setItem("username", data.username)
       updateNavbar(data.username)
       loadRuns()
       showAuthSection(false) // login successfully, so hide auth form, show other sections
@@ -595,22 +665,28 @@ async function updateNavbar(username) {
       userSpaceBtn.style.display = "none"
     }
     greeting.textContent = "" // 清除问候语
+    debugger
   }
 }
 
 async function displayUserRuns(username) {
-  // 从后端获取用户参与的跑步列表
   const response = await fetch(`/users/${username}/joinedRuns`)
   const { joinedRuns } = await response.json()
 
   console.log({ joinedRuns })
 
-  // 清空现有的跑步列表
+  // clear current user joined run list
   const userRunsElement = document.getElementById("user-runs")
   userRunsElement.innerHTML = ""
 
-  // 为每个跑步创建一个列表项
+  // calculate statistics
+  let totalParticipations = joinedRuns.length
+  let totalPace = 0
+  let levelDistribution = { newbie: 0, intermediate: 0, expert: 0 }
+
   joinedRuns.forEach((run) => {
+    totalPace += run.expectedPace
+    levelDistribution[run.level]++
     const runElement = document.createElement("div")
     runElement.className = "run-item"
     runElement.innerHTML = `
@@ -619,22 +695,76 @@ async function displayUserRuns(username) {
           <p>Start Point: ${run.startPointName}</p>
           <p>End Point: ${run.endPointName}</p>
           <p>Expected Pace: ${run.expectedPace}</p>
+          <p>Level: ${run.level}</p>
           <button onclick="viewRunDetails('${run._id}')">See Detail</button>
       `
     userRunsElement.appendChild(runElement)
   })
 
-  debugger
+  let averagePace =
+    totalParticipations > 0 ? totalPace / totalParticipations : 0
+
+  document.getElementById(
+    "total-participations"
+  ).textContent = `Total Participations: ${totalParticipations}`
+  document.getElementById(
+    "average-pace"
+  ).textContent = `Average Pace: ${averagePace.toFixed(2)} min/mile`
+
+  //  Chart.js draw bar chart for level distribution
+  if (levelDistributionChart) {
+    levelDistributionChart.destroy()
+  }
+  const ctx = document
+    .getElementById("level-distribution-chart")
+    .getContext("2d")
+  levelDistributionChart = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: Object.keys(levelDistribution),
+      datasets: [
+        {
+          label: "Run Level Distribution",
+          data: Object.values(levelDistribution),
+          backgroundColor: [
+            "rgba(255, 99, 132, 0.2)",
+            "rgba(54, 162, 235, 0.2)",
+            "rgba(255, 206, 86, 0.2)",
+          ],
+          borderColor: [
+            "rgba(255,99,132,1)",
+            "rgba(54, 162, 235, 1)",
+            "rgba(255, 206, 86, 1)",
+          ],
+          borderWidth: 1,
+        },
+      ],
+    },
+    options: {
+      scales: {
+        y: {
+          beginAtZero: true,
+        },
+      },
+    },
+  })
 }
 
 function showUserSpaceButton(username) {
-  const userSpaceBtn = document.createElement("button")
-  userSpaceBtn.id = "user-space-btn"
+  // check if button exists
+  let userSpaceBtn = document.getElementById("user-space-btn")
+  if (!userSpaceBtn) {
+    // if not, create one
+    userSpaceBtn = document.createElement("button")
+    userSpaceBtn.id = "user-space-btn"
+    document.querySelector(".navbar-logout").appendChild(userSpaceBtn)
+  }
+
   userSpaceBtn.textContent = "User Space"
-  document.querySelector(".navbar-logout").appendChild(userSpaceBtn)
-  userSpaceBtn.style.display = "block"
+  userSpaceBtn.style.display = "block" // 确保按钮是可见的
+
+  userSpaceBtn.onclick = null // remove previous one
   userSpaceBtn.addEventListener("click", async () => {
-    // display username
     document.getElementById("user-name").textContent = `Username: ${username}`
 
     document.getElementById("create-run").style.display = "block"
@@ -649,8 +779,6 @@ function showUserSpaceButton(username) {
         // 返回主页面
         toggleUserSpace(false)
       })
-
-    // fetch and show user previous run list
   })
 }
 
@@ -750,7 +878,7 @@ async function findRun() {
   var reco_runs = []
 
   // Get the username of the connected user
-  const username = localStorage.getItem("username")
+  const username = sessionStorage.getItem("username")
 
   try {
     //fetch all the runs the user participated in
@@ -994,3 +1122,52 @@ async function Weather(runId, startPointCoords, startTime) {
     showWeather.innerHTML = `<p>Error fetching weather forecast.</p>`;
   }
 }
+
+function generateUUID() {
+  return "xxxx-xxxx-xxxx-xxxx".replace(/[x]/g, function (c) {
+    const r = (Math.random() * 16) | 0
+    return r.toString(16)
+  })
+}
+
+function addOrUpdateMarker(lngLat, type) {
+  // Remove the existing marker if it exists
+  if (markers[type]) {
+    markers[type].remove()
+  }
+
+  // Create and add the new marker
+  markers[type] = new mapboxgl.Marker({
+    color: type === "start" ? "green" : "red",
+  }) // Use different colors for different types if you wish
+    .setLngLat(lngLat)
+    .addTo(map)
+
+  map.flyTo({ center: lngLat, zoom: 10 }) // Center the map on the new marker
+}
+
+function updateRouteOnMap(route) {
+  if (map.getSource(routeLayerID)) {
+    map.removeLayer(routeLayerID)
+    map.removeSource(routeLayerID)
+  }
+  // Add the new route to the map
+  map.addSource(routeLayerID, {
+    type: "geojson",
+    data: {
+      type: "Feature",
+      properties: {},
+      geometry: route,
+    },
+  })
+
+  map.addLayer({
+    id: routeLayerID,
+    type: "line",
+    source: routeLayerID,
+    layout: { "line-join": "round", "line-cap": "round" },
+    paint: { "line-color": "#888", "line-width": 8 },
+  })
+}
+
+

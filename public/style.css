@@ -65,7 +65,7 @@ h4 {
 
 #search-section {
   display: flex;
-  align-items: center;
+  gap: 20%;
 }
 
 .search-area {
@@ -224,7 +224,8 @@ nav {
 }
 
 #start-point-suggestions,
-#end-point-suggestions {
+#end-point-suggestions,
+.meeting-point-suggestions {
   display: none;
   position: absolute;
   top: 23px;
@@ -235,6 +236,10 @@ nav {
   padding: 10px;
 }
 
+.meeting-point-input-groups {
+  position: relative;
+}
+
 .suggestion {
   cursor: pointer;
   border-bottom: 1px solid lightblue;
@@ -243,6 +248,12 @@ nav {
 .suggestion:hover {
   background-color: var(--main-blue);
   color: white;
+}
+
+.meeting-point-input-group {
+  display: flex;
+  gap: 5px;
+  align-items: center;
 }
 
 button {
@@ -256,6 +267,21 @@ button {
   font-size: 16px;
   color: white;
   align-items: center;
+}
+
+.sm-button {
+  padding: 4px 6px;
+  border: none;
+  border-radius: 2px;
+  cursor: pointer;
+  font-weight: 500;
+  background-color: var(--light-blue);
+  color: white;
+}
+
+.sm-button:hover {
+  color: white;
+  background-color: var(--main-blue);
 }
 
 #log-in,
@@ -448,6 +474,14 @@ form select {
   border-radius: 3px;
   font-family: "Raleway", sans-serif;
   font-style: light;
+}
+
+#create-run form .meeting-point-search {
+  margin-bottom: 0;
+}
+
+#add-meeting-point {
+  margin: 10px 0;
 }
 
 /** Filter run **/

@@ -22,6 +22,7 @@
       href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap"
       rel="stylesheet"
     />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
 
   <body>
@@ -44,12 +45,17 @@
             <label class="custom-label"> Username </label>
             <input name="username" id="username" value="admin" />
           </div>
-  
+
           <div>
             <label class="custom-label"> Password </label>
-            <input type="password" name="password" id="password" value="admin" />
+            <input
+              type="password"
+              name="password"
+              id="password"
+              value="admin"
+            />
           </div>
-  
+
           <div class="auth-footer">
             <button id="log-in">Log in</button>
             <button id="sign-up">Sign up</button>
@@ -61,42 +67,50 @@
       <section id="create-run">
         <h2>Initiate a run</h2>
         <p>Fill in the form to initiate your run.</p>
-        <br/>
+        <br />
         <form>
-       
-            <div class="input-group">
-             <div>
+          <div class="input-group">
+            <div>
               <label class="custom-label"> Name </label>
               <input name="name" id="name" required />
-
-             </div>
-             <div>
-              <label for="start-time" class="custom-label"> Starting Time </label>
-              <input name="start-time" type="datetime-local" id="start-time"  required/>
-             </div>
             </div>
+            <div>
+              <label for="start-time" class="custom-label">
+                Starting Time
+              </label>
+              <input
+                name="start-time"
+                type="datetime-local"
+                id="start-time"
+                required
+              />
+            </div>
+          </div>
 
-            <div class="input-group">
-
-           <div>
-            <label class="custom-label">Level</label>
-            <select name="level" id="level" class="custom-select" required>
-              <option selected value="newbie">Newbie</option>
-              <option value="intermediate">Intermediate</option>
-              <option value="expert">Expert</option>
-            </select>
-           </div>
+          <div class="input-group">
+            <div>
+              <label class="custom-label">Level</label>
+              <select name="level" id="level" class="custom-select" required>
+                <option selected value="newbie">Newbie</option>
+                <option value="intermediate">Intermediate</option>
+                <option value="expert">Expert</option>
+              </select>
+            </div>
             <div>
               <label class="custom-label"> Expected Pace (minute miles) </label>
-              <input name="expected-pace" id="expected-pace" pattern="\d+" required />
+              <input
+                name="expected-pace"
+                id="expected-pace"
+                pattern="\d+"
+                required
+              />
               <span class="error-message" id="error-message"
-              >Please input number</span>
+                >Please input number</span
+              >
             </div>
-            </div>
+          </div>
 
- 
-
-          <div id="search-section" class="input-group">
+          <div id="search-section">
             <div id="start-search-area">
               <label class="custom-label"> Starting Point </label>
               <input
@@ -119,16 +133,28 @@
               <input type="hidden" name="end-point" id="end-point" />
               <div id="end-point-suggestions"></div>
             </div>
-
           </div>
 
           <div id="start-map" style="width: 743px; height: 300px"></div>
-        </br>
-        <div>
-          <textarea name="description" id="description" rows="5" placeholder="Add description here..."></textarea>
+          <br />
+          <div id="meeting-points-section">
+            <label class="custom-label">Meeting Points</label>
+            <div id="meeting-points-container">
+              <!-- Meeting points will be added here dynamically -->
+            </div>
+            <button type="button" id="add-meeting-point">
+              Add Meeting Point
+            </button>
+          </div>
+          <div>
+            <textarea
+              name="description"
+              id="description"
+              rows="5"
+              placeholder="Add description here..."
+            ></textarea>
+          </div>
 
-        </div>
-          
           <button id="create-run" type="submit">Create a run</button>
         </form>
       </section>
@@ -203,6 +229,13 @@
         <div class="user-details">
           <h4 id="user-name">Username: <span></span></h4>
         </div>
+        <div class="user-statistics">
+          <h3>Statistics</h3>
+          <p id="total-participations">Total Participations: 0</p>
+          <p id="average-pace">Average Pace: 0 min/mile</p>
+          <canvas id="level-distribution-chart"></canvas>
+        </div>
+
         <div class="joined-runs">
           <h3>Joined Runs</h3>
           <div id="user-runs">
