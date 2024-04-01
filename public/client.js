@@ -5,6 +5,7 @@ let mapRoute = null
 let startPointMarker
 let endPointMarker
 let currentRunId = null
+let levelDistributionChart = null
 const filterSelect = document.getElementById("filter-by-level")
 const runList = document.getElementById("run-list")
 const logoutBtn = document.querySelector("#logout")
@@ -207,7 +208,7 @@ const showRunDetailPage = async (runId) => {
   // hide other sections
   document.getElementById("create-run").style.display = "none"
   document.getElementById("run-list-section").style.display = "none"
-
+  document.getElementById("user-space-section").style.display = "none"
   currentRunId = runId
 
   // fetching run details from the server
@@ -616,18 +617,23 @@ async function updateNavbar(username) {
 }
 
 async function displayUserRuns(username) {
-  // 从后端获取用户参与的跑步列表
   const response = await fetch(`/users/${username}/joinedRuns`)
   const { joinedRuns } = await response.json()
 
   console.log({ joinedRuns })
 
-  // 清空现有的跑步列表
+  // clear current user joined run list
   const userRunsElement = document.getElementById("user-runs")
   userRunsElement.innerHTML = ""
 
-  // 为每个跑步创建一个列表项
+  // calculate statistics
+  let totalParticipations = joinedRuns.length
+  let totalPace = 0
+  let levelDistribution = { newbie: 0, intermediate: 0, expert: 0 }
+
   joinedRuns.forEach((run) => {
+    totalPace += run.expectedPace
+    levelDistribution[run.level]++
     const runElement = document.createElement("div")
     runElement.className = "run-item"
     runElement.innerHTML = `
@@ -636,12 +642,59 @@ async function displayUserRuns(username) {
           <p>Start Point: ${run.startPointName}</p>
           <p>End Point: ${run.endPointName}</p>
           <p>Expected Pace: ${run.expectedPace}</p>
+          <p>Level: ${run.level}</p>
           <button onclick="viewRunDetails('${run._id}')">See Detail</button>
       `
     userRunsElement.appendChild(runElement)
   })
 
-  debugger
+  let averagePace =
+    totalParticipations > 0 ? totalPace / totalParticipations : 0
+
+  document.getElementById(
+    "total-participations"
+  ).textContent = `Total Participations: ${totalParticipations}`
+  document.getElementById(
+    "average-pace"
+  ).textContent = `Average Pace: ${averagePace.toFixed(2)} min/mile`
+
+  //  Chart.js draw bar chart for level distribution
+  if (levelDistributionChart) {
+    levelDistributionChart.destroy()
+  }
+  const ctx = document
+    .getElementById("level-distribution-chart")
+    .getContext("2d")
+  levelDistributionChart = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: Object.keys(levelDistribution),
+      datasets: [
+        {
+          label: "Run Level Distribution",
+          data: Object.values(levelDistribution),
+          backgroundColor: [
+            "rgba(255, 99, 132, 0.2)",
+            "rgba(54, 162, 235, 0.2)",
+            "rgba(255, 206, 86, 0.2)",
+          ],
+          borderColor: [
+            "rgba(255,99,132,1)",
+            "rgba(54, 162, 235, 1)",
+            "rgba(255, 206, 86, 1)",
+          ],
+          borderWidth: 1,
+        },
+      ],
+    },
+    options: {
+      scales: {
+        y: {
+          beginAtZero: true,
+        },
+      },
+    },
+  })
 }
 
 function showUserSpaceButton(username) {
