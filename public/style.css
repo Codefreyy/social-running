@@ -223,8 +223,9 @@ nav {
   position: relative;
 }
 
-#point-suggestions,
-#point-suggestions {
+#start-point-suggestions,
+#end-point-suggestions,
+.meeting-point-suggestions {
   display: none;
   position: absolute;
   top: 23px;
@@ -233,6 +234,10 @@ nav {
   background-color: #fff;
   opacity: 0.7;
   padding: 10px;
+}
+
+.meeting-point-input-groups {
+  position: relative;
 }
 
 .suggestion {

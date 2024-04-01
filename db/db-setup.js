@@ -158,7 +158,6 @@ async function assignUsersToRuns(usersCollection, runsCollection) {
 
       // Break if all unique runs have been added
       if (joinedRuns.size === runs.length) {
-        console.log("All runs have been added for", user.username)
         break
       }
     }

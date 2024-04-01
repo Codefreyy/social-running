@@ -1,7 +1,9 @@
 const MY_MAPBOXGL_TOKEN =
   "pk.eyJ1Ijoiam95eXl5eXl5IiwiYSI6ImNsdHZ3NjAyNzE4MmoycXFwdzVwYXpvNGwifQ.rLajkAaYDentEmhdczyRyw"
-let startMap = null
+let map = null
+let markers = {}
 let mapRoute = null
+let routeLayerID = "route" // Unique ID for the route layer
 let startPointMarker
 let endPointMarker
 let currentRunId = null
@@ -18,7 +20,7 @@ const comInput = document.getElementById("comInput")
 const commentsSec = document.getElementById("commentsSec")
 
 document.addEventListener("DOMContentLoaded", () => {
-  initializeMapboxMaps()
+  initializeMap()
   setupEventListeners()
   showAuthSection(true) //ensure that when page loads, only show the auth form
 })
@@ -52,6 +54,7 @@ function setupEventListeners() {
 
         const suggestions = await fetchMeetingPointSuggestions(searchText)
         suggestionsBox.innerHTML = "" // Clear existing suggestions
+        suggestionsBox.style.display = "block"
         suggestions.forEach((place) => {
           const option = document.createElement("div")
           option.className = "suggestion"
@@ -60,6 +63,7 @@ function setupEventListeners() {
             searchInput.value = place.place_name
             // Optionally store coordinates in a hidden input for form submission
             suggestionsBox.innerHTML = "" // Clear suggestions after selection
+            suggestionsBox.style.display = "none"
           })
           suggestionsBox.appendChild(option)
         })
@@ -211,13 +215,10 @@ function setupEventListeners() {
         suggestionsList.innerHTML = "" // Clear suggestions after selection
         suggestionsList.style.display = "none"
 
-        // Update the map with the new marker
-        if (startPointMarker) startPointMarker.remove() // Remove existing marker
-        startPointMarker = new mapboxgl.Marker({ color: "green" })
-          .setLngLat(place.center)
-          .addTo(startMap) // Assuming startMap is your map instance
-        startMap.flyTo({ center: place.center, zoom: 10 })
-        showRoute()
+        addOrUpdateMarker(place.center, "start")
+        if (markers["start"] && markers["end"]) {
+          showRoute()
+        }
       }
       suggestionsList.appendChild(option)
     })
@@ -249,13 +250,12 @@ function setupEventListeners() {
         suggestionsList.innerHTML = "" // Clear suggestions after selection
         suggestionsList.style.display = "none"
 
-        // Update the map with the new marker
-        if (endPointMarker) endPointMarker.remove() // Remove existing marker
-        endPointMarker = new mapboxgl.Marker({ color: "red" })
-          .setLngLat(place.center)
-          .addTo(startMap)
-        startMap.flyTo({ center: place.center, zoom: 10 })
-        showRoute()
+        addOrUpdateMarker(place.center, "end")
+
+        // Check if both start and end markers are set and show the route
+        if (markers["start"] && markers["end"]) {
+          showRoute()
+        }
       }
       suggestionsList.appendChild(option)
     })
@@ -283,6 +283,9 @@ const showRunDetailPage = async (runId) => {
 
   // constructing details section content
   const detailsSection = document.getElementById("run-details-content")
+  const meetingPointsText = runDetails?.meetingPoints
+    ? runDetails.meetingPoints.join(",")
+    : "Not set"
   detailsSection.innerHTML = `
 <div class="run-details-card">
    <div class="run-details-header"> 
@@ -297,7 +300,7 @@ const showRunDetailPage = async (runId) => {
     <p>Start Time: ${new Date(runDetails.startTime).toLocaleString()}</p>
     <p>Start Point: ${runDetails.startPointName || runDetails.startPoint}</p> 
     <p>End Point: ${runDetails.endPointName || runDetails.endPoint}</p> 
-    <p>Meeting Points: ${runDetails.meetingPoints.join(",")}</p>
+    <p>Meeting Points: ${meetingPointsText}</p>
     <p>Expected Pace: ${runDetails.expectedPace} minute miles</p>
 </div>
 `
@@ -416,49 +419,19 @@ async function fetchParticipants(runId) {
 }
 
 function showRoute() {
-  const start = startPointMarker.getLngLat()
-  const end = endPointMarker.getLngLat()
-  if (!start || !end) return
+  const startLngLat = markers["start"].getLngLat()
+  const endLngLat = markers["end"].getLngLat()
+
+  if (!startLngLat || !endLngLat) return
 
   // using Mapbox Directions API query routes
-  const directionsQuery = `https://api.mapbox.com/directions/v5/mapbox/driving/${start.lng},${start.lat};${end.lng},${end.lat}?geometries=geojson&access_token=${MY_MAPBOXGL_TOKEN}`
+  const directionsQuery = `https://api.mapbox.com/directions/v5/mapbox/driving/${startLngLat.lng},${startLngLat.lat};${endLngLat.lng},${endLngLat.lat}?geometries=geojson&access_token=${MY_MAPBOXGL_TOKEN}`
 
   fetch(directionsQuery)
     .then((response) => response.json())
     .then((data) => {
       const route = data.routes[0].geometry
-
-      // remove already existing route
-      if (mapRoute) {
-        startMap.removeLayer("route")
-        startMap.removeSource("route")
-      }
-
-      // add new routes to the map
-      startMap.addSource("route", {
-        type: "geojson",
-        data: {
-          type: "Feature",
-          properties: {},
-          geometry: route,
-        },
-      })
-
-      startMap.addLayer({
-        id: "route",
-        type: "line",
-        source: "route",
-        layout: {
-          "line-join": "round",
-          "line-cap": "round",
-        },
-        paint: {
-          "line-color": "#888",
-          "line-width": 8,
-        },
-      })
-
-      mapRoute = true // mark route added
+      updateRouteOnMap(route)
     })
 }
 
@@ -552,6 +525,18 @@ function initializeMapboxMaps() {
     const coords = [e.lngLat.lng, e.lngLat.lat]
     document.getElementById("start-point").value = coords.join(",")
   })
+}
+
+function initializeMap() {
+  mapboxgl.accessToken = MY_MAPBOXGL_TOKEN
+  map = new mapboxgl.Map({
+    container: "start-map", // Container ID
+    style: "mapbox://styles/mapbox/streets-v11", // Style URL
+    center: [-2.79902, 56.33871], // Starting position [lng, lat]
+    zoom: 9, // Starting zoom level
+  })
+
+  map.addControl(new mapboxgl.NavigationControl()) // Add zoom and rotation controls to the map.
 }
 
 const loadRuns = async () => {
@@ -1109,5 +1094,45 @@ function generateUUID() {
   return "xxxx-xxxx-xxxx-xxxx".replace(/[x]/g, function (c) {
     const r = (Math.random() * 16) | 0
     return r.toString(16)
+  })
+}
+
+function addOrUpdateMarker(lngLat, type) {
+  // Remove the existing marker if it exists
+  if (markers[type]) {
+    markers[type].remove()
+  }
+
+  // Create and add the new marker
+  markers[type] = new mapboxgl.Marker({
+    color: type === "start" ? "green" : "red",
+  }) // Use different colors for different types if you wish
+    .setLngLat(lngLat)
+    .addTo(map)
+
+  map.flyTo({ center: lngLat, zoom: 10 }) // Center the map on the new marker
+}
+
+function updateRouteOnMap(route) {
+  if (map.getSource(routeLayerID)) {
+    map.removeLayer(routeLayerID)
+    map.removeSource(routeLayerID)
+  }
+  // Add the new route to the map
+  map.addSource(routeLayerID, {
+    type: "geojson",
+    data: {
+      type: "Feature",
+      properties: {},
+      geometry: route,
+    },
+  })
+
+  map.addLayer({
+    id: routeLayerID,
+    type: "line",
+    source: routeLayerID,
+    layout: { "line-join": "round", "line-cap": "round" },
+    paint: { "line-color": "#888", "line-width": 8 },
   })
 }
