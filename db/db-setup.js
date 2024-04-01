@@ -145,8 +145,6 @@ async function assignUsersToRuns(usersCollection, runsCollection) {
     runsToJoin = Math.min(runsToJoin, runs.length)
 
     while (joinedRuns.size < runsToJoin) {
-      console.log(joinedRuns.size, runsToJoin)
-
       const run = runs[Math.floor(Math.random() * runs.length)]
       joinedRuns.add(run._id) // Set automatically handles duplicates
 

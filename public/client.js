@@ -24,6 +24,64 @@ document.addEventListener("DOMContentLoaded", () => {
 })
 
 function setupEventListeners() {
+  document
+    .getElementById("add-meeting-point")
+    .addEventListener("click", function () {
+      const container = document.getElementById("meeting-points-container")
+      const inputGroup = document.createElement("div")
+      inputGroup.className = "meeting-point-input-groups"
+      inputGroup.innerHTML = `
+      <div class="meeting-point-input-group">
+      <input type="text" placeholder="Enter meeting point" class="meeting-point-search" required/>
+      <button type="button" class="remove-meeting-point sm-button">Remove</button>
+      </div>
+      <div class="meeting-point-suggestions">
+
+    </div>
+    `
+      container.appendChild(inputGroup)
+
+      const searchInput = inputGroup.querySelector(".meeting-point-search")
+      const suggestionsBox = inputGroup.querySelector(
+        ".meeting-point-suggestions"
+      )
+
+      searchInput.addEventListener("input", async (e) => {
+        const searchText = e.target.value
+        if (searchText.length < 3) return // Wait for at least 3 characters
+
+        const suggestions = await fetchMeetingPointSuggestions(searchText)
+        suggestionsBox.innerHTML = "" // Clear existing suggestions
+        suggestions.forEach((place) => {
+          const option = document.createElement("div")
+          option.className = "suggestion"
+          option.textContent = place.place_name
+          option.addEventListener("click", () => {
+            searchInput.value = place.place_name
+            // Optionally store coordinates in a hidden input for form submission
+            suggestionsBox.innerHTML = "" // Clear suggestions after selection
+          })
+          suggestionsBox.appendChild(option)
+        })
+      })
+
+      inputGroup
+        .querySelector(".remove-meeting-point")
+        .addEventListener("click", function () {
+          inputGroup.remove()
+        })
+    })
+
+  async function fetchMeetingPointSuggestions(searchText) {
+    const response = await fetch(
+      `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+        searchText
+      )}.json?access_token=${MY_MAPBOXGL_TOKEN}`
+    )
+    const data = await response.json()
+    return data.features // Assuming features contain the suggestions
+  }
+
   logoutBtn.addEventListener("click", async () => {
     const sessionId = sessionStorage.getItem("sessionId")
     const username = sessionStorage.getItem("username")
@@ -215,6 +273,8 @@ const showRunDetailPage = async (runId) => {
   const response = await fetch(`/runs/${runId}`)
   const runDetails = await response.json()
 
+  console.log({ runDetails })
+
   // update join button
   const username = sessionStorage.getItem("username")
 
@@ -233,10 +293,11 @@ const showRunDetailPage = async (runId) => {
   }</button>
   <div><span id="participantCount">0 </span>People Already Join!</div></div>
   </div>
-    <p>Description: ${runDetails.description}</p>
+    <p>${runDetails.description}</p>
     <p>Start Time: ${new Date(runDetails.startTime).toLocaleString()}</p>
     <p>Start Point: ${runDetails.startPointName || runDetails.startPoint}</p> 
     <p>End Point: ${runDetails.endPointName || runDetails.endPoint}</p> 
+    <p>Meeting Points: ${runDetails.meetingPoints.join(",")}</p>
     <p>Expected Pace: ${runDetails.expectedPace} minute miles</p>
 </div>
 `
@@ -406,6 +467,10 @@ async function onCreateRunFormSubmit(e) {
   const startTime = document.getElementById("start-time").value
   const startTimeDate = new Date(startTime)
   const currentDateTime = new Date()
+  const meetingPoints = [
+    ...document.querySelectorAll(".meeting-point-search"),
+  ].map((input) => input.value)
+  console.log({ meetingPoints })
   startTimeDate.setSeconds(0)
 
   console.log(startTimeDate, currentDateTime, startTimeDate < currentDateTime)
@@ -447,6 +512,7 @@ async function onCreateRunFormSubmit(e) {
     name,
     level,
     description,
+    meetingPoints,
   }
 
   const response = await fetch("/runs", {

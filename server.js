@@ -1,5 +1,4 @@
 const express = require("express")
-const expressBasicAuth = require("express-basic-auth")
 
 const app = express()
 const port = 5500
@@ -147,6 +146,7 @@ app.post("/runs", async (req, res) => {
     description,
     startPointName,
     endPointName,
+    meetingPoints,
   } = req.body
   const runData = {
     _id: nanoid(),
@@ -159,6 +159,7 @@ app.post("/runs", async (req, res) => {
     name,
     level,
     description,
+    meetingPoints,
     createdAt: new Date(),
   }
   try {
