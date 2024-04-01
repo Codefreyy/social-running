@@ -271,6 +271,7 @@ app.post("/comments", async (req, res) => {
 app.get("/comments", async (req, res) => {
   try {
     const { runId } = req.query
+    // Find all reviews in the database whose runId matches the given runId and convert the result to an array.
     const comments = await commentsCollection.find({ runId: runId }).toArray()
     res.json(comments)
   } catch (error) {
@@ -327,3 +328,50 @@ app.get("/runs", async (req, res) => {
     res.status(500).json({ error: "An error occurred" })
   }
 })
+
+
+app.post("/weather", async (req, res) => {
+  const { runId, weatherData } = req.body;
+  try {
+    const document = {
+      _id: nanoid(),
+      runId,
+      ...weatherData // Expand weather data
+    }
+    await weathersCollection.insertOne(document);
+    res.json({ message: "Weather info saved successfully" })
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({ message: "An error occurred while saving weather info" })
+  }
+});
+
+app.get('/weather', async (req, res) => {
+  const { lat, lon, startTime } = req.query;
+  const date = new Date(startTime);
+  const targetDate = date.toISOString().split('T')[0];
+  console.log(targetDate);
+  const url = `http://api.weatherapi.com/v1/forecast.json?key=dbb28b581c6541268f4193126243103&q=${lat},${lon}&dt=${targetDate}`;
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error('Failed to fetch weather data');
+    }
+    const data = await response.json();
+    // Find the forecast for the targetDate
+    const forecastForTargetDate = data.forecast.forecastday.find(forecast => forecast.date === targetDate);
+
+    if (forecastForTargetDate) {
+      // Return the forecast for the specific date
+      res.json(forecastForTargetDate);
+    } else {
+      // No forecast available for the targetDate
+      res.status(404).json({ error: 'Sorry, we can only predict the weather within 15 days' });
+    }
+  } catch (error) {
+    console.error('Error fetching weather data:', error);
+    res.status(500).json({ error: 'Failed to fetch weather data' });
+  }
+});
+
+

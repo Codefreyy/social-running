@@ -11,17 +11,20 @@ const { nanoid } = require("nanoid")
 async function clearDatabase(
   runsCollection,
   usersCollection,
-  commentsCollection
+  commentsCollection,
+  weathersCollection
 ) {
   await runsCollection.deleteMany({})
   await usersCollection.deleteMany({})
   await commentsCollection.deleteMany({})
+  await weathersCollection.deleteMany({})
 }
 
 async function insertStarterData(
   runsCollection,
   usersCollection,
-  commentsCollection
+  commentsCollection,
+  weathersCollection
 ) {
   await clearDatabase(runsCollection, usersCollection, commentsCollection)
 
@@ -29,6 +32,7 @@ async function insertStarterData(
   await insertUsers(usersCollection)
   await assignUsersToRuns(usersCollection, runsCollection) // This function will be defined below
   await insertComments(commentsCollection, runsCollection, usersCollection) // Modified to include runs and users
+  await insertWeathers(weathersCollection, runsCollection, usersCollection)
 }
 
 async function insertRuns(runsCollection) {
@@ -208,5 +212,28 @@ async function insertComments(
 
   await commentsCollection.insertMany(comments)
 }
+
+async function insertWeathers(
+  weathersCollection,
+  runsCollection,
+  usersCollection
+) {
+  const runs = await runsCollection.find().toArray()
+  let weathers = []
+  runs.forEach((run) => {
+    const weatherData = {
+      _id: nanoid(),
+      runId: run._id,
+      temperature: 20,
+      condition: "Sunny",
+      humidity: 93,
+      visibility: 7,
+      UVIndex: 1,
+    };
+    weathers.push(weatherData)
+  })
+  await weathersCollection.insertMany(weathers)
+}
+
 
 module.exports = { insertStarterData }

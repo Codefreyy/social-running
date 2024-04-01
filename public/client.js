@@ -83,7 +83,8 @@ function setupEventListeners() {
   subBtn.addEventListener("click", async () => {
     const username = localStorage.getItem("username")
     console.log(username)
-    const commentText = comInput.value
+    const commentText = comInput.value // Get the comment text entered by the user in the comment input box (comInput).
+    // If the comment text, current run activity ID (currentRunId) and user name all exist, the internal code is executed.
     if (commentText && currentRunId && username) {
       const response = await fetch("/comments", {
         method: "POST",
@@ -214,9 +215,8 @@ const showRunDetailPage = async (runId) => {
    <div class="run-details-header"> 
     <h2>${runDetails.name}</h2>
    <div>
-   <button id="joinRun" data-run-id="${runDetails._id}">${
-    username ? "Click to Join" : "Login to Join"
-  }</button>
+   <button id="joinRun" data-run-id="${runDetails._id}">${username ? "Click to Join" : "Login to Join"
+    }</button>
   <div><span id="participantCount">0 </span>People Already Join!</div></div>
   </div>
     <p>Description: ${runDetails.description}</p>
@@ -234,7 +234,9 @@ const showRunDetailPage = async (runId) => {
   // coordinates of start point and end point
   const startPointCoords = runDetails.startPoint.split(",").map(Number)
   const endPointCoords = runDetails.endPoint.split(",").map(Number)
+  const startTime = runDetails.startTime;
   console.log("comments", runId)
+  await Weather(runId, startPointCoords, startTime)
   await showComments(runId)
   showDetailRunRoute(startPointCoords, endPointCoords)
 
@@ -737,6 +739,7 @@ async function showComments(runId) {
   commentsSec.innerHTML = ""
   comments.forEach((comment) => {
     const comDetail = document.createElement("p")
+    // Convert the creation time of each comment to local time format
     const date = new Date(comment.createdAt).toLocaleString()
     comDetail.textContent = `${comment.username}: ${comment.content} (${date})`
     commentsSec.appendChild(comDetail)
@@ -949,9 +952,8 @@ async function findRun() {
             <p>End Point: ${run.info.endPointName}</p>
             <p>Expected Pace: ${run.info.expectedPace}</p>
             <p>Recommendation score: ${run.score}%</p>
-            <button onclick="viewRunDetails('${
-              run.info._id
-            }')">See Detail</button>
+            <button onclick="viewRunDetails('${run.info._id
+          }')">See Detail</button>
             `
         listElement.appendChild(item)
       })
@@ -959,5 +961,36 @@ async function findRun() {
   } catch (error) {
     console.error("Error finding runs:", error)
     alert("An error occurred while finding runs. Please try again later.")
+  }
+}
+
+async function Weather(runId, startPointCoords, startTime) {
+  // Format startTime as YYYY-MM-DD
+  const date = new Date(startTime);
+  const targetDate = date.toISOString().split('T')[0];
+  const url = `/weather?runId=${runId}&lat=${startPointCoords[0]}&lon=${startPointCoords[1]}&startTime=${targetDate}`;
+  try {
+    const response = await fetch(url);
+    const weatherData = await response.json();
+    console.log("weather", weatherData);
+    const showWeather = document.getElementById("weather");
+// If weatherData exists and contains the day attribute, it means that we have weather data for a specific day.
+    if (weatherData && weatherData.day) {
+      const weatherInfo = weatherData.day;
+      showWeather.innerHTML = `
+        <h3>Weather Forecast for ${weatherData.date}</h3>
+        <img src="https:${weatherInfo.condition.icon}" alt="${weatherInfo.condition.text}">
+        <p>Max Temperature: ${weatherInfo.maxtemp_c}°C</p>
+        <p>Min Temperature: ${weatherInfo.mintemp_c}°C</p>
+        <p>Condition: ${weatherInfo.condition.text}</p>
+        <p>Chance of Rain: ${weatherInfo.daily_chance_of_rain}%</p>
+        <p>UV Index: ${weatherInfo.uv}</p>
+      `;
+    } else {
+      showWeather.innerHTML = `<p>Sorry, we can only predict the weather within 15 days.</p>`;
+    }
+  } catch (error) {
+    console.error("Error fetching weather data:", error);
+    showWeather.innerHTML = `<p>Error fetching weather forecast.</p>`;
   }
 }
