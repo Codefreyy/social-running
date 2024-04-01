@@ -71,8 +71,6 @@ app.post("/logout", async (req, res) => {
   const { username, sessionId } = req.body
   try {
     const user = await usersCollection.findOne({ username })
-    console.log(username, sessionId, "session")
-
     if (user && user.sessionId === sessionId) {
       await usersCollection.updateOne(
         { username },
@@ -108,7 +106,6 @@ async function createNewUser(username, password) {
       username: username,
       password: password,
     })
-    console.log(`${userIdNanoid} registered`)
     return userIdNanoid // 返回生成的用户ID
   } catch (error) {
     console.error(" Register Error ")
@@ -127,7 +124,6 @@ app.post("/register", async (req, res) => {
         .json({ success: false, message: "User already exists" })
     }
     const userId = await createNewUser(username, password)
-    console.log({ userId })
     res.status(200).json({ success: true, userId: userId })
   } catch (error) {
     res.status(400).json({ success: false, message: error.message })
@@ -176,7 +172,6 @@ app.get("/runs/:id", async (req, res) => {
   const { id } = req.params
   try {
     const result = await runsCollection.findOne({ _id: id })
-    console.log(result)
     if (result) {
       res.json(result)
     } else {
@@ -192,8 +187,6 @@ app.get("/runs/:id", async (req, res) => {
 app.post("/runs/:id/join", async (req, res) => {
   const runId = req.params.id
   const { username, sessionId } = req.body
-
-  console.log(runId, username)
 
   try {
     // First, find the user to get their _id
@@ -269,12 +262,10 @@ app.post("/comments", async (req, res) => {
     content,
     createdAt: new Date(),
   }
-  console.log(req.body)
   try {
     await commentsCollection.insertOne(commentText)
     res.json({ message: "comment saved" })
   } catch (error) {
-    console.log(error)
     res.status(500).json({ message: "An error occurred while saving comments" })
   }
 })
@@ -286,7 +277,6 @@ app.get("/comments", async (req, res) => {
     const comments = await commentsCollection.find({ runId: runId }).toArray()
     res.json(comments)
   } catch (error) {
-    console.log(error)
     res
       .status(500)
       .json({ message: "An error occurred while getting comments" })
@@ -301,7 +291,6 @@ app.get("/runs", async (req, res) => {
     // Check if a level query parameter is provided
     if (req.query.level) {
       const level = req.query.level.toLowerCase()
-      console.log("Received level filter:", level) // Log the received level filter
       // Filter runs based on the level
       if (
         level === "newbie" ||
@@ -332,7 +321,6 @@ app.get("/runs", async (req, res) => {
       .sort({ createdAt: -1 })
       .toArray()
 
-    console.log("Filtered runs:", results) // Log the filtered runs
     res.json(results)
   } catch (error) {
     console.error(error)
@@ -340,49 +328,52 @@ app.get("/runs", async (req, res) => {
   }
 })
 
-
 app.post("/weather", async (req, res) => {
-  const { runId, weatherData } = req.body;
+  const { runId, weatherData } = req.body
   try {
     const document = {
       _id: nanoid(),
       runId,
-      ...weatherData // Expand weather data
+      ...weatherData, // Expand weather data
     }
-    await weathersCollection.insertOne(document);
+    await weathersCollection.insertOne(document)
     res.json({ message: "Weather info saved successfully" })
   } catch (error) {
-    console.log(error)
-    res.status(500).json({ message: "An error occurred while saving weather info" })
+    res
+      .status(500)
+      .json({ message: "An error occurred while saving weather info" })
   }
-});
+})
 
-app.get('/weather', async (req, res) => {
-  const { lat, lon, startTime } = req.query;
-  const date = new Date(startTime);
-  const targetDate = date.toISOString().split('T')[0];
-  console.log(targetDate);
-  const url = `http://api.weatherapi.com/v1/forecast.json?key=dbb28b581c6541268f4193126243103&q=${lat},${lon}&dt=${targetDate}`;
+app.get("/weather", async (req, res) => {
+  const { lat, lon, startTime } = req.query
+  const date = new Date(startTime)
+  const targetDate = date.toISOString().split("T")[0]
+  const url = `http://api.weatherapi.com/v1/forecast.json?key=dbb28b581c6541268f4193126243103&q=${lat},${lon}&dt=${targetDate}`
   try {
-    const response = await fetch(url);
+    const response = await fetch(url)
     if (!response.ok) {
-      throw new Error('Failed to fetch weather data');
+      throw new Error("Failed to fetch weather data")
     }
-    const data = await response.json();
+    const data = await response.json()
     // Find the forecast for the targetDate
-    const forecastForTargetDate = data.forecast.forecastday.find(forecast => forecast.date === targetDate);
+    const forecastForTargetDate = data.forecast.forecastday.find(
+      (forecast) => forecast.date === targetDate
+    )
 
     if (forecastForTargetDate) {
       // Return the forecast for the specific date
-      res.json(forecastForTargetDate);
+      res.json(forecastForTargetDate)
     } else {
       // No forecast available for the targetDate
-      res.status(404).json({ error: 'Sorry, we can only predict the weather within 15 days' });
+      res
+        .status(404)
+        .json({
+          error: "Sorry, we can only predict the weather within 15 days",
+        })
     }
   } catch (error) {
-    console.error('Error fetching weather data:', error);
-    res.status(500).json({ error: 'Failed to fetch weather data' });
+    console.error("Error fetching weather data:", error)
+    res.status(500).json({ error: "Failed to fetch weather data" })
   }
-});
-
-
+})
