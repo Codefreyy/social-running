@@ -17,6 +17,8 @@ async function clearDatabase(
   await runsCollection.deleteMany({})
   await usersCollection.deleteMany({})
   await commentsCollection.deleteMany({})
+  // 
+  //
   await weathersCollection.deleteMany({})
 }
 
@@ -26,7 +28,7 @@ async function insertStarterData(
   commentsCollection,
   weathersCollection
 ) {
-  await clearDatabase(runsCollection, usersCollection, commentsCollection)
+  await clearDatabase(runsCollection, usersCollection, commentsCollection, weathersCollection)
 
   await insertRuns(runsCollection)
   await insertUsers(usersCollection)

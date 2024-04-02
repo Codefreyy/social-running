@@ -15,7 +15,7 @@ const client = new MongoClient(url)
 let runsCollection = null
 let usersCollection = null
 let commentsCollection = null
-
+let weathersCollection = null;
 //connect to the database
 client
   .connect()
@@ -26,6 +26,7 @@ client
     runsCollection = db.collection("runs")
     usersCollection = db.collection("users")
     commentsCollection = db.collection("comments")
+    weathersCollection =db.collection("weathers")
 
     console.log("Connected!", conn.s.url.replace(/:([^:@]{1,})@/, ":****@"))
   })
@@ -38,7 +39,7 @@ client
   })
   //interact with the database
   .then(() =>
-    insertStarterData(runsCollection, usersCollection, commentsCollection)
+    insertStarterData(runsCollection, usersCollection, commentsCollection, weathersCollection)
   )
   //exit gracefully from any errors
   .catch((err) => {
