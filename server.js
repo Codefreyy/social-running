@@ -92,8 +92,6 @@ app.post("/logout", async (req, res) => {
   }
 })
 
-// handling user register
-
 async function createNewUser(username, password) {
   if (
     typeof username !== "string" ||
@@ -119,6 +117,7 @@ async function createNewUser(username, password) {
   }
 }
 
+// handling user register
 app.post("/register", async (req, res) => {
   try {
     const { username, password } = req.body
@@ -189,6 +188,51 @@ app.get("/runs/:id", async (req, res) => {
   }
 })
 
+// Get runs with filtering by level
+app.get("/runs", async (req, res) => {
+  try {
+    let filter = {} // Default filter to retrieve all runs
+
+    // Check if a level query parameter is provided
+    if (req.query.level) {
+      const level = req.query.level.toLowerCase()
+      // Filter runs based on the level
+      if (
+        level === "newbie" ||
+        level === "intermediate" ||
+        level === "expert"
+      ) {
+        filter.level = level // Set the filter level
+      } else if (level == "all") {
+        filter = {}
+      } else {
+        return res.status(400).json({ error: "Invalid level parameter" })
+      }
+    }
+
+    // Check if a pace query parameter is provided
+    if (req.query.pace) {
+      const pace = parseFloat(req.query.pace)
+      if (!isNaN(pace)) {
+        // Assuming expectedPace is stored as a number in your collection
+        filter.expectedPace = { $lte: pace } // Filter for runs with expectedPace less than or equal to the provided pace
+      } else {
+        return res.status(400).json({ error: "Invalid pace parameter" })
+      }
+    }
+
+    const results = await runsCollection
+      .find(filter)
+      .sort({ createdAt: -1 })
+      .toArray()
+
+    res.json(results)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ error: "An error occurred" })
+  }
+})
+
 // POST /runs/:id/join - Join a run
 app.post("/runs/:id/join", async (req, res) => {
   const runId = req.params.id
@@ -252,13 +296,6 @@ app.get("/users/:username/joinedRuns", async (req, res) => {
   }
 })
 
-//temporary db for testing purposes
-db_temp = { username: null, password: null, email: null }
-
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`)
-})
-
 app.post("/comments", async (req, res) => {
   const { content, runId, username } = req.body
   const commentText = {
@@ -286,51 +323,6 @@ app.get("/comments", async (req, res) => {
     res
       .status(500)
       .json({ message: "An error occurred while getting comments" })
-  }
-})
-
-// Get runs with filtering by level
-app.get("/runs", async (req, res) => {
-  try {
-    let filter = {} // Default filter to retrieve all runs
-
-    // Check if a level query parameter is provided
-    if (req.query.level) {
-      const level = req.query.level.toLowerCase()
-      // Filter runs based on the level
-      if (
-        level === "newbie" ||
-        level === "intermediate" ||
-        level === "expert"
-      ) {
-        filter.level = level // Set the filter level
-      } else if (level == "all") {
-        filter = {}
-      } else {
-        return res.status(400).json({ error: "Invalid level parameter" })
-      }
-    }
-
-    // Check if a pace query parameter is provided
-    if (req.query.pace) {
-      const pace = parseFloat(req.query.pace)
-      if (!isNaN(pace)) {
-        // Assuming expectedPace is stored as a number in your collection
-        filter.expectedPace = { $lte: pace } // Filter for runs with expectedPace less than or equal to the provided pace
-      } else {
-        return res.status(400).json({ error: "Invalid pace parameter" })
-      }
-    }
-
-    const results = await runsCollection
-      .find(filter)
-      .sort({ createdAt: -1 })
-      .toArray()
-
-    res.json(results)
-  } catch (error) {
-    console.error(error)
-    res.status(500).json({ error: "An error occurred" })
   }
 })
 
@@ -381,4 +373,8 @@ app.get("/weather", async (req, res) => {
     console.error("Error fetching weather data:", error)
     res.status(500).json({ error: "Failed to fetch weather data" })
   }
+})
+
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`)
 })
