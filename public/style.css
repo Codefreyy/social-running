@@ -24,7 +24,8 @@ body {
 main {
   position: relative;
   margin-inline: auto;
-  width: 1200px;
+  width: 100%;
+  max-width: 1200px;
   padding: 10px;
 }
 
@@ -83,7 +84,8 @@ nav {
   display: flex;
   justify-content: space-between;
   padding: 10px 20px;
-  width: 1200px;
+  max-width: 1200px;
+  width: 100%;
   margin-inline: auto;
 }
 
@@ -133,6 +135,18 @@ nav {
   box-sizing: border-box;
 }
 
+/* respostive */
+@media only screen and (max-width: 768px) {
+  .run-item {
+    width: calc(50% - 20px); /* Two items per row with gap */
+  }
+}
+
+@media only screen and (max-width: 480px) {
+  .run-item {
+    width: calc(100% - 20px); /* One item per row with gap */
+  }
+}
 .run-item h3 {
   color: #333;
   font-family: "Raleway", sans-serif;
@@ -345,17 +359,31 @@ button {
   padding: 30px 0;
 }
 
+/* respostive */
+@media only screen and (max-width: 1024px) {
+  .container, nav, main {
+    width: 80%;
+  }
+}
+
 @media only screen and (max-width: 768px) {
-  .container {
+  .container, nav, main {
     width: 90%;
   }
 }
 
 @media only screen and (max-width: 576px) {
-  .container {
+  .container, nav, main {
     width: 95%;
   }
 }
+
+@media only screen and (max-width: 480px) {
+  .container, nav, main {
+    width: 100%;
+  }
+}
+
 
 input[name="username"],
 input[name="password"] {
@@ -578,9 +606,9 @@ form select {
 #weather {
   flex: 1;
   margin-left: 50px;
-  border: 0.2rem outset rgba(255, 192, 203, 0.852);
-  outline: 0.3rem solid rgba(240, 230, 140, 0.872);
-  box-shadow: 0 0 0 0.4rem rgba(135, 235, 232, 0.885);
+  border: 0.2rem outset #ffc0cbd9;
+  outline: 0.3rem solid #f0e68cde;
+  box-shadow: 0 0 0 0.4rem #87ebe8e2;
   border-radius: 2px;
   text-align: center;
   font-size: 1.1em;
