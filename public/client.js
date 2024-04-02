@@ -138,18 +138,14 @@ function setupEventListeners() {
   })
 
   document.getElementById("expected-pace").addEventListener("input", (e) => {
-    console.log(e.target.value)
 
     const errorElemnt = document.getElementById("error-message")
-    console.log({ errorElemnt })
     if (!e.target.checkValidity()) {
-      console.log(e.target.checkValidity())
       errorElemnt.style.display = "block"
     } else {
       document.getElementById("error-message").style.display = "none"
     }
     const expectedPace = e.target.value
-    console.log({ expectedPace })
   })
 
   window.viewRunDetails = showRunDetailPage
@@ -157,7 +153,6 @@ function setupEventListeners() {
   subBtn.addEventListener("click", async () => {
     const username = sessionStorage.getItem("username")
 
-    console.log(username)
     const commentText = comInput.value // Get the comment text entered by the user in the comment input box (comInput).
     // If the comment text, current run activity ID (currentRunId) and user name all exist, the internal code is executed.
     if (commentText && currentRunId && username) {
@@ -226,7 +221,6 @@ function setupEventListeners() {
   })
 
   endPointSearch.addEventListener("input", async (e) => {
-    console.log("...")
     const searchText = e.target.value
     if (searchText.length < 3) return // Wait for at least 3 characters before searching
 
@@ -274,7 +268,6 @@ const showRunDetailPage = async (runId) => {
   const response = await fetch(`/runs/${runId}`)
   const runDetails = await response.json()
 
-  console.log({ runDetails })
 
   // update join button
   const username = sessionStorage.getItem("username")
@@ -313,7 +306,6 @@ const showRunDetailPage = async (runId) => {
   const startPointCoords = runDetails.startPoint.split(",").map(Number)
   const endPointCoords = runDetails.endPoint.split(",").map(Number)
   const startTime = runDetails.startTime;
-  console.log("comments", runId)
   await Weather(runId, startPointCoords, startTime)
   await showComments(runId)
   showDetailRunRoute(startPointCoords, endPointCoords)
@@ -405,7 +397,6 @@ async function fetchJoinedRuns(username) {
   )
   if (response.ok) {
     const { joinedRuns } = await response.json()
-    console.log({ joinedRuns })
     return joinedRuns.map((run) => run._id) // We just need the IDs for comparison
   }
   return []
@@ -445,10 +436,8 @@ async function onCreateRunFormSubmit(e) {
   const meetingPoints = [
     ...document.querySelectorAll(".meeting-point-search"),
   ].map((input) => input.value)
-  console.log({ meetingPoints })
   startTimeDate.setSeconds(0)
 
-  console.log(startTimeDate, currentDateTime, startTimeDate < currentDateTime)
   if (startTimeDate < currentDateTime) {
     alert("Start time cannot be earlier than current time")
     return
@@ -505,7 +494,6 @@ async function onCreateRunFormSubmit(e) {
   } else {
     alert(`Create run faild: ${result?.error}`)
   }
-  console.log("result", response)
 }
 
 function initializeMapboxMaps() {
@@ -550,7 +538,6 @@ const loadRuns = async () => {
   listElement.className = "runs-grid" // Assign a class for styling the grid
 
   runs.forEach((run) => {
-    console.log({ run })
     const now = new Date()
     const startTime = new Date(run.startTime)
     let statusBadgeClass = "status-Upcoming"
@@ -600,7 +587,6 @@ function login(username, password) {
     }),
   })
     .then((response) => {
-      console.log(response, response.ok)
       if (!response.ok) {
         throw new Error("Login failed")
       }
@@ -622,8 +608,6 @@ function login(username, password) {
 function handleSignUp() {
   const username = document.getElementById("username").value.trim()
   const password = document.getElementById("password").value.trim()
-  console.log("user", username, password)
-  console.log(!username, !password)
   if (!username || !password) {
     alert("Please fill in all the fields")
     return
@@ -639,8 +623,6 @@ function handleSignUp() {
   })
     .then((response) => response.json())
     .then((data) => {
-      console.log("Registration successful", data)
-      console.log(!data.success)
       if (!data.success) {
         alert(`Registration failed: ${data.message}`)
       } else {
@@ -673,7 +655,6 @@ async function displayUserRuns(username) {
   const response = await fetch(`/users/${username}/joinedRuns`)
   const { joinedRuns } = await response.json()
 
-  console.log({ joinedRuns })
 
   // clear current user joined run list
   const userRunsElement = document.getElementById("user-runs")
@@ -858,22 +839,6 @@ function showDetailRunRoute(start, end) {
 }
 
 /** Comments Section */
-
-// async function showComments(runId) {
-//   const response = await fetch(`/comments?runId=${runId}`)
-//   const comments = await response.json()
-//   console.log("comments", comments)
-//   const commentsSec = document.getElementById("commentsSec")
-//   commentsSec.innerHTML = ""
-//   comments.forEach((comment) => {
-//     const comDetail = document.createElement("p")
-//     // Convert the creation time of each comment to local time format
-//     const date = new Date(comment.createdAt).toLocaleString()
-//     comDetail.textContent = `${comment.username}: ${comment.content} (${date})`
-//     commentsSec.appendChild(comDetail)
-//   })
-//   console.log(comments)
-// }
 async function showComments(runId) {
   const response = await fetch(`/comments?runId=${runId}`);
   const comments = await response.json();
@@ -1006,9 +971,6 @@ async function findRun() {
       const user_avg_startTime = avgStartTime(user_runs)
 
       //we display the users stats for testing purposes
-      console.log(
-        `User : level : ${user_level} / pace : ${user_avg_pace} / participants : ${user_avg_num_participant} / start time : ${user_avg_startTime}`
-      )
 
       // TO ADD: avg start time and address
 
@@ -1047,7 +1009,6 @@ async function findRun() {
           let startTime_diff = Math.abs(
             user_avg_startTime - new Date(run.startTime).getHours()
           )
-          console.log("startTime_diff" + startTime_diff)
           // Calculate the score based on the inverse proportionality for startTime
           score += max_startTime_score / (startTime_diff + 1)
 
@@ -1077,7 +1038,6 @@ async function findRun() {
 
       //we sort the array in deacrising order based on the score
       reco_runs.sort((a, b) => b.score - a.score)
-      console.log(reco_runs)
 
       //we display the recommended runs in the html page
       const listElement = document.getElementById("reco-run")
@@ -1130,7 +1090,6 @@ async function Weather(runId, startPointCoords, startTime) {
   try {
     const response = await fetch(url);
     const weatherData = await response.json();
-    console.log("weather", weatherData);
     const showWeather = document.getElementById("weather");
     // If weatherData exists and contains the day attribute, it means that we have weather data for a specific day.
     if (weatherData && weatherData.day) {

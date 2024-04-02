@@ -481,10 +481,10 @@ input:invalid {
   width: 10%;
   height: 30px;
   text-align: center;
-  display: inline-block;
+  display: flex;
   justify-content: center;
+  align-items: center;
   background-color: var(--main-blue);
-  color: #f0f0f0;
   border: none;
   font-size: 1em;
   border-radius: 7px;
@@ -492,11 +492,6 @@ input:invalid {
 
 #comSubmit:hover {
   background-color: var(--light-blue);
-}
-
-.comArea {
-  display: flex;
-  align-items: center;
 }
 
 #commentsSec {
@@ -629,69 +624,60 @@ form select {
   flex: 1;
   margin-left: 50px;
   border: 0.2rem outset rgba(255, 192, 203, 0.852);
-    outline: 0.3rem solid rgba(240, 230, 140, 0.872);
-    box-shadow: 0 0 0 0.4rem rgba(135, 235, 232, 0.885);
-    border-radius: 2px;
-    text-align: center;
-    font-size: 1.1em;
+  outline: 0.3rem solid rgba(240, 230, 140, 0.872);
+  box-shadow: 0 0 0 0.4rem rgba(135, 235, 232, 0.885);
+  border-radius: 2px;
+  text-align: center;
+  font-size: 1.1em;
 }
 
 .comments {
-  max-width: 800px;
-  margin: 20px auto; 
-  padding: 20px; 
-  background: #fff; 
-  border-radius: 10px; 
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05); 
+  margin: 20px auto;
+  padding: 20px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
 }
 
-
 .inputArea {
-  display: flex; 
-  justify-content: space-between; 
   margin-bottom: 20px;
 }
 
 #comInput {
-  flex-grow: 1; 
-  margin-right: 5px; 
-  padding: 5px; 
-  border: 1px solid #dcdcdc; 
-  border-radius: 4px; 
+  flex-grow: 1;
+  margin-right: 5px;
+  padding: 5px;
+  border: 1px solid #dcdcdc;
+  border-radius: 4px;
 }
 
-
 #commentsSec {
-  background-color: #fafcff; 
   border-radius: 8px;
-  padding: 10px; 
-  min-height: 100px; 
-  overflow: auto; 
+  padding: 10px;
+  min-height: 100px;
+  overflow: auto;
 }
 
 .comment-container {
-  width: 750px; 
-  background-color: #ffffff; 
-  border-radius: 8px; 
-  padding: 10px; 
-  margin-bottom: 10px; 
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); 
-  display: flex; 
+  background-color: #ffffff;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  display: flex;
   flex-direction: column;
-  overflow: hidden; 
-  box-sizing: border-box; 
+  overflow: hidden;
+  box-sizing: border-box;
 }
-
 
 .comment-username {
   font-weight: bold;
 }
 
 .comment-content {
-  display: block; 
-  word-wrap: break-word; 
+  display: block;
+  word-wrap: break-word;
 }
-
 
 .comment-timestamp {
   color: #757575;
@@ -699,40 +685,36 @@ form select {
   margin-top: 5px;
 }
 
-
-
 #run-details-content {
-  max-width: 800px; 
-  margin: 20px auto; 
+  margin: 20px auto;
   padding: 20px;
-  background: #ffffff; 
+  background: #ffffff;
   border-radius: 10px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); 
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .run-details-card {
-  border: 1px solid #e1e1e1;
-  border-radius: 8px; 
+  border-radius: 8px;
   padding: 20px;
 }
 
 .run-details-header {
-  border-bottom: 1px solid #eaeaea; 
-  padding-bottom: 15px; 
-  margin-bottom: 15px; 
+  border-bottom: 1px solid #eaeaea;
+  padding-bottom: 15px;
+  margin-bottom: 15px;
   display: flex;
-  justify-content: space-between; 
+  justify-content: space-between;
   align-items: center;
 }
 
 .run-details-header h2 {
   font-size: 24px;
-  color: #333; 
+  color: #333;
 }
 
 #joinRun {
   padding: 10px 20px;
-  background-color: #007bff; 
+  background-color: #007bff;
   color: white;
   border: none;
   border-radius: 4px;
@@ -751,36 +733,35 @@ form select {
 
 .run-details-card p {
   font-size: 16px;
-  line-height: 1.5; 
+  line-height: 1.5;
   color: #666;
-  margin-bottom: 10px; 
+  margin-bottom: 10px;
 }
 
 #mapAndWeather {
   margin: 20px auto;
-  max-width: 800px;
-  padding: 20px; 
+  padding: 20px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
   background: #fff;
   border-radius: 10px;
-  display: flex; 
-  justify-content: space-between; 
+  display: flex;
+  justify-content: space-between;
   align-items: center;
 }
 
 #run-details-map {
-  width: 100%; 
-  height: 400px; 
-  position: relative; 
+  width: 100%;
+  height: 400px;
+  position: relative;
 }
 
 #run-details-map img {
-  width: 100%; 
-  height: auto; 
-  border-radius: 8px; 
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
 }
 
 #weather {
-  padding: 20px; 
-  text-align: center; 
+  padding: 20px;
+  text-align: center;
 }

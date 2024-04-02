@@ -15,7 +15,7 @@ const client = new MongoClient(url)
 let runsCollection = null
 let usersCollection = null
 let commentsCollection = null
-let weathersCollection = null;
+let weathersCollection = null
 //connect to the database
 client
   .connect()
@@ -26,7 +26,7 @@ client
     runsCollection = db.collection("runs")
     usersCollection = db.collection("users")
     commentsCollection = db.collection("comments")
-    weathersCollection =db.collection("weathers")
+    weathersCollection = db.collection("weathers")
 
     console.log("Connected!", conn.s.url.replace(/:([^:@]{1,})@/, ":****@"))
   })
@@ -39,7 +39,12 @@ client
   })
   //interact with the database
   .then(() =>
-    insertStarterData(runsCollection, usersCollection, commentsCollection, weathersCollection)
+    insertStarterData(
+      runsCollection,
+      usersCollection,
+      commentsCollection,
+      weathersCollection
+    )
   )
   //exit gracefully from any errors
   .catch((err) => {
@@ -351,7 +356,6 @@ app.get("/weather", async (req, res) => {
   const { lat, lon, startTime } = req.query
   const date = new Date(startTime)
   const targetDate = date.toISOString().split("T")[0]
-  console.log(targetDate)
   const url = `http://api.weatherapi.com/v1/forecast.json?key=dbb28b581c6541268f4193126243103&q=${lat},${lon}&dt=${targetDate}`
   try {
     const response = await fetch(url)
@@ -369,11 +373,9 @@ app.get("/weather", async (req, res) => {
       res.json(forecastForTargetDate)
     } else {
       // No forecast available for the targetDate
-      res
-        .status(404)
-        .json({
-          error: "Sorry, we can only predict the weather within 15 days",
-        })
+      res.status(404).json({
+        error: "Sorry, we can only predict the weather within 15 days",
+      })
     }
   } catch (error) {
     console.error("Error fetching weather data:", error)

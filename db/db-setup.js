@@ -10,7 +10,7 @@ const { nanoid } = require("nanoid")
 async function clearDatabase(
   runsCollection,
   usersCollection,
-  commentsCollection,
+  commentsCollection
 ) {
   await runsCollection.deleteMany({})
   await usersCollection.deleteMany({})
@@ -20,7 +20,7 @@ async function clearDatabase(
 async function insertStarterData(
   runsCollection,
   usersCollection,
-  commentsCollection,
+  commentsCollection
 ) {
   await clearDatabase(runsCollection, usersCollection, commentsCollection)
 
@@ -104,7 +104,6 @@ async function insertRuns(runsCollection) {
       participants: [],
     }
   })
-  console.log({ runs })
   const runs1 = await runsCollection.insertMany(runs)
 }
 
@@ -170,8 +169,6 @@ async function assignUsersToRuns(usersCollection, runsCollection) {
       { $set: { joinedRuns } }
     )
   }
-
-  console.log("Admin has joined runs: ", adminJoinedRuns)
 
   // Update the runs with their participants
   for (let run of runs) {
