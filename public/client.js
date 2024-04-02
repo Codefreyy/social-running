@@ -881,32 +881,25 @@ async function showComments(runId) {
   commentsSec.innerHTML = "";
 
   comments.forEach((comment) => {
-    // 创建评论容器
     const commentDiv = document.createElement("div");
     commentDiv.className = "comment-container";
 
-    // 创建用户名的部分
     const usernameSpan = document.createElement("span");
     usernameSpan.className = "comment-username";
     usernameSpan.textContent = `${comment.username}: `;
 
-    // 创建评论内容的部分
     const contentSpan = document.createElement("span");
     contentSpan.className = "comment-content";
     contentSpan.textContent = comment.content;
 
-    // 创建时间戳的部分
     const timestampDiv = document.createElement("div");
     timestampDiv.className = "comment-timestamp";
     const date = new Date(comment.createdAt).toLocaleString();
     timestampDiv.textContent = `(${date})`;
 
-    // 将用户名、评论内容和时间戳添加到评论容器中
     commentDiv.appendChild(usernameSpan);
     commentDiv.appendChild(contentSpan);
     commentDiv.appendChild(timestampDiv);
-
-    // 将评论容器添加到评论部分
     commentsSec.appendChild(commentDiv);
   });
 }
@@ -1139,7 +1132,7 @@ async function Weather(runId, startPointCoords, startTime) {
     const weatherData = await response.json();
     console.log("weather", weatherData);
     const showWeather = document.getElementById("weather");
-// If weatherData exists and contains the day attribute, it means that we have weather data for a specific day.
+    // If weatherData exists and contains the day attribute, it means that we have weather data for a specific day.
     if (weatherData && weatherData.day) {
       const weatherInfo = weatherData.day;
       showWeather.innerHTML = `
