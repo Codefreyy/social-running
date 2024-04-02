@@ -44,7 +44,13 @@ h2 {
 h4 {
   font-family: "Raleway", sans-serif;
   font-optical-sizing: auto;
-  font-weight: 400;
+  font-weight: 500;
+}
+
+h5{
+  font-family: "Raleway", sans-serif;
+  font-optical-sizing: auto;
+  color: #646464;
 }
 
 .custom-label {
@@ -315,8 +321,19 @@ button {
 }
 
 #log-in:hover,
-#logout:hover {
+#logout:hover,
+#user-space-btn:hover {
   background-color: var(--light-blue);
+}
+/* try */
+#user-space-section {
+  /* 确保元素是可见的，因为原来的样式是 display: none; */
+  display: block; /* 或其他显示属性，根据需要调整 */
+  transition: background-color 0.3s; /* 添加过渡效果使颜色变化平滑 */
+}
+
+#user-space-section:hover {
+  background-color: #ce3333; /* 鼠标悬停时的背景颜色 */
 }
 
 #sign-up:hover {
@@ -569,6 +586,9 @@ form select {
 }
 
 #user-space-section h2 {
+  font-family: "Raleway", sans-serif;
+  font-optical-sizing: auto;
+  font-style: semibold;
   margin: 0;
   color: #333;
   font-weight: 600;
