@@ -1,6 +1,5 @@
 /**
- * We're inserting 20 runs with varied level values to simulate different skill levels.
-We're creating 20 users.
+ * We're inserting 20 runs with varied level values to simulate different skill levels. We're creating 20 users.
 The assignUsersToRuns function assigns users to runs in a somewhat random manner to simulate participation.
 The insertComments function has been modified to insert comments for the runs based on the participants, ensuring that there's relevant data for each run.
 This setup provides a rich dataset for simulating different scenarios in your application, including user participation across various runs and engagement through comments.
@@ -17,9 +16,7 @@ async function clearDatabase(
   await runsCollection.deleteMany({})
   await usersCollection.deleteMany({})
   await commentsCollection.deleteMany({})
-  // 
-  //
-  await weathersCollection.deleteMany({})
+  await weathersCollection?.deleteMany({})
 }
 
 async function insertStarterData(
@@ -97,7 +94,7 @@ async function insertRuns(runsCollection) {
     return {
       _id: nanoid(),
       name: loc.name,
-      startTime: new Date(`2024-05-${(index % 30) + 1}T08:00:00Z`),
+      startTime: new Date(2024, 3, (index % 21) + 10, 8, 0, 0),
       startPoint: loc.coordinates.join(","),
       endPoint: [
         loc.coordinates[0] + offsetLng,
@@ -111,8 +108,8 @@ async function insertRuns(runsCollection) {
       participants: [],
     }
   })
-
-  await runsCollection.insertMany(runs)
+  console.log({ runs })
+  const runs1 = await runsCollection.insertMany(runs)
 }
 
 async function insertUsers(usersCollection) {
@@ -228,11 +225,10 @@ async function insertWeathers(
       humidity: 93,
       visibility: 7,
       UVIndex: 1,
-    };
+    }
     weathers.push(weatherData)
   })
-  await weathersCollection.insertMany(weathers)
+  await weathersCollection?.insertMany(weathers)
 }
-
 
 module.exports = { insertStarterData }
