@@ -47,7 +47,7 @@ h4 {
   font-weight: 500;
 }
 
-h5{
+h5 {
   font-family: "Raleway", sans-serif;
   font-optical-sizing: auto;
   color: #646464;
@@ -325,15 +325,10 @@ button {
 #user-space-btn:hover {
   background-color: var(--light-blue);
 }
-/* try */
-#user-space-section {
-  /* 确保元素是可见的，因为原来的样式是 display: none; */
-  display: block; /* 或其他显示属性，根据需要调整 */
-  transition: background-color 0.3s; /* 添加过渡效果使颜色变化平滑 */
-}
 
-#user-space-section:hover {
-  background-color: #ce3333; /* 鼠标悬停时的背景颜色 */
+#user-space-section {
+  display: block;
+  transition: background-color 0.3s;
 }
 
 #sign-up:hover {
@@ -378,29 +373,36 @@ button {
 
 /* respostive */
 @media only screen and (max-width: 1024px) {
-  .container, nav, main {
+  .container,
+  nav,
+  main {
     width: 80%;
   }
 }
 
 @media only screen and (max-width: 768px) {
-  .container, nav, main {
+  .container,
+  nav,
+  main {
     width: 90%;
   }
 }
 
 @media only screen and (max-width: 576px) {
-  .container, nav, main {
+  .container,
+  nav,
+  main {
     width: 95%;
   }
 }
 
 @media only screen and (max-width: 480px) {
-  .container, nav, main {
+  .container,
+  nav,
+  main {
     width: 100%;
   }
 }
-
 
 input[name="username"],
 input[name="password"] {
