@@ -15,7 +15,6 @@ const client = new MongoClient(url)
 let runsCollection = null
 let usersCollection = null
 let commentsCollection = null
-let weathersCollection = null
 //connect to the database
 client
   .connect()
@@ -26,7 +25,6 @@ client
     runsCollection = db.collection("runs")
     usersCollection = db.collection("users")
     commentsCollection = db.collection("comments")
-    weathersCollection = db.collection("weathers")
 
     console.log("Connected!", conn.s.url.replace(/:([^:@]{1,})@/, ":****@"))
   })
@@ -43,7 +41,6 @@ client
       runsCollection,
       usersCollection,
       commentsCollection,
-      weathersCollection
     )
   )
   //exit gracefully from any errors
@@ -329,12 +326,6 @@ app.get("/comments", async (req, res) => {
 app.post("/weather", async (req, res) => {
   const { runId, weatherData } = req.body
   try {
-    const document = {
-      _id: nanoid(),
-      runId,
-      ...weatherData, // Expand weather data
-    }
-    await weathersCollection.insertOne(document)
     res.json({ message: "Weather info saved successfully" })
   } catch (error) {
     console.log(error)
