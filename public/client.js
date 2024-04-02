@@ -1,3 +1,14 @@
+const filterSelect = document.getElementById("filter-by-level")
+const runList = document.getElementById("run-list")
+const logoutBtn = document.querySelector("#logout")
+const authSection = document.getElementById("auth")
+const startPointSearch = document.getElementById("start-point-search")
+const endPointSearch = document.getElementById("end-point-search")
+const subCommentBtn = document.getElementById("comSubmit")
+const comContent = document.getElementById("comments")
+const comInput = document.getElementById("comInput")
+const commentsSec = document.getElementById("commentsSec")
+
 const MY_MAPBOXGL_TOKEN =
   "pk.eyJ1Ijoiam95eXl5eXl5IiwiYSI6ImNsdHZ3NjAyNzE4MmoycXFwdzVwYXpvNGwifQ.rLajkAaYDentEmhdczyRyw"
 let map = null
@@ -8,16 +19,6 @@ let startPointMarker
 let endPointMarker
 let currentRunId = null
 let levelDistributionChart = null
-const filterSelect = document.getElementById("filter-by-level")
-const runList = document.getElementById("run-list")
-const logoutBtn = document.querySelector("#logout")
-const authSection = document.getElementById("auth")
-const startPointSearch = document.getElementById("start-point-search")
-const endPointSearch = document.getElementById("end-point-search")
-const subBtn = document.getElementById("comSubmit")
-const comContent = document.getElementById("comments")
-const comInput = document.getElementById("comInput")
-const commentsSec = document.getElementById("commentsSec")
 
 document.addEventListener("DOMContentLoaded", () => {
   initializeMap()
@@ -26,6 +27,62 @@ document.addEventListener("DOMContentLoaded", () => {
 })
 
 function setupEventListeners() {
+  // auth
+  logoutBtn.addEventListener("click", handleLogoutClick)
+
+  loginBtn = document.getElementById("log-in")
+  loginBtn.addEventListener("click", () => {
+    const login_username = document.getElementById("username").value
+    const login_password = document.getElementById("password").value
+    login(login_username, login_password)
+  })
+
+  document.getElementById("sign-up").addEventListener("click", handleSignUp)
+
+  // create run form
+  filterSelect.addEventListener("change", (event) => {
+    const selectedLevel = event.target.value
+    displayRuns(selectedLevel)
+  })
+
+  document
+    .getElementById("filter-by-pace")
+    .addEventListener("change", function () {
+      const selectedLevel = document.getElementById("filter-by-level").value
+      const selectedPace = this.value
+      displayRuns(selectedLevel, selectedPace)
+    })
+
+  document
+    .getElementById("create-run")
+    .addEventListener("submit", onCreateRunFormSubmit)
+
+  document.getElementById("expected-pace").addEventListener("input", (e) => {
+    const errorElemnt = document.getElementById("error-message")
+    if (!e.target.checkValidity()) {
+      errorElemnt.style.display = "block"
+    } else {
+      document.getElementById("error-message").style.display = "none"
+    }
+    const expectedPace = e.target.value
+  })
+
+  window.viewRunDetails = showRunDetailPage
+
+  subCommentBtn.addEventListener("click", handleCommentSubmit)
+
+  document.getElementById("find-run-btn").addEventListener("click", findRun)
+
+  document.getElementById("btn-back-to-list").addEventListener("click", () => {
+    document.getElementById("run-details").style.display = "none"
+    document.getElementById("run-list-section").style.display = "block"
+    document.getElementById("create-run").style.display = "block"
+  })
+
+  // map search
+  startPointSearch.addEventListener("input", handleStartPointSearch)
+  endPointSearch.addEventListener("input", handleEndPointSearch)
+
   document
     .getElementById("add-meeting-point")
     .addEventListener("click", function () {
@@ -33,14 +90,14 @@ function setupEventListeners() {
       const inputGroup = document.createElement("div")
       inputGroup.className = "meeting-point-input-groups"
       inputGroup.innerHTML = `
-      <div class="meeting-point-input-group">
-      <input type="text" placeholder="Enter meeting point" class="meeting-point-search" required/>
-      <button type="button" class="remove-meeting-point sm-button">Remove</button>
-      </div>
-      <div class="meeting-point-suggestions">
-
+    <div class="meeting-point-input-group">
+    <input type="text" placeholder="Enter meeting point" class="meeting-point-search" required/>
+    <button type="button" class="remove-meeting-point sm-button">Remove</button>
     </div>
-    `
+    <div class="meeting-point-suggestions">
+
+  </div>
+  `
       container.appendChild(inputGroup)
 
       const searchInput = inputGroup.querySelector(".meeting-point-search")
@@ -75,186 +132,6 @@ function setupEventListeners() {
           inputGroup.remove()
         })
     })
-
-  async function fetchMeetingPointSuggestions(searchText) {
-    const response = await fetch(
-      `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
-        searchText
-      )}.json?access_token=${MY_MAPBOXGL_TOKEN}`
-    )
-    const data = await response.json()
-    return data.features // Assuming features contain the suggestions
-  }
-
-  logoutBtn.addEventListener("click", async () => {
-    const sessionId = sessionStorage.getItem("sessionId")
-    const username = sessionStorage.getItem("username")
-    try {
-      const response = await fetch("/logout", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ sessionId, username }),
-      })
-      if (response.ok) {
-        //Clear the sessionId stored by the client after successful logout
-        sessionStorage.clear()
-        // Update UI status
-        updateNavbar(null)
-        showAuthSection(true)
-        authSection.style.display = "flex"
-        logoutBtn.style.display = "none"
-      } else {
-        throw new Error("Logout failed")
-      }
-    } catch (error) {
-      console.error("Logout error:", error)
-      // 处理登出错误，可能需要告知用户重试
-    }
-  })
-
-  filterSelect.addEventListener("change", (event) => {
-    const selectedLevel = event.target.value
-    displayRuns(selectedLevel)
-  })
-
-  document
-    .getElementById("filter-by-pace")
-    .addEventListener("change", function () {
-      const selectedLevel = document.getElementById("filter-by-level").value
-      const selectedPace = this.value
-      displayRuns(selectedLevel, selectedPace)
-    })
-
-  document
-    .getElementById("create-run")
-    .addEventListener("submit", onCreateRunFormSubmit)
-
-  document.getElementById("btn-back-to-list").addEventListener("click", () => {
-    document.getElementById("run-details").style.display = "none"
-    document.getElementById("run-list-section").style.display = "block"
-    document.getElementById("create-run").style.display = "block"
-  })
-
-  document.getElementById("expected-pace").addEventListener("input", (e) => {
-
-    const errorElemnt = document.getElementById("error-message")
-    if (!e.target.checkValidity()) {
-      errorElemnt.style.display = "block"
-    } else {
-      document.getElementById("error-message").style.display = "none"
-    }
-    const expectedPace = e.target.value
-  })
-
-  window.viewRunDetails = showRunDetailPage
-
-  subBtn.addEventListener("click", async () => {
-    const username = sessionStorage.getItem("username")
-
-    const commentText = comInput.value // Get the comment text entered by the user in the comment input box (comInput).
-    // If the comment text, current run activity ID (currentRunId) and user name all exist, the internal code is executed.
-    if (commentText && currentRunId && username) {
-      const response = await fetch("/comments", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          content: commentText,
-          runId: currentRunId,
-          username,
-        }),
-      })
-      if (response.ok) {
-        comInput.value = ""
-        showComments(currentRunId) // Re-fetch and display all comments
-      }
-    }
-  })
-
-  document.getElementById("find-run-btn").addEventListener("click", findRun)
-
-  document.getElementById("sign-up").addEventListener("click", handleSignUp)
-
-  login_btn = document.getElementById("log-in")
-  login_btn.addEventListener("click", () => {
-    const login_username = document.getElementById("username").value
-    const login_password = document.getElementById("password").value
-    login(login_username, login_password)
-  })
-
-  // map search
-  startPointSearch.addEventListener("input", async (e) => {
-    const searchText = e.target.value
-    if (searchText.length < 3) return // Wait for at least 3 characters before searching
-
-    const response = await fetch(
-      `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
-        searchText
-      )}.json?access_token=${MY_MAPBOXGL_TOKEN}`
-    )
-    const data = await response.json()
-    const suggestions = data.features
-
-    const suggestionsList = document.getElementById("start-point-suggestions")
-    suggestionsList.style.display = "block"
-    suggestionsList.innerHTML = "" // Clear existing suggestions
-    suggestions.forEach((place) => {
-      const option = document.createElement("div")
-      option.className = "suggestion"
-      option.textContent = place.place_name
-      option.onclick = function () {
-        document.getElementById("start-point-search").value = place.place_name
-        document.getElementById("start-point").value = place.center.join(",")
-        suggestionsList.innerHTML = "" // Clear suggestions after selection
-        suggestionsList.style.display = "none"
-
-        addOrUpdateMarker(place.center, "start")
-        if (markers["start"] && markers["end"]) {
-          showRoute()
-        }
-      }
-      suggestionsList.appendChild(option)
-    })
-  })
-
-  endPointSearch.addEventListener("input", async (e) => {
-    const searchText = e.target.value
-    if (searchText.length < 3) return // Wait for at least 3 characters before searching
-
-    const response = await fetch(
-      `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
-        searchText
-      )}.json?access_token=${MY_MAPBOXGL_TOKEN}`
-    )
-    const data = await response.json()
-    const suggestions = data.features
-
-    const suggestionsList = document.getElementById("end-point-suggestions")
-    suggestionsList.innerHTML = "" // Clear existing suggestions
-    suggestionsList.style.display = "block"
-    suggestions.forEach((place) => {
-      const option = document.createElement("div")
-      option.className = "suggestion"
-      option.textContent = place.place_name
-      option.onclick = function () {
-        document.getElementById("end-point-search").value = place.place_name
-        document.getElementById("end-point").value = place.center.join(",")
-        suggestionsList.innerHTML = "" // Clear suggestions after selection
-        suggestionsList.style.display = "none"
-
-        addOrUpdateMarker(place.center, "end")
-
-        // Check if both start and end markers are set and show the route
-        if (markers["start"] && markers["end"]) {
-          showRoute()
-        }
-      }
-      suggestionsList.appendChild(option)
-    })
-  })
 }
 
 const showRunDetailPage = async (runId) => {
@@ -267,7 +144,6 @@ const showRunDetailPage = async (runId) => {
   // fetching run details from the server
   const response = await fetch(`/runs/${runId}`)
   const runDetails = await response.json()
-
 
   // update join button
   const username = sessionStorage.getItem("username")
@@ -285,8 +161,9 @@ const showRunDetailPage = async (runId) => {
    <div class="run-details-header"> 
     <h2>${runDetails.name}</h2>
    <div>
-   <button id="joinRun" data-run-id="${runDetails._id}">${username ? "Click to Join" : "Login to Join"
-    }</button>
+   <button id="joinRun" data-run-id="${runDetails._id}">${
+    username ? "Click to Join" : "Login to Join"
+  }</button>
   <div><span id="participantCount">0 </span>People Already Join!</div></div>
   </div>
     <p>${runDetails.description}</p>
@@ -305,7 +182,7 @@ const showRunDetailPage = async (runId) => {
   // coordinates of start point and end point
   const startPointCoords = runDetails.startPoint.split(",").map(Number)
   const endPointCoords = runDetails.endPoint.split(",").map(Number)
-  const startTime = runDetails.startTime;
+  const startTime = runDetails.startTime
   await Weather(runId, startPointCoords, startTime)
   await showComments(runId)
   showDetailRunRoute(startPointCoords, endPointCoords)
@@ -389,6 +266,45 @@ async function displayRuns(level = "all", pace = "all") {
   }
 }
 
+const loadRuns = async () => {
+  const response = await fetch("/runs")
+  const runs = await response.json()
+
+  const listElement = document.getElementById("run-list")
+  listElement.innerHTML = "" // Clear the list before adding new elements
+  listElement.className = "runs-grid" // Assign a class for styling the grid
+
+  runs.forEach((run) => {
+    const now = new Date()
+    const startTime = new Date(run.startTime)
+    let statusBadgeClass = "status-Upcoming"
+    let status = "Upcoming" // Default status
+    if (now > startTime) {
+      status = "Expired" // If the current time is past the start time
+      statusClass = "status-Expired"
+    }
+
+    const levelBadgeClass = `level-${run.level?.toLowerCase()}`
+
+    const item = document.createElement("div")
+    item.className = "run-item" // Add a class for styling
+    item.innerHTML = `
+  <h3>${run.name}
+ 
+  </h3>
+  <div>
+  <span class="badge ${levelBadgeClass}">${run.level}</span>
+  <span class="badge ${statusBadgeClass}">${status}</span></div>
+  <p>Start Time: ${startTime.toLocaleString()}</p>
+  <p>Start Point: ${run.startPointName}</p>
+  <p>End Point: ${run.endPointName}</p>
+  <p>Expected Pace: ${run.expectedPace}</p>
+  <button onclick="viewRunDetails('${run._id}')">See Detail</button>
+`
+    listElement.appendChild(item)
+  })
+}
+
 async function fetchJoinedRuns(username) {
   const sessionId = sessionStorage.getItem("sessionId")
   if (!username) return []
@@ -409,23 +325,6 @@ async function fetchParticipants(runId) {
     document.getElementById("participantCount").innerText =
       data.participantCount
   }
-}
-
-function showRoute() {
-  const startLngLat = markers["start"].getLngLat()
-  const endLngLat = markers["end"].getLngLat()
-
-  if (!startLngLat || !endLngLat) return
-
-  // using Mapbox Directions API query routes
-  const directionsQuery = `https://api.mapbox.com/directions/v5/mapbox/driving/${startLngLat.lng},${startLngLat.lat};${endLngLat.lng},${endLngLat.lat}?geometries=geojson&access_token=${MY_MAPBOXGL_TOKEN}`
-
-  fetch(directionsQuery)
-    .then((response) => response.json())
-    .then((data) => {
-      const route = data.routes[0].geometry
-      updateRouteOnMap(route)
-    })
 }
 
 async function onCreateRunFormSubmit(e) {
@@ -496,78 +395,6 @@ async function onCreateRunFormSubmit(e) {
   }
 }
 
-function initializeMapboxMaps() {
-  mapboxgl.accessToken = MY_MAPBOXGL_TOKEN
-
-  startMap = new mapboxgl.Map({
-    container: "start-map",
-    style: "mapbox://styles/mapbox/streets-v11",
-    center: [-2.79902, 56.33871],
-
-    zoom: 9,
-  })
-
-  // Add map controls for user interaction
-  startMap.addControl(new mapboxgl.NavigationControl())
-
-  // Event listeners for map clicks to set the start and end points
-  startMap.on("click", function (e) {
-    const coords = [e.lngLat.lng, e.lngLat.lat]
-    document.getElementById("start-point").value = coords.join(",")
-  })
-}
-
-function initializeMap() {
-  mapboxgl.accessToken = MY_MAPBOXGL_TOKEN
-  map = new mapboxgl.Map({
-    container: "start-map", // Container ID
-    style: "mapbox://styles/mapbox/streets-v11", // Style URL
-    center: [-2.79902, 56.33871], // Starting position [lng, lat]
-    zoom: 9, // Starting zoom level
-  })
-
-  map.addControl(new mapboxgl.NavigationControl()) // Add zoom and rotation controls to the map.
-}
-
-const loadRuns = async () => {
-  const response = await fetch("/runs")
-  const runs = await response.json()
-
-  const listElement = document.getElementById("run-list")
-  listElement.innerHTML = "" // Clear the list before adding new elements
-  listElement.className = "runs-grid" // Assign a class for styling the grid
-
-  runs.forEach((run) => {
-    const now = new Date()
-    const startTime = new Date(run.startTime)
-    let statusBadgeClass = "status-Upcoming"
-    let status = "Upcoming" // Default status
-    if (now > startTime) {
-      status = "Expired" // If the current time is past the start time
-      statusClass = "status-Expired"
-    }
-
-    const levelBadgeClass = `level-${run.level?.toLowerCase()}`
-
-    const item = document.createElement("div")
-    item.className = "run-item" // Add a class for styling
-    item.innerHTML = `
-  <h3>${run.name}
- 
-  </h3>
-  <div>
-  <span class="badge ${levelBadgeClass}">${run.level}</span>
-  <span class="badge ${statusBadgeClass}">${status}</span></div>
-  <p>Start Time: ${startTime.toLocaleString()}</p>
-  <p>Start Point: ${run.startPointName}</p>
-  <p>End Point: ${run.endPointName}</p>
-  <p>Expected Pace: ${run.expectedPace}</p>
-  <button onclick="viewRunDetails('${run._id}')">See Detail</button>
-`
-    listElement.appendChild(item)
-  })
-}
-
 function login(username, password) {
   document.getElementById("username").value = ""
   document.getElementById("password").value = ""
@@ -636,6 +463,34 @@ function handleSignUp() {
     })
 }
 
+const handleLogoutClick = async () => {
+  const sessionId = sessionStorage.getItem("sessionId")
+  const username = sessionStorage.getItem("username")
+  try {
+    const response = await fetch("/logout", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ sessionId, username }),
+    })
+    if (response.ok) {
+      //Clear the sessionId stored by the client after successful logout
+      sessionStorage.clear()
+      // Update UI status
+      updateNavbar(null)
+      showAuthSection(true)
+      authSection.style.display = "flex"
+      logoutBtn.style.display = "none"
+    } else {
+      throw new Error("Logout failed")
+    }
+  } catch (error) {
+    console.error("Logout error:", error)
+    // 处理登出错误，可能需要告知用户重试
+  }
+}
+
 async function updateNavbar(username) {
   const greeting = document.getElementById("user-greeting")
   const userSpaceBtn = document.getElementById("user-space-btn")
@@ -654,7 +509,6 @@ async function updateNavbar(username) {
 async function displayUserRuns(username) {
   const response = await fetch(`/users/${username}/joinedRuns`)
   const { joinedRuns } = await response.json()
-
 
   // clear current user joined run list
   const userRunsElement = document.getElementById("user-runs")
@@ -840,33 +694,57 @@ function showDetailRunRoute(start, end) {
 
 /** Comments Section */
 async function showComments(runId) {
-  const response = await fetch(`/comments?runId=${runId}`);
-  const comments = await response.json();
-  const commentsSec = document.getElementById("commentsSec");
-  commentsSec.innerHTML = "";
+  const response = await fetch(`/comments?runId=${runId}`)
+  const comments = await response.json()
+  const commentsSec = document.getElementById("commentsSec")
+  commentsSec.innerHTML = ""
 
   comments.forEach((comment) => {
-    const commentDiv = document.createElement("div");
-    commentDiv.className = "comment-container";
+    const commentDiv = document.createElement("div")
+    commentDiv.className = "comment-container"
 
-    const usernameSpan = document.createElement("span");
-    usernameSpan.className = "comment-username";
-    usernameSpan.textContent = `${comment.username}: `;
+    const usernameSpan = document.createElement("span")
+    usernameSpan.className = "comment-username"
+    usernameSpan.textContent = `${comment.username}: `
 
-    const contentSpan = document.createElement("span");
-    contentSpan.className = "comment-content";
-    contentSpan.textContent = comment.content;
+    const contentSpan = document.createElement("span")
+    contentSpan.className = "comment-content"
+    contentSpan.textContent = comment.content
 
-    const timestampDiv = document.createElement("div");
-    timestampDiv.className = "comment-timestamp";
-    const date = new Date(comment.createdAt).toLocaleString();
-    timestampDiv.textContent = `(${date})`;
+    const timestampDiv = document.createElement("div")
+    timestampDiv.className = "comment-timestamp"
+    const date = new Date(comment.createdAt).toLocaleString()
+    timestampDiv.textContent = `(${date})`
 
-    commentDiv.appendChild(usernameSpan);
-    commentDiv.appendChild(contentSpan);
-    commentDiv.appendChild(timestampDiv);
-    commentsSec.appendChild(commentDiv);
-  });
+    commentDiv.appendChild(usernameSpan)
+    commentDiv.appendChild(contentSpan)
+    commentDiv.appendChild(timestampDiv)
+    commentsSec.appendChild(commentDiv)
+  })
+}
+
+const handleCommentSubmit = async () => {
+  const username = sessionStorage.getItem("username")
+
+  const commentText = comInput.value // Get the comment text entered by the user in the comment input box (comInput).
+  // If the comment text, current run activity ID (currentRunId) and user name all exist, the internal code is executed.
+  if (commentText && currentRunId && username) {
+    const response = await fetch("/comments", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        content: commentText,
+        runId: currentRunId,
+        username,
+      }),
+    })
+    if (response.ok) {
+      comInput.value = ""
+      showComments(currentRunId) // Re-fetch and display all comments
+    }
+  }
 }
 
 async function findRun() {
@@ -1070,8 +948,9 @@ async function findRun() {
             <p>End Point: ${run.info.endPointName}</p>
             <p>Expected Pace: ${run.info.expectedPace}</p>
             <p>Recommendation score: ${run.score}%</p>
-            <button onclick="viewRunDetails('${run.info._id
-          }')">See Detail</button>
+            <button onclick="viewRunDetails('${
+              run.info._id
+            }')">See Detail</button>
             `
         listElement.appendChild(item)
       })
@@ -1084,16 +963,16 @@ async function findRun() {
 
 async function Weather(runId, startPointCoords, startTime) {
   // Format startTime as YYYY-MM-DD
-  const date = new Date(startTime);
-  const targetDate = date.toISOString().split('T')[0];
-  const url = `/weather?runId=${runId}&lat=${startPointCoords[0]}&lon=${startPointCoords[1]}&startTime=${targetDate}`;
+  const date = new Date(startTime)
+  const targetDate = date.toISOString().split("T")[0]
+  const url = `/weather?runId=${runId}&lat=${startPointCoords[0]}&lon=${startPointCoords[1]}&startTime=${targetDate}`
   try {
-    const response = await fetch(url);
-    const weatherData = await response.json();
-    const showWeather = document.getElementById("weather");
+    const response = await fetch(url)
+    const weatherData = await response.json()
+    const showWeather = document.getElementById("weather")
     // If weatherData exists and contains the day attribute, it means that we have weather data for a specific day.
     if (weatherData && weatherData.day) {
-      const weatherInfo = weatherData.day;
+      const weatherInfo = weatherData.day
       showWeather.innerHTML = `
         <h3>Weather Forecast for ${weatherData.date}</h3>
         <img src="https:${weatherInfo.condition.icon}" alt="${weatherInfo.condition.text}">
@@ -1102,13 +981,13 @@ async function Weather(runId, startPointCoords, startTime) {
         <p>Condition: ${weatherInfo.condition.text}</p>
         <p>Chance of Rain: ${weatherInfo.daily_chance_of_rain}%</p>
         <p>UV Index: ${weatherInfo.uv}</p>
-      `;
+      `
     } else {
-      showWeather.innerHTML = `<p>Sorry, we can only predict the weather within 15 days.</p>`;
+      showWeather.innerHTML = `<p>Sorry, we can only predict the weather within 15 days.</p>`
     }
   } catch (error) {
-    console.error("Error fetching weather data:", error);
-    showWeather.innerHTML = `<p>Error fetching weather forecast.</p>`;
+    console.error("Error fetching weather data:", error)
+    showWeather.innerHTML = `<p>Error fetching weather forecast.</p>`
   }
 }
 
@@ -1117,6 +996,35 @@ function generateUUID() {
     const r = (Math.random() * 16) | 0
     return r.toString(16)
   })
+}
+
+function initializeMap() {
+  mapboxgl.accessToken = MY_MAPBOXGL_TOKEN
+  map = new mapboxgl.Map({
+    container: "start-map", // Container ID
+    style: "mapbox://styles/mapbox/streets-v11", // Style URL
+    center: [-2.79902, 56.33871], // Starting position [lng, lat]
+    zoom: 9, // Starting zoom level
+  })
+
+  map.addControl(new mapboxgl.NavigationControl()) // Add zoom and rotation controls to the map.
+}
+
+function showRoute() {
+  const startLngLat = markers["start"].getLngLat()
+  const endLngLat = markers["end"].getLngLat()
+
+  if (!startLngLat || !endLngLat) return
+
+  // using Mapbox Directions API query routes
+  const directionsQuery = `https://api.mapbox.com/directions/v5/mapbox/driving/${startLngLat.lng},${startLngLat.lat};${endLngLat.lng},${endLngLat.lat}?geometries=geojson&access_token=${MY_MAPBOXGL_TOKEN}`
+
+  fetch(directionsQuery)
+    .then((response) => response.json())
+    .then((data) => {
+      const route = data.routes[0].geometry
+      updateRouteOnMap(route)
+    })
 }
 
 function addOrUpdateMarker(lngLat, type) {
@@ -1159,4 +1067,82 @@ function updateRouteOnMap(route) {
   })
 }
 
+async function fetchMeetingPointSuggestions(searchText) {
+  const response = await fetch(
+    `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+      searchText
+    )}.json?access_token=${MY_MAPBOXGL_TOKEN}`
+  )
+  const data = await response.json()
+  return data.features // Assuming features contain the suggestions
+}
 
+const handleEndPointSearch = async (e) => {
+  const searchText = e.target.value
+  if (searchText.length < 3) return // Wait for at least 3 characters before searching
+
+  const response = await fetch(
+    `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+      searchText
+    )}.json?access_token=${MY_MAPBOXGL_TOKEN}`
+  )
+  const data = await response.json()
+  const suggestions = data.features
+
+  const suggestionsList = document.getElementById("end-point-suggestions")
+  suggestionsList.innerHTML = "" // Clear existing suggestions
+  suggestionsList.style.display = "block"
+  suggestions.forEach((place) => {
+    const option = document.createElement("div")
+    option.className = "suggestion"
+    option.textContent = place.place_name
+    option.onclick = function () {
+      document.getElementById("end-point-search").value = place.place_name
+      document.getElementById("end-point").value = place.center.join(",")
+      suggestionsList.innerHTML = "" // Clear suggestions after selection
+      suggestionsList.style.display = "none"
+
+      addOrUpdateMarker(place.center, "end")
+
+      // Check if both start and end markers are set and show the route
+      if (markers["start"] && markers["end"]) {
+        showRoute()
+      }
+    }
+    suggestionsList.appendChild(option)
+  })
+}
+
+const handleStartPointSearch = async (e) => {
+  const searchText = e.target.value
+  if (searchText.length < 3) return // Wait for at least 3 characters before searching
+
+  const response = await fetch(
+    `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+      searchText
+    )}.json?access_token=${MY_MAPBOXGL_TOKEN}`
+  )
+  const data = await response.json()
+  const suggestions = data.features
+
+  const suggestionsList = document.getElementById("start-point-suggestions")
+  suggestionsList.style.display = "block"
+  suggestionsList.innerHTML = "" // Clear existing suggestions
+  suggestions.forEach((place) => {
+    const option = document.createElement("div")
+    option.className = "suggestion"
+    option.textContent = place.place_name
+    option.onclick = function () {
+      document.getElementById("start-point-search").value = place.place_name
+      document.getElementById("start-point").value = place.center.join(",")
+      suggestionsList.innerHTML = "" // Clear suggestions after selection
+      suggestionsList.style.display = "none"
+
+      addOrUpdateMarker(place.center, "start")
+      if (markers["start"] && markers["end"]) {
+        showRoute()
+      }
+    }
+    suggestionsList.appendChild(option)
+  })
+}
