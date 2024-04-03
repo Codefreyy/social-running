@@ -597,7 +597,7 @@ function showUserSpaceButton(username) {
   let userSpaceBtn = document.getElementById("user-space-btn")
   if (!userSpaceBtn) {
     // if not, create one
-    userSpaceBtn = document.createElement("button")
+    userSpaceBtn = document.createElement("span")
     userSpaceBtn.id = "user-space-btn"
     document.querySelector(".navbar-logout").appendChild(userSpaceBtn)
   }
@@ -757,6 +757,7 @@ const handleCommentSubmit = async () => {
 
 async function findRun() {
   var reco_runs = []
+  var filtered_runs
 
   // Get the username of the connected user
   const username = sessionStorage.getItem("username")

@@ -28,10 +28,11 @@ main {
   width: 100%;
   max-width: 1200px;
   padding: 10px;
+  margin-top: 5%;
 }
 
 h2 {
-  color: #00aaee;
+  color: var(--main-blue);
   font-family: "Raleway", sans-serif;
   font-optical-sizing: auto;
   font-weight: 600;
@@ -83,7 +84,14 @@ h5 {
 }
 
 header {
-  border-bottom: 1px solid #dddfe5;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  background-color: #fff;
+  width: 100%;
+  padding: 10px 0;
 }
 
 nav {
@@ -106,7 +114,7 @@ nav {
 
 .navbar-logout {
   display: flex;
-  gap: 5px;
+  gap: 10px;
   align-items: center;
   font-family: "Raleway", sans-serif;
   font-weight: regular;
@@ -118,10 +126,6 @@ nav {
   font-weight: 400;
   font-weight: light;
   margin-right: 15px;
-}
-
-.run-list-title {
-  margin-left: 20px; /* Adjust based on your layout */
 }
 
 .runs-grid,
@@ -305,11 +309,16 @@ button {
   background-color: var(--main-blue);
 }
 
-#log-in,
-#logout {
+#log-in {
   background-color: var(--main-blue);
   color: white;
   transition: background-color 0.2s ease-in-out;
+}
+
+#logout,
+#user-space-btn {
+  color: var(--main-blue);
+  text-decoration: underline;
 }
 
 #sign-up {
@@ -322,8 +331,7 @@ button {
 }
 
 #log-in:hover,
-#logout:hover,
-#user-space-btn:hover {
+#logout:hover {
   background-color: var(--light-blue);
 }
 
