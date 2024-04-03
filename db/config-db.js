@@ -3,7 +3,7 @@
     url: "localhost",
     username: "webuser",
     password: "socialrunning",
-    port: "27017", //using lab computer may be : 24667
+    port: "27017", //using lab computer may be : 24667 //27017
     database: "mongodb_data",
     collection: "runs",
     users: "users",
