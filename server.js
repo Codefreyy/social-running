@@ -324,7 +324,7 @@ app.get("/comments", async (req, res) => {
 })
 
 app.post("/weather", async (req, res) => {
-  const { runId, weatherData } = req.body
+  // const { runId, weatherData } = req.body
   try {
     res.json({ message: "Weather info saved successfully" })
   } catch (error) {

@@ -699,6 +699,9 @@ async function showComments(runId) {
   const commentsSec = document.getElementById("commentsSec")
   commentsSec.innerHTML = ""
 
+  // Sort comments by time from newest to oldest
+  comments.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
   comments.forEach((comment) => {
     const commentDiv = document.createElement("div")
     commentDiv.className = "comment-container"
