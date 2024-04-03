@@ -12,6 +12,7 @@
 
 body {
   margin: 0;
+  padding: 0;
 }
 
 .raleway-bold {
@@ -432,17 +433,18 @@ input:invalid {
 
 #joinRun {
   border: 1px solid orange;
+  color: white;
+  font-size: 16px;
+  font-weight: 800;
+  background-color: orange;
+}
+
+#joinRun[data-joined="true"] {
+  border: 1px solid orange;
   color: orange;
   font-size: 16px;
   font-weight: 800;
   background-color: white;
-}
-
-#joinRun:disabled {
-  pointer-events: none;
-  cursor: not-allowed;
-  color: lightgray;
-  border: 1px solid lightgray;
 }
 
 #joinRun:hover {
@@ -478,8 +480,6 @@ input:invalid {
 }
 
 #comSubmit {
-  width: 10%;
-  height: 30px;
   text-align: center;
   display: flex;
   justify-content: center;
@@ -529,10 +529,10 @@ form select {
 /** Filter run **/
 #filter-run-section {
   display: flex;
-  justify-content: space-between;
+  justify-content: start;
+  gap: 20px;
   padding: 20px;
-  background-color: #f7f7f7; /* 浅灰色背景提升扁平化风格 */
-  border-bottom: 2px solid #e0e0e0; /* 添加底部边框以区分筛选栏和列表 */
+  border-bottom: 2px solid #e0e0e0;
 }
 
 #filter-run-section > div {
@@ -578,6 +578,7 @@ form select {
 .user-space-header {
   display: flex;
   justify-content: space-between;
+  gap: 20px;
   align-items: center;
   margin-bottom: 20px;
 }
@@ -592,16 +593,14 @@ form select {
 }
 
 #back-to-main {
-  padding: 8px 16px;
-  background-color: var(--main-blue);
-  color: #ffffff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
+  background-color: #fff;
+  color: var(--main-blue);
+  text-decoration: underline;
 }
 
 #back-to-main:hover {
-  background-color: #0056b3;
+  text-decoration: none;
+  color: var(--light-blue);
 }
 
 .user-details,
@@ -623,9 +622,6 @@ form select {
 #weather {
   flex: 1;
   margin-left: 50px;
-  border: 0.2rem outset rgba(255, 192, 203, 0.852);
-  outline: 0.3rem solid rgba(240, 230, 140, 0.872);
-  box-shadow: 0 0 0 0.4rem rgba(135, 235, 232, 0.885);
   border-radius: 2px;
   text-align: center;
   font-size: 1.1em;
@@ -710,25 +706,6 @@ form select {
 .run-details-header h2 {
   font-size: 24px;
   color: #333;
-}
-
-#joinRun {
-  padding: 10px 20px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 16px;
-}
-
-#joinRun:hover {
-  background-color: #0056b3;
-}
-
-#participantCount {
-  font-weight: bold;
-  color: #007bff;
 }
 
 .run-details-card p {

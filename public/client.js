@@ -149,7 +149,7 @@ const showRunDetailPage = async (runId) => {
   const username = sessionStorage.getItem("username")
 
   const joinedRuns = await fetchJoinedRuns(username)
-  const hasJoined = joinedRuns.includes(runId)
+  const isJoined = joinedRuns.includes(runId)
 
   // constructing details section content
   const detailsSection = document.getElementById("run-details-content")
@@ -167,6 +167,7 @@ const showRunDetailPage = async (runId) => {
   <div><span id="participantCount">0 </span>People Already Join!</div></div>
   </div>
     <p>${runDetails.description}</p>
+    <p>Run Level: ${runDetails.level}</p>
     <p>Start Time: ${new Date(runDetails.startTime).toLocaleString()}</p>
     <p>Start Point: ${runDetails.startPointName || runDetails.startPoint}</p> 
     <p>End Point: ${runDetails.endPointName || runDetails.endPoint}</p> 
@@ -176,8 +177,8 @@ const showRunDetailPage = async (runId) => {
 `
   document.getElementById("run-details").style.display = "block"
   const joinButton = document.getElementById("joinRun")
-  joinButton.textContent = hasJoined ? "Joined" : "Join"
-  joinButton.disabled = hasJoined
+  joinButton.textContent = isJoined ? "Cancel Join" : "Join"
+  joinButton.setAttribute("data-joined", isJoined.toString())
 
   // coordinates of start point and end point
   const startPointCoords = runDetails.startPoint.split(",").map(Number)
@@ -191,10 +192,13 @@ const showRunDetailPage = async (runId) => {
   document
     .getElementById("joinRun")
     .addEventListener("click", async function () {
+      const isJoined = this.getAttribute("data-joined") === "true"
       const runId = this.getAttribute("data-run-id")
+      const endPoint = `/runs/${runId}/${isJoined ? "leave" : "join"}`
       const sessionId = sessionStorage.getItem("sessionId")
       const username = sessionStorage.getItem("username")
-      const response = await fetch(`/runs/${runId}/join`, {
+
+      const response = await fetch(endPoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -202,10 +206,9 @@ const showRunDetailPage = async (runId) => {
         body: JSON.stringify({ username, sessionId }),
       })
       if (response.ok) {
-        // Refresh the participant count
+        this.textContent = isJoined ? "Join" : "Cancel Join"
+        this.setAttribute("data-joined", (!isJoined).toString())
         fetchParticipants(runId)
-        this.textContent = "Joined"
-        this.disabled = true
       }
     })
 
@@ -502,7 +505,6 @@ async function updateNavbar(username) {
       userSpaceBtn.style.display = "none"
     }
     greeting.textContent = "" // 清除问候语
-    debugger
   }
 }
 
@@ -579,7 +581,13 @@ async function displayUserRuns(username) {
       scales: {
         y: {
           beginAtZero: true,
+          ticks: {
+            stepSize: 1, // 设置y轴每个刻度的间隔为1
+          },
         },
+      },
+      legend: {
+        display: false, // 隐藏图例
       },
     },
   })
@@ -700,7 +708,7 @@ async function showComments(runId) {
   commentsSec.innerHTML = ""
 
   // Sort comments by time from newest to oldest
-  comments.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  comments.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
 
   comments.forEach((comment) => {
     const commentDiv = document.createElement("div")

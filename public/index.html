@@ -174,7 +174,7 @@
             </select>
           </div>
           <div>
-            <label>Pace (minute miles):</label>
+            <label>Pace not exceeding (minutes per mile):</label>
             <select id="filter-by-pace">
               <option value="all">All</option>
               <option value="5">5 min/mile or faster</option>
@@ -206,12 +206,11 @@
           <div id="run-details-map" style="width: 800px; height: 400px"></div>
           <div id="weather">weather</div>
         </div>
-        
 
         <div class="comments">
           <h2 id="titleCom">Comments</h2>
           <div class="inputArea">
-            <input id="comInput" type="text" />
+            <textarea rows="5" id="comInput" type="text"> </textarea>
             <button id="comSubmit">submit</button>
           </div>
           <div class="comArea">
@@ -221,10 +220,10 @@
       </section>
 
       <!-- user space -->
-      <section id="user-space-section" style="display: none; ">
+      <section id="user-space-section" style="display: none">
         <div class="user-space-header">
           <h2>User Space</h2>
-          <button id="back-to-main">Return</button>
+          <button id="back-to-main">Back to homepage</button>
         </div>
         <div class="user-details">
           <h4 id="user-name">Username: <span></span></h4>

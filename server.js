@@ -37,11 +37,7 @@ client
   })
   //interact with the database
   .then(() =>
-    insertStarterData(
-      runsCollection,
-      usersCollection,
-      commentsCollection,
-    )
+    insertStarterData(runsCollection, usersCollection, commentsCollection)
   )
   //exit gracefully from any errors
   .catch((err) => {
@@ -249,12 +245,29 @@ app.post("/runs/:id/join", async (req, res) => {
       { $addToSet: { participants: username } }
     )
 
-    // const updatedUserInfo = await usersCollection.updateOne(
-    //   { _id: user._id },
-    //   { $addToSet: { joinedRuns: runId } }
-    // )
-
     res.json({ message: "Successfully joined the run" })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ error: "An error occurred" })
+  }
+})
+
+app.post("/runs/:id/leave", async (req, res) => {
+  const runId = req.params.id
+  const { username, sessionId } = req.body
+
+  try {
+    const user = await usersCollection.findOne({ username })
+    if (!user || user.sessionId !== sessionId) {
+      return res
+        .status(403)
+        .json({ error: "Session ID mismatch or user not found" })
+    }
+    await runsCollection.updateOne(
+      { _id: runId },
+      { $pull: { participants: username } }
+    )
+    res.json({ message: "Successfully left the run" })
   } catch (error) {
     console.error(error)
     res.status(500).json({ error: "An error occurred" })
