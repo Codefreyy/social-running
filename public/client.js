@@ -66,7 +66,7 @@ function setupEventListeners() {
 
   subCommentBtn.addEventListener("click", handleCommentSubmit)
 
-  document.getElementById("find-run-btn").addEventListener("click", findRun)
+  //document.getElementById("find-run-btn").addEventListener("click", findRun)
 
   document.getElementById("btn-back-to-list").addEventListener("click", () => {
     document.getElementById("run-details").style.display = "none"
@@ -863,7 +863,7 @@ async function findRun() {
       //get the runs the user has not participated in yet
       const response = await fetch("/runs")
       const runs = await response.json()
-      filtered_runs = runs.filter((run) => {
+      var filtered_runs = runs.filter((run) => {
         return !run.participants.includes(username)
       })
 
@@ -968,6 +968,8 @@ async function findRun() {
     alert("An error occurred while finding runs. Please try again later.")
   }
 }
+
+findRun();
 
 async function Weather(runId, startPointCoords, startTime) {
   // Format startTime as YYYY-MM-DD
