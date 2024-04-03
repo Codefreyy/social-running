@@ -346,8 +346,8 @@ async function onCreateRunFormSubmit(e) {
   }
   const startPoint = document.getElementById("start-point").value
   const endPoint = document.getElementById("end-point").value
-  const startPointName = document.getElementById("start-point-search").value // 获取地点的名称
-  const endPointName = document.getElementById("end-point-search").value //
+  const startPointName = document.getElementById("start-point-search").value
+  const endPointName = document.getElementById("end-point-search").value
   const expectedPace = document.getElementById("expected-pace").value
   const level = document.getElementById("level").value
 
@@ -443,7 +443,6 @@ function handleSignUp() {
     return
   }
 
-  // 发送注册请求到服务器
   fetch("/register", {
     method: "POST",
     headers: {
@@ -490,7 +489,6 @@ const handleLogoutClick = async () => {
     }
   } catch (error) {
     console.error("Logout error:", error)
-    // 处理登出错误，可能需要告知用户重试
   }
 }
 
@@ -504,7 +502,7 @@ async function updateNavbar(username) {
     if (userSpaceBtn) {
       userSpaceBtn.style.display = "none"
     }
-    greeting.textContent = "" // 清除问候语
+    greeting.textContent = ""
   }
 }
 
@@ -582,12 +580,12 @@ async function displayUserRuns(username) {
         y: {
           beginAtZero: true,
           ticks: {
-            stepSize: 1, // 设置y轴每个刻度的间隔为1
+            stepSize: 1,
           },
         },
       },
       legend: {
-        display: false, // 隐藏图例
+        display: false,
       },
     },
   })
@@ -604,7 +602,7 @@ function showUserSpaceButton(username) {
   }
 
   userSpaceBtn.textContent = "User Space"
-  userSpaceBtn.style.display = "block" // 确保按钮是可见的
+  userSpaceBtn.style.display = "block"
 
   userSpaceBtn.onclick = null // remove previous one
   userSpaceBtn.addEventListener("click", async () => {
@@ -619,7 +617,6 @@ function showUserSpaceButton(username) {
     document
       .getElementById("back-to-main")
       .addEventListener("click", function () {
-        // 返回主页面
         toggleUserSpace(false)
       })
   })
@@ -737,7 +734,7 @@ async function showComments(runId) {
 const handleCommentSubmit = async () => {
   const username = sessionStorage.getItem("username")
 
-  const commentText = comInput.value // Get the comment text entered by the user in the comment input box (comInput).
+  const commentText = comInput.value
   // If the comment text, current run activity ID (currentRunId) and user name all exist, the internal code is executed.
   if (commentText && currentRunId && username) {
     const response = await fetch("/comments", {

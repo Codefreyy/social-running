@@ -5,22 +5,21 @@ const port = 5500
 const { nanoid } = require("nanoid") // for generating unique ids
 
 const MongoClient = require("mongodb").MongoClient
-const { insertStarterData } = require("./db/db-setup")
+const { insertStarterData } = require("./db/db-setup") // populate data
 
 const config = require("./db/config-db.js")
-// const url = "mongodb://localhost:27017"
+// MongoDB URL with credentials.
 const url = `mongodb://${config.username}:${config.password}@${config.url}:${config.port}/${config.database}?authSource=admin`
 const client = new MongoClient(url)
 
 let runsCollection = null
 let usersCollection = null
 let commentsCollection = null
-//connect to the database
+
+// Connect to MongoDB and initialize collections.
 client
   .connect()
-  //NOTE: the regular expression replaces the password with **** so it is not printed in plain text to the console!
   .then((conn) => {
-    //if the collection does not exist it will automatically be created
     const db = client.db()
     runsCollection = db.collection("runs")
     usersCollection = db.collection("users")
@@ -35,11 +34,9 @@ client
     )
     throw err
   })
-  //interact with the database
   .then(() =>
     insertStarterData(runsCollection, usersCollection, commentsCollection)
   )
-  //exit gracefully from any errors
   .catch((err) => {
     console.log("Giving up!", err.message)
   })
@@ -47,7 +44,7 @@ client
 app.use(express.static("public"))
 app.use(express.json()) // parse the req body as json
 
-//Handling user login
+// User login route
 app.post("/login", async function (req, res) {
   const { username, password, sessionId } = req.body
   try {
@@ -65,11 +62,12 @@ app.post("/login", async function (req, res) {
   }
 })
 
-// Handling user logout
+// User logout route
 app.post("/logout", async (req, res) => {
   const { username, sessionId } = req.body
   try {
     const user = await usersCollection.findOne({ username })
+    // clear session ID
     if (user && user.sessionId === sessionId) {
       await usersCollection.updateOne(
         { username },
@@ -85,32 +83,7 @@ app.post("/logout", async (req, res) => {
   }
 })
 
-async function createNewUser(username, password) {
-  if (
-    typeof username !== "string" ||
-    typeof password !== "string" ||
-    password.length > 30 ||
-    username.length > 30
-  ) {
-    throw new Error("Invalid username or password length.")
-  }
-
-  let userIdNanoid = nanoid(7) // 生成用户ID
-
-  try {
-    await usersCollection.insertOne({
-      userId: userIdNanoid,
-      username: username,
-      password: password,
-    })
-    return userIdNanoid // 返回生成的用户ID
-  } catch (error) {
-    console.error(" Register Error ")
-    throw new Error(" Register Error ")
-  }
-}
-
-// handling user register
+// User registration route
 app.post("/register", async (req, res) => {
   try {
     const { username, password } = req.body
@@ -128,7 +101,32 @@ app.post("/register", async (req, res) => {
   }
 })
 
-// Create new runs
+async function createNewUser(username, password) {
+  if (
+    typeof username !== "string" ||
+    typeof password !== "string" ||
+    password.length > 30 ||
+    username.length > 30
+  ) {
+    throw new Error("Invalid username or password length.")
+  }
+
+  let userIdNanoid = nanoid(7)
+
+  try {
+    await usersCollection.insertOne({
+      userId: userIdNanoid,
+      username: username,
+      password: password,
+    })
+    return userIdNanoid
+  } catch (error) {
+    console.error(" Register Error ")
+    throw new Error(" Register Error ")
+  }
+}
+
+// Create a new run
 app.post("/runs", async (req, res) => {
   const {
     startTime,
@@ -165,7 +163,7 @@ app.post("/runs", async (req, res) => {
   }
 })
 
-// Get run details by id
+// Get details of a specific run by ID
 app.get("/runs/:id", async (req, res) => {
   const { id } = req.params
   try {
@@ -181,7 +179,7 @@ app.get("/runs/:id", async (req, res) => {
   }
 })
 
-// Get runs with filtering by level
+// Route to get a list of runs, optionally filter by level and pace
 app.get("/runs", async (req, res) => {
   try {
     let filter = {} // Default filter to retrieve all runs
@@ -226,7 +224,7 @@ app.get("/runs", async (req, res) => {
   }
 })
 
-// POST /runs/:id/join - Join a run
+// Join a run by run Id
 app.post("/runs/:id/join", async (req, res) => {
   const runId = req.params.id
   const { username, sessionId } = req.body
@@ -252,6 +250,7 @@ app.post("/runs/:id/join", async (req, res) => {
   }
 })
 
+// Leave a run by run ID
 app.post("/runs/:id/leave", async (req, res) => {
   const runId = req.params.id
   const { username, sessionId } = req.body
@@ -274,7 +273,7 @@ app.post("/runs/:id/leave", async (req, res) => {
   }
 })
 
-// GET /runs/:id/participants - Get number of participants
+// Get number of participants of specific run by ID
 app.get("/runs/:id/participants", async (req, res) => {
   const runId = req.params.id
 
@@ -291,7 +290,7 @@ app.get("/runs/:id/participants", async (req, res) => {
   }
 })
 
-// Get the list of runs a user has joined
+// Get the list of runs a user has joined by username
 app.get("/users/:username/joinedRuns", async (req, res) => {
   const { username } = req.params
 
@@ -306,6 +305,7 @@ app.get("/users/:username/joinedRuns", async (req, res) => {
   }
 })
 
+// post comments to a specific run
 app.post("/comments", async (req, res) => {
   const { content, runId, username } = req.body
   const commentText = {
@@ -323,6 +323,7 @@ app.post("/comments", async (req, res) => {
   }
 })
 
+// get all the comments of a run by runId
 app.get("/comments", async (req, res) => {
   try {
     const { runId } = req.query
@@ -336,18 +337,7 @@ app.get("/comments", async (req, res) => {
   }
 })
 
-app.post("/weather", async (req, res) => {
-  // const { runId, weatherData } = req.body
-  try {
-    res.json({ message: "Weather info saved successfully" })
-  } catch (error) {
-    console.log(error)
-    res
-      .status(500)
-      .json({ message: "An error occurred while saving weather info" })
-  }
-})
-
+// Get weather data by coordinates and startTime of the run
 app.get("/weather", async (req, res) => {
   const { lat, lon, startTime } = req.query
   const date = new Date(startTime)
