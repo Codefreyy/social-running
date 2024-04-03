@@ -698,7 +698,7 @@ function showDetailRunRoute(start, end) {
 }
 
 /** Comments Section */
-async function showComments(runId) {
+export async function showComments(runId) {
   const response = await fetch(`/comments?runId=${runId}`)
   const comments = await response.json()
   commentsSec.innerHTML = ""
@@ -971,7 +971,7 @@ async function findRun() {
 
 findRun()
 
-async function Weather(runId, startPointCoords, startTime) {
+export async function Weather(runId, startPointCoords, startTime) {
   // Format startTime as YYYY-MM-DD
   const date = new Date(startTime)
   const targetDate = date.toISOString().split("T")[0]
@@ -997,7 +997,6 @@ async function Weather(runId, startPointCoords, startTime) {
     }
   } catch (error) {
     console.error("Error fetching weather data:", error)
-    showWeather.innerHTML = `<p>Error fetching weather forecast.</p>`
   }
 }
 
