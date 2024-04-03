@@ -16,3 +16,9 @@ Welcome to the Social Running Project! Follow these instructions to get the serv
 ### Client Setup
 
 Open the web browser and enter the URL `http://localhost:5500` in the address bar. Press Enter to navigate to the page and start the app.
+
+### Login 
+
+In order to have acces to the aplication, please log in using the admin account :
+   - username : admin
+   - password : admin
