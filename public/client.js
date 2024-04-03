@@ -34,7 +34,6 @@ function setupEventListeners() {
   loginBtn.addEventListener("click", handleLogin)
   signUpBtn.addEventListener("click", handleSignUp)
 
-  // create run form
   filterSelect.addEventListener("change", (event) => {
     const selectedLevel = event.target.value
     displayRuns(selectedLevel)
@@ -970,7 +969,7 @@ async function findRun() {
   }
 }
 
-findRun();
+findRun()
 
 async function Weather(runId, startPointCoords, startTime) {
   // Format startTime as YYYY-MM-DD

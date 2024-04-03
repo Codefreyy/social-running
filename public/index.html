@@ -42,19 +42,15 @@
       <!-- for login & register -->
       <section id="auth">
         <div id="form">
-          <div>
+          <h2>Sign in</h2>
+          <div class="input-group">
             <label class="custom-label"> Username </label>
-            <input name="username" id="username" value="admin" />
+            <input name="username" id="username" />
           </div>
 
-          <div>
+          <div class="input-group">
             <label class="custom-label"> Password </label>
-            <input
-              type="password"
-              name="password"
-              id="password"
-              value="admin"
-            />
+            <input type="password" name="password" id="password" />
           </div>
 
           <div class="auth-footer">
@@ -70,12 +66,12 @@
         <p>Fill in the form to initiate your run.</p>
         <br />
         <form>
-          <div class="input-group">
-            <div>
+          <div class="form-row">
+            <div class="input-group">
               <label class="custom-label"> Name </label>
               <input name="name" id="name" required />
             </div>
-            <div>
+            <div class="input-group">
               <label for="start-time" class="custom-label">
                 Starting Time
               </label>
@@ -88,8 +84,8 @@
             </div>
           </div>
 
-          <div class="input-group">
-            <div>
+          <div class="form-row">
+            <div class="input-group">
               <label class="custom-label">Level</label>
               <select name="level" id="level" class="custom-select" required>
                 <option selected value="newbie">Newbie</option>
@@ -97,7 +93,7 @@
                 <option value="expert">Expert</option>
               </select>
             </div>
-            <div>
+            <div class="input-group">
               <label class="custom-label"> Expected Pace (minute miles) </label>
               <input
                 name="expected-pace"
@@ -111,8 +107,8 @@
             </div>
           </div>
 
-          <div id="search-section">
-            <div id="start-search-area">
+          <div id="search-section" class="form-row">
+            <div id="start-search-area" class="input-group">
               <label class="custom-label"> Starting Point </label>
               <input
                 type="text"
@@ -124,8 +120,8 @@
               <div id="start-point-suggestions"></div>
             </div>
 
-            <div id="end-search-area" class="custom-label">
-              <label> Ending Point </label>
+            <div id="end-search-area" class="input-group">
+              <label class="custom-label"> Ending Point </label>
               <input
                 type="text"
                 id="end-point-search"
@@ -136,14 +132,14 @@
             </div>
           </div>
 
-          <div id="start-map" style="width: 743px; height: 300px"></div>
+          <div id="start-map" style="width: 800px; height: 400px"></div>
           <br />
           <div id="meeting-points-section">
             <label class="custom-label">Meeting Points</label>
             <div id="meeting-points-container">
               <!-- Meeting points will be added here dynamically -->
             </div>
-            <button type="button" id="add-meeting-point">
+            <button type="button" id="add-meeting-point" class="outline-btn">
               Add Meeting Point
             </button>
           </div>
@@ -156,7 +152,7 @@
             ></textarea>
           </div>
 
-          <button id="create-run" type="submit">Create a run</button>
+          <button id="create-run-btn" type="submit">Create a run</button>
         </form>
       </section>
       <br />
@@ -210,7 +206,7 @@
         <div class="comments">
           <h2 id="titleCom">Comments</h2>
           <div class="inputArea">
-            <textarea rows="5" id="comInput" type="text"> </textarea>
+            <textarea rows="6" id="comInput" type="text"> </textarea>
             <button id="comSubmit">submit</button>
           </div>
           <div class="comArea">

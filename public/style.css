@@ -13,6 +13,7 @@
 body {
   margin: 0;
   padding: 0;
+  background-color: #f9f9f9;
 }
 
 .raleway-bold {
@@ -61,20 +62,11 @@ h5 {
   font-weight: 500;
   font-style: medium;
   color: #313131;
+  margin-bottom: 5px;
 }
 
-.custom-select {
-  font-family: "Raleway", sans-serif;
-  font-style: regular;
-  font-size: 12px;
-  color: #646464;
-  align-items: center;
-  width: 130px;
-}
-
-#search-section {
+.form-row {
   display: flex;
-  gap: 20%;
 }
 
 .search-area {
@@ -98,6 +90,7 @@ nav {
   color: rgb(255, 255, 255);
   display: flex;
   justify-content: space-between;
+  align-items: center;
   padding: 10px 20px;
   max-width: 1200px;
   width: 100%;
@@ -144,6 +137,7 @@ nav {
   padding: 20px;
   width: calc(33.333% - 20px); /* Three items per row with gap */
   box-sizing: border-box;
+  background-color: #fff;
 }
 
 /* respostive */
@@ -174,18 +168,7 @@ nav {
   font-size: 12px;
 }
 
-.run-item button {
-  color: white;
-  font-family: "Raleway", sans-serif;
-  padding: 6px 10px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-  background-color: var(--main-blue);
-}
-
-.run-item button:hover {
+button:hover {
   background-color: var(--light-blue);
 }
 
@@ -253,7 +236,7 @@ nav {
 .meeting-point-suggestions {
   display: none;
   position: absolute;
-  top: 23px;
+  top: 80%;
   left: 0px;
   z-index: 10;
   background-color: #fff;
@@ -294,6 +277,24 @@ button {
   align-items: center;
 }
 
+.outline-btn {
+  padding: 8px 16px;
+  border: 1px solid var(--main-blue);
+  border-radius: 5px;
+  cursor: pointer;
+  font-family: "Raleway", sans-serif;
+  font-weight: 500;
+  color: var(--main-blue);
+  font-size: 16px;
+  background-color: white;
+  align-items: center;
+}
+
+.outline-btn:hover {
+  background-color: var(--main-blue);
+  color: white;
+}
+
 .sm-button {
   padding: 4px 6px;
   border: none;
@@ -319,6 +320,12 @@ button {
 #user-space-btn {
   color: var(--main-blue);
   text-decoration: underline;
+  cursor: pointer;
+}
+
+#logout:hover,
+#user-space-btn:hover {
+  text-decoration: none;
 }
 
 #sign-up {
@@ -330,14 +337,8 @@ button {
   background-color: white;
 }
 
-#log-in:hover,
-#logout:hover {
+#log-in:hover {
   background-color: var(--light-blue);
-}
-
-#user-space-section {
-  display: block;
-  transition: background-color 0.3s;
 }
 
 #sign-up:hover {
@@ -361,7 +362,8 @@ button {
 
 .input-group {
   display: flex;
-  gap: 20%;
+  flex-direction: column;
+  width: 100%;
 }
 
 #form {
@@ -369,6 +371,10 @@ button {
   flex-direction: column;
   gap: 15px;
   align-items: start;
+  width: 500px;
+  padding: 50px;
+  background: white;
+  border-radius: 10px;
 }
 
 .auth-footer {
@@ -416,13 +422,13 @@ button {
 input[name="username"],
 input[name="password"] {
   margin-bottom: 15px;
-  width: 180px;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 3px;
-  background-color: #f9f9f9;
+  padding: 10px;
+  border: 1px solid #aaa;
+  border-radius: 5px;
+  background-color: #fff;
   font-family: "Raleway", sans-serif;
   font-style: light;
+  width: 100%;
 }
 
 input:invalid {
@@ -480,13 +486,6 @@ input:invalid {
   font-style: regular;
 }
 
-#comInput {
-  flex: 1;
-  width: auto;
-  max-width: 60%;
-  height: 25px;
-}
-
 #comSubmit {
   text-align: center;
   display: flex;
@@ -506,7 +505,14 @@ input:invalid {
   margin-top: 10px;
 }
 
-#create-run textarea {
+#create-run,
+#run-list-section {
+  background-color: white;
+  padding: 30px;
+  border-radius: 10px;
+}
+
+textarea {
   width: 743px;
   max-height: 300px;
   overflow-y: auto;
@@ -574,11 +580,10 @@ form select {
 
 #user-space-section {
   background-color: #fff;
-  padding: 20px;
+  padding: 30px;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   max-width: 1000px;
-  margin: 10px auto;
   display: flex;
   flex-direction: column;
 }
@@ -598,6 +603,11 @@ form select {
   margin: 0;
   color: #333;
   font-weight: 600;
+}
+
+.reco-run-title {
+  margin-bottom: 0;
+  margin-top: 15px;
 }
 
 #back-to-main {
@@ -650,8 +660,9 @@ form select {
 #comInput {
   flex-grow: 1;
   margin-right: 5px;
-  padding: 5px;
-  border: 1px solid #dcdcdc;
+  padding: 8px;
+  border: 1px solid #aaa;
+  height: 30px;
   border-radius: 4px;
 }
 
@@ -713,7 +724,6 @@ form select {
 
 .run-details-header h2 {
   font-size: 24px;
-  color: #333;
 }
 
 .run-details-card p {
