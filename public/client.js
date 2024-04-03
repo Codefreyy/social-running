@@ -1,22 +1,23 @@
+import {
+  markers,
+  initializeMap,
+  addOrUpdateMarker,
+  MY_MAPBOXGL_TOKEN,
+  showRoute,
+} from "./map.js"
+
 const filterSelect = document.getElementById("filter-by-level")
 const runList = document.getElementById("run-list")
 const logoutBtn = document.querySelector("#logout")
+const loginBtn = document.getElementById("log-in")
 const authSection = document.getElementById("auth")
 const startPointSearch = document.getElementById("start-point-search")
 const endPointSearch = document.getElementById("end-point-search")
 const subCommentBtn = document.getElementById("comSubmit")
-const comContent = document.getElementById("comments")
 const comInput = document.getElementById("comInput")
 const commentsSec = document.getElementById("commentsSec")
+const signUpBtn = document.getElementById("sign-up")
 
-const MY_MAPBOXGL_TOKEN =
-  "pk.eyJ1Ijoiam95eXl5eXl5IiwiYSI6ImNsdHZ3NjAyNzE4MmoycXFwdzVwYXpvNGwifQ.rLajkAaYDentEmhdczyRyw"
-let map = null
-let markers = {}
-let mapRoute = null
-let routeLayerID = "route" // Unique ID for the route layer
-let startPointMarker
-let endPointMarker
 let currentRunId = null
 let levelDistributionChart = null
 
@@ -30,14 +31,8 @@ function setupEventListeners() {
   // auth
   logoutBtn.addEventListener("click", handleLogoutClick)
 
-  loginBtn = document.getElementById("log-in")
-  loginBtn.addEventListener("click", () => {
-    const login_username = document.getElementById("username").value
-    const login_password = document.getElementById("password").value
-    login(login_username, login_password)
-  })
-
-  document.getElementById("sign-up").addEventListener("click", handleSignUp)
+  loginBtn.addEventListener("click", handleLogin)
+  signUpBtn.addEventListener("click", handleSignUp)
 
   // create run form
   filterSelect.addEventListener("change", (event) => {
@@ -435,6 +430,12 @@ function login(username, password) {
     })
 }
 
+const handleLogin = () => {
+  const login_username = document.getElementById("username").value
+  const login_password = document.getElementById("password").value
+  login(login_username, login_password)
+}
+
 function handleSignUp() {
   const username = document.getElementById("username").value.trim()
   const password = document.getElementById("password").value.trim()
@@ -701,7 +702,6 @@ function showDetailRunRoute(start, end) {
 async function showComments(runId) {
   const response = await fetch(`/comments?runId=${runId}`)
   const comments = await response.json()
-  const commentsSec = document.getElementById("commentsSec")
   commentsSec.innerHTML = ""
 
   // Sort comments by time from newest to oldest
@@ -1003,75 +1003,6 @@ function generateUUID() {
   return "xxxx-xxxx-xxxx-xxxx".replace(/[x]/g, function (c) {
     const r = (Math.random() * 16) | 0
     return r.toString(16)
-  })
-}
-
-function initializeMap() {
-  mapboxgl.accessToken = MY_MAPBOXGL_TOKEN
-  map = new mapboxgl.Map({
-    container: "start-map", // Container ID
-    style: "mapbox://styles/mapbox/streets-v11", // Style URL
-    center: [-2.79902, 56.33871], // Starting position [lng, lat]
-    zoom: 9, // Starting zoom level
-  })
-
-  map.addControl(new mapboxgl.NavigationControl()) // Add zoom and rotation controls to the map.
-}
-
-function showRoute() {
-  const startLngLat = markers["start"].getLngLat()
-  const endLngLat = markers["end"].getLngLat()
-
-  if (!startLngLat || !endLngLat) return
-
-  // using Mapbox Directions API query routes
-  const directionsQuery = `https://api.mapbox.com/directions/v5/mapbox/driving/${startLngLat.lng},${startLngLat.lat};${endLngLat.lng},${endLngLat.lat}?geometries=geojson&access_token=${MY_MAPBOXGL_TOKEN}`
-
-  fetch(directionsQuery)
-    .then((response) => response.json())
-    .then((data) => {
-      const route = data.routes[0].geometry
-      updateRouteOnMap(route)
-    })
-}
-
-function addOrUpdateMarker(lngLat, type) {
-  // Remove the existing marker if it exists
-  if (markers[type]) {
-    markers[type].remove()
-  }
-
-  // Create and add the new marker
-  markers[type] = new mapboxgl.Marker({
-    color: type === "start" ? "green" : "red",
-  }) // Use different colors for different types if you wish
-    .setLngLat(lngLat)
-    .addTo(map)
-
-  map.flyTo({ center: lngLat, zoom: 10 }) // Center the map on the new marker
-}
-
-function updateRouteOnMap(route) {
-  if (map.getSource(routeLayerID)) {
-    map.removeLayer(routeLayerID)
-    map.removeSource(routeLayerID)
-  }
-  // Add the new route to the map
-  map.addSource(routeLayerID, {
-    type: "geojson",
-    data: {
-      type: "Feature",
-      properties: {},
-      geometry: route,
-    },
-  })
-
-  map.addLayer({
-    id: routeLayerID,
-    type: "line",
-    source: routeLayerID,
-    layout: { "line-join": "round", "line-cap": "round" },
-    paint: { "line-color": "#888", "line-width": 8 },
   })
 }
 

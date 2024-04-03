@@ -116,7 +116,7 @@
               <input
                 type="text"
                 id="start-point-search"
-                placeholder="Enter a location"
+                placeholder="Search location"
               />
               <!-- this hidden input is for lat lon number form submit -->
               <input type="hidden" name="start-point" id="start-point" />
@@ -128,7 +128,7 @@
               <input
                 type="text"
                 id="end-point-search"
-                placeholder="Enter a location"
+                placeholder="Search location"
               />
               <input type="hidden" name="end-point" id="end-point" />
               <div id="end-point-suggestions"></div>
@@ -243,7 +243,8 @@
         </div>
       </section>
     </main>
-    <script src="./client.js"></script>
+    <script type="module" src="map.js"></script>
+    <script type="module" src="./client.js"></script>
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.js"></script>
   </body>
 </html>
