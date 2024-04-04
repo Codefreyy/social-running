@@ -82,20 +82,25 @@ async function insertRuns(runsCollection) {
     },
   ]
 
+  function clamp(value, min, max) {
+    return Math.min(Math.max(value, min), max)
+  }
+
   let runs = locations.map((loc, index) => {
     // Generating a small random offset for end points to simulate a path
     const offsetLat = Math.random() * 0.01 - 0.01
     const offsetLng = Math.random() * 0.01 - 0.01
+
+    // Clamp values to ensure they're within valid ranges
+    const endLat = clamp(loc.coordinates[1] + offsetLat, -90, 90)
+    const endLng = clamp(loc.coordinates[0] + offsetLng, -180, 180)
 
     return {
       _id: nanoid(),
       name: loc.name,
       startTime: new Date(2024, 3, (index % 21) + 10, 8, 0, 0),
       startPoint: loc.coordinates.join(","),
-      endPoint: [
-        loc.coordinates[0] + offsetLng,
-        loc.coordinates[1] + offsetLat,
-      ].join(","),
+      endPoint: [endLng, endLat].join(","),
       startPointName: `${loc.city}, ${loc.country}`,
       endPointName: `End Point near ${loc.city}`,
       expectedPace: loc.pace,

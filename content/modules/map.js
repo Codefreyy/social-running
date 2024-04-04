@@ -54,7 +54,7 @@ export function showRoute() {
   fetch(directionsQuery)
     .then((response) => response.json())
     .then((data) => {
-      const route = data.routes[0].geometry
+      const route = data?.routes[0]?.geometry
       updateRouteOnMap(route)
     })
 }
@@ -84,13 +84,18 @@ export function showDetailRunRoute(start, end, meetingPoints) {
 
     // Prepare waypoints string from meeting points for the directions query
     const waypoints = meetingPoints?.map((mp) => mp.coordinates).join(";")
-
-    const directionsQuery = `https://api.mapbox.com/directions/v5/mapbox/walking/${start[0]},${start[1]};${waypoints};${end[0]},${end[1]}?geometries=geojson&access_token=${MY_MAPBOXGL_TOKEN}`
+    let directionsQuery
+    if (waypoints == undefined) {
+      directionsQuery = `https://api.mapbox.com/directions/v5/mapbox/walking/${start[0]},${start[1]};${end[0]},${end[1]}?geometries=geojson&access_token=${MY_MAPBOXGL_TOKEN}`
+    } else {
+      directionsQuery = `https://api.mapbox.com/directions/v5/mapbox/walking/${start[0]},${start[1]};${waypoints};${end[0]},${end[1]}?geometries=geojson&access_token=${MY_MAPBOXGL_TOKEN}`
+    }
+    console.log({ waypoints })
 
     fetch(directionsQuery)
       .then((response) => response.json())
       .then((data) => {
-        const route = data.routes[0].geometry
+        const route = data?.routes[0]?.geometry
         detailsMap.addSource("route", {
           type: "geojson",
           data: {

@@ -1,3 +1,4 @@
+import { handleCommentSubmit, showComments } from "./modules/comments.js"
 import {
   initializeMap,
   handleStartPointSearch,
@@ -15,11 +16,9 @@ const authSection = document.getElementById("auth")
 const startPointSearch = document.getElementById("start-point-search")
 const endPointSearch = document.getElementById("end-point-search")
 const subCommentBtn = document.getElementById("comSubmit")
-const comInput = document.getElementById("comInput")
-const commentsSec = document.getElementById("commentsSec")
 const signUpBtn = document.getElementById("sign-up")
 
-let currentRunId = null
+export let currentRunId = null
 let levelDistributionChart = null
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -29,15 +28,15 @@ document.addEventListener("DOMContentLoaded", () => {
 })
 
 function setupEventListeners() {
-  // auth
+  // Authentication events
   logoutBtn.addEventListener("click", handleLogoutClick)
   loginBtn.addEventListener("click", handleLogin)
   signUpBtn.addEventListener("click", handleSignUp)
 
-  // create run form
+  // Filter runs based on selected level or pace.
   filterSelect.addEventListener("change", (event) => {
     const selectedLevel = event.target.value
-    displayRuns(selectedLevel)
+    loadAndDisplayRuns(selectedLevel)
   })
 
   document
@@ -45,13 +44,14 @@ function setupEventListeners() {
     .addEventListener("change", function () {
       const selectedLevel = document.getElementById("filter-by-level").value
       const selectedPace = this.value
-      displayRuns(selectedLevel, selectedPace)
+      loadAndDisplayRuns(selectedLevel, selectedPace)
     })
 
   document
     .getElementById("create-run")
     .addEventListener("submit", onCreateRunFormSubmit)
 
+  // listen expected pace input and show hint if no a number is input
   document.getElementById("expected-pace").addEventListener("input", (e) => {
     const errorElemnt = document.getElementById("error-message")
     if (!e.target.checkValidity()) {
@@ -92,15 +92,15 @@ const showRunDetailPage = async (runId) => {
   const response = await fetch(`/runs/${runId}`)
   const runDetails = await response.json()
 
-  // update join button
+  // store username in the session storage
   const username = sessionStorage.getItem("username")
 
+  // fetch this user's joinedRuns and check if user joined the current run
   const joinedRuns = await fetchJoinedRuns(username)
   const isJoined = joinedRuns.includes(runId)
 
-  // constructing details section content
+  // show detail page content
   const detailsSection = document.getElementById("run-details-content")
-  console.log(12, runDetails.meetingPoints)
   const meetingPointsText = runDetails?.meetingPoints?.length
     ? runDetails.meetingPoints
         .map(
@@ -111,25 +111,27 @@ const showRunDetailPage = async (runId) => {
     : "Not set"
 
   detailsSection.innerHTML = `
-<div class="run-details-card">
-   <div class="run-details-header"> 
-    <h2>${runDetails.name}</h2>
-   <div>
-   <button id="joinRun" data-run-id="${runDetails._id}">${
+  <div class="run-details-card">
+    <div class="run-details-header"> 
+      <h2>${runDetails.name}</h2>
+    <div>
+    <button id="joinRun" data-run-id="${runDetails._id}">${
     username ? "Click to Join" : "Login to Join"
   }</button>
-  <div><span id="participantCount">0 </span>People Already Join!</div></div>
+    <div><span id="participantCount">0 </span>People Already Join!</div></div>
+    </div>
+      <p>${runDetails.description}</p>
+      <p>Run Level: ${runDetails.level}</p>
+      <p>Start Time: ${new Date(runDetails.startTime).toLocaleString()}</p>
+      <p>Start Point: ${runDetails.startPointName || runDetails.startPoint}</p> 
+      <p>End Point: ${runDetails.endPointName || runDetails.endPoint}</p> 
+      <p>Meeting Points: ${meetingPointsText}</p>
+      <p>Expected Pace: ${runDetails.expectedPace} minute miles</p>
   </div>
-    <p>${runDetails.description}</p>
-    <p>Run Level: ${runDetails.level}</p>
-    <p>Start Time: ${new Date(runDetails.startTime).toLocaleString()}</p>
-    <p>Start Point: ${runDetails.startPointName || runDetails.startPoint}</p> 
-    <p>End Point: ${runDetails.endPointName || runDetails.endPoint}</p> 
-    <p>Meeting Points: ${meetingPointsText}</p>
-    <p>Expected Pace: ${runDetails.expectedPace} minute miles</p>
-</div>
-`
+  `
   document.getElementById("run-details").style.display = "block"
+
+  // change join button status based on isJoined
   const joinButton = document.getElementById("joinRun")
   joinButton.textContent = isJoined ? "Cancel Join" : "Join"
   joinButton.setAttribute("data-joined", isJoined.toString())
@@ -138,9 +140,9 @@ const showRunDetailPage = async (runId) => {
   const startPointCoords = runDetails.startPoint.split(",").map(Number)
   const endPointCoords = runDetails.endPoint.split(",").map(Number)
   const startTime = runDetails.startTime
-  await Weather(runId, startPointCoords, startTime)
-  await showComments(runId)
-  showDetailRunRoute(startPointCoords, endPointCoords, runDetails.meetingPoints)
+  await Weather(runId, startPointCoords, startTime) //show weather
+  await showComments(runId) // show comments
+  showDetailRunRoute(startPointCoords, endPointCoords, runDetails.meetingPoints) // show this run's map route
 
   // bind eventListner to joinRun button
   document
@@ -164,7 +166,7 @@ const showRunDetailPage = async (runId) => {
         this.setAttribute("data-joined", (!isJoined).toString())
         fetchParticipants(runId)
       }
-      findRun()
+      findRun() // once user join a run, update the recommended run by calling findRun()
     })
 
   // Call fetchParticipants initially to load the current participant count
@@ -173,24 +175,31 @@ const showRunDetailPage = async (runId) => {
   }
 }
 
-async function displayRuns(level = "all", pace = "all") {
-  let query = `/runs?level=${level}`
-  if (pace !== "all") {
-    query += `&pace=${pace}`
-  }
+async function loadAndDisplayRuns(level = "all", pace = "all") {
+  // Construct the query string with filters for level and pace if provided
+  let query = `/runs?`
+  if (level !== "all") query += `level=${level}&`
+  if (pace !== "all") query += `pace=${pace}`
 
   try {
+    // Fetch run data from the server with the constructed query
     const response = await fetch(query)
     if (!response.ok) {
       throw new Error(`Error fetching runs: ${response.statusText}`) // Handle non-200 responses
     }
     const runs = await response.json()
-    runList.innerHTML = "" // Clear previous list items
 
+    // Clear any previous list items
+    runList.innerHTML = ""
+    runList.className = "runs-grid"
+
+    // Display a message if no runs are found
     if (runs.length == 0) {
       runList.textContent = "Oops, no runs found."
       return
     }
+
+    // Iterate through each run and create a list item for it
     runs.forEach((run) => {
       const now = new Date()
       const startTime = new Date(run.startTime)
@@ -198,69 +207,30 @@ async function displayRuns(level = "all", pace = "all") {
       let status = "Upcoming" // Default status
       if (now > startTime) {
         status = "Expired" // If the current time is past the start time
-        statusClass = "status-Expired"
+        statusBadgeClass = "status-Expired"
       }
 
       const levelBadgeClass = `level-${run.level?.toLowerCase()}`
-      // Create and append a list item for each run
+      // Create and append the DOM element for each run item
       const item = document.createElement("div")
       item.className = "run-item" // Add a class for styling
       item.innerHTML = `
-        <h3>${run.name}
-        </h3>
+        <h3>${run.name}</h3>
         <div>
-        <span class="badge ${levelBadgeClass}">${run.level}</span>
-        <span class="badge ${statusBadgeClass}">${status}</span></div>
+          <span class="badge ${levelBadgeClass}">${run.level}</span>
+          <span class="badge ${statusBadgeClass}">${status}</span>
+        </div>
         <p>Start Time: ${startTime.toLocaleString()}</p>
-        <p>Start Point: ${run.startPointName}</p>
-        <p>End Point: ${run.endPointName}</p>
+        <p>Start Point: ${run.startPointName || run.startPoint}</p>
+        <p>End Point: ${run.endPointName || run.endPoint}</p>
         <p>Expected Pace: ${run.expectedPace}</p>
         <button onclick="viewRunDetails('${run._id}')">See Detail</button>
       `
-      runList.appendChild(item)
+      runList.appendChild(item) // Append the item to the run list
     })
   } catch (error) {
-    console.error("Error fetching runs:", error)
+    console.error("Error fetching runs:", error) // Log any errors
   }
-}
-
-const loadRuns = async () => {
-  const response = await fetch("/runs")
-  const runs = await response.json()
-
-  const listElement = document.getElementById("run-list")
-  listElement.innerHTML = "" // Clear the list before adding new elements
-  listElement.className = "runs-grid" // Assign a class for styling the grid
-
-  runs.forEach((run) => {
-    const now = new Date()
-    const startTime = new Date(run.startTime)
-    let statusBadgeClass = "status-Upcoming"
-    let status = "Upcoming" // Default status
-    if (now > startTime) {
-      status = "Expired" // If the current time is past the start time
-      statusClass = "status-Expired"
-    }
-
-    const levelBadgeClass = `level-${run.level?.toLowerCase()}`
-
-    const item = document.createElement("div")
-    item.className = "run-item" // Add a class for styling
-    item.innerHTML = `
-  <h3>${run.name}
- 
-  </h3>
-  <div>
-  <span class="badge ${levelBadgeClass}">${run.level}</span>
-  <span class="badge ${statusBadgeClass}">${status}</span></div>
-  <p>Start Time: ${startTime.toLocaleString()}</p>
-  <p>Start Point: ${run.startPointName}</p>
-  <p>End Point: ${run.endPointName}</p>
-  <p>Expected Pace: ${run.expectedPace}</p>
-  <button onclick="viewRunDetails('${run._id}')">See Detail</button>
-`
-    listElement.appendChild(item)
-  })
 }
 
 async function fetchJoinedRuns(username) {
@@ -351,7 +321,7 @@ async function onCreateRunFormSubmit(e) {
 
   if (response.status == 200) {
     alert("Create Run Successfully!")
-    loadRuns()
+    loadAndDisplayRuns()
   } else {
     alert(`Create run faild: ${result?.error}`)
   }
@@ -385,7 +355,7 @@ function login(username, password) {
       sessionStorage.setItem("sessionId", data.sessionId)
       sessionStorage.setItem("username", data.username)
       updateNavbar(data.username)
-      loadRuns()
+      loadAndDisplayRuns()
       findRun()
       showAuthSection(false) // login successfully, so hide auth form, show other sections
     })
@@ -630,63 +600,6 @@ function showAuthSection(showLogin) {
   }
 }
 
-/** Comments Section */
-export async function showComments(runId) {
-  const response = await fetch(`/comments?runId=${runId}`)
-  const comments = await response.json()
-  commentsSec.innerHTML = ""
-
-  // Sort comments by time from newest to oldest
-  comments.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-
-  comments.forEach((comment) => {
-    const commentDiv = document.createElement("div")
-    commentDiv.className = "comment-container"
-
-    const usernameSpan = document.createElement("span")
-    usernameSpan.className = "comment-username"
-    usernameSpan.textContent = `${comment.username}: `
-
-    const contentSpan = document.createElement("span")
-    contentSpan.className = "comment-content"
-    contentSpan.textContent = comment.content
-
-    const timestampDiv = document.createElement("div")
-    timestampDiv.className = "comment-timestamp"
-    const date = new Date(comment.createdAt).toLocaleString()
-    timestampDiv.textContent = `(${date})`
-
-    commentDiv.appendChild(usernameSpan)
-    commentDiv.appendChild(contentSpan)
-    commentDiv.appendChild(timestampDiv)
-    commentsSec.appendChild(commentDiv)
-  })
-}
-
-const handleCommentSubmit = async () => {
-  const username = sessionStorage.getItem("username")
-
-  const commentText = comInput.value
-  // If the comment text, current run activity ID (currentRunId) and user name all exist, the internal code is executed.
-  if (commentText && currentRunId && username) {
-    const response = await fetch("/comments", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        content: commentText,
-        runId: currentRunId,
-        username,
-      }),
-    })
-    if (response.ok) {
-      comInput.value = ""
-      showComments(currentRunId) // Re-fetch and display all comments
-    }
-  }
-}
-
 async function findRun() {
   var reco_runs = []
   var filtered_runs
@@ -910,7 +823,6 @@ async function findRun() {
     }
   } catch (error) {
     console.error("Error finding runs:", error)
-    alert("An error occurred while finding runs. Please try again later.")
   }
 }
 
