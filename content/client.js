@@ -5,7 +5,6 @@ import {
   showDetailRunRoute,
   handleAddMeetingPoint,
 } from "./modules/map.js"
-
 import { Weather } from "./modules/weather.js"
 
 const filterSelect = document.getElementById("filter-by-level")
@@ -70,6 +69,7 @@ function setupEventListeners() {
     document.getElementById("run-details").style.display = "none"
     document.getElementById("run-list-section").style.display = "block"
     document.getElementById("create-run").style.display = "block"
+    findRun()
   })
 
   // map search
@@ -160,6 +160,7 @@ const showRunDetailPage = async (runId) => {
         this.setAttribute("data-joined", (!isJoined).toString())
         fetchParticipants(runId)
       }
+      findRun()
     })
 
   // Call fetchParticipants initially to load the current participant count
@@ -382,7 +383,6 @@ function login(username, password) {
       updateNavbar(data.username)
       loadRuns()
       findRun()
-
       showAuthSection(false) // login successfully, so hide auth form, show other sections
     })
     .catch((error) => {
@@ -395,7 +395,6 @@ const handleLogin = () => {
   const login_username = document.getElementById("username").value
   const login_password = document.getElementById("password").value
   login(login_username, login_password)
-  console.log(1111)
 }
 
 function handleSignUp() {
@@ -459,7 +458,6 @@ async function updateNavbar(username) {
   const greeting = document.getElementById("user-greeting")
   const userSpaceBtn = document.getElementById("user-space-btn")
   if (username) {
-    debugger
     greeting.textContent = `Hi ${username}`
     showUserSpaceButton(username)
   } else {
@@ -556,7 +554,6 @@ async function displayUserRuns(username) {
 }
 
 function showUserSpaceButton(username) {
-  debugger
   // check if button exists
   let userSpaceBtn = document.getElementById("user-space-btn")
   if (!userSpaceBtn) {
@@ -571,7 +568,8 @@ function showUserSpaceButton(username) {
 
   userSpaceBtn.onclick = null // remove previous one
   userSpaceBtn.addEventListener("click", async () => {
-    debugger
+    document.getElementById("user-name").textContent = `Username: ${username}`
+
     document.getElementById("create-run").style.display = "block"
     document.getElementById("run-list-section").style.display = "block"
     document.getElementById("user-space-section").style.display = "none"
@@ -589,7 +587,6 @@ function showUserSpaceButton(username) {
       greetingText = `Good Evening! ${username}'s Space`
     }
     document.getElementById("userspace-greeting").textContent = greetingText
-
     await displayUserRuns(username)
 
     document
@@ -798,7 +795,7 @@ async function findRun() {
       const response = await fetch("/runs")
       const runs = await response.json()
       var filtered_runs = runs.filter((run) => {
-        return !run.participants?.includes(username)
+        return !run.participants.includes(username)
       })
 
       if (filtered_runs.length >= 1) {
@@ -850,52 +847,64 @@ async function findRun() {
           //add the run to an array
           reco_runs.push({ score: final_percent_score, info: run })
         })
+
+        //we sort the array in deacrising order based on the score
+        reco_runs.sort((a, b) => b.score - a.score)
+
+        //we display the recommended runs in the html page
+        const listElement = document.getElementById("reco-run")
+        listElement.innerHTML = "" // Clear the list before adding new elements
+        listElement.className = "runs-grid" // Assign a class for styling the grid
+
+        let i = 0
+        reco_runs.forEach((run) => {
+          i += 1
+          if (i <= 3) {
+            //only display the first 3 runs
+
+            const now = new Date()
+            const startTime = new Date(run.info.startTime)
+            let statusBadgeClass = "status-Upcoming"
+            let status = "Upcoming" // Default status
+            if (now > startTime) {
+              status = "Expired" // If the current time is past the start time
+              statusClass = "status-Expired"
+            }
+
+            const levelBadgeClass = `level-${run.info.level?.toLowerCase()}`
+
+            const item = document.createElement("div")
+            item.className = "run-item" // Add a class for styling
+            item.innerHTML = `
+                <h3>${run.info.name}
+              
+                </h3>
+                <div>
+                <span class="badge ${levelBadgeClass}">${run.info.level}</span>
+                <span class="badge ${statusBadgeClass}">${status}</span></div>
+                <p>Start Time: ${startTime.toLocaleString()}</p>
+                <p>Start Point: ${run.info.startPointName}</p>
+                <p>End Point: ${run.info.endPointName}</p>
+                <p>Expected Pace: ${run.info.expectedPace}</p>
+                <p>Recommendation score: ${run.score}%</p>
+                <button onclick="viewRunDetails('${
+                  run.info._id
+                }')">See Detail</button>
+                `
+            listElement.appendChild(item)
+          }
+        })
       } else {
-        alert(
-          "You participated in all the runs> We are unable to recommend new runs !"
-        )
+        //alert("You participated in all the runs ! We are unable to recommend new runs !")
+        //we display the recommended runs in the html page
+        const listElement = document.getElementById("reco-run")
+        listElement.innerHTML = ""
+        listElement.innerHTML = `You participated in all the runs ! We are unable to recommend new runs !`
       }
-
-      //we sort the array in deacrising order based on the score
-      reco_runs.sort((a, b) => b.score - a.score)
-
+    } else {
       //we display the recommended runs in the html page
       const listElement = document.getElementById("reco-run")
-      listElement.innerHTML = "" // Clear the list before adding new elements
-      listElement.className = "runs-grid" // Assign a class for styling the grid
-
-      reco_runs.forEach((run) => {
-        const now = new Date()
-        const startTime = new Date(run.info.startTime)
-        let statusBadgeClass = "status-Upcoming"
-        let status = "Upcoming" // Default status
-        if (now > startTime) {
-          status = "Expired" // If the current time is past the start time
-          statusClass = "status-Expired"
-        }
-
-        const levelBadgeClass = `level-${run.info.level?.toLowerCase()}`
-
-        const item = document.createElement("div")
-        item.className = "run-item" // Add a class for styling
-        item.innerHTML = `
-            <h3>${run.info.name}
-          
-            </h3>
-            <div>
-            <span class="badge ${levelBadgeClass}">${run.info.level}</span>
-            <span class="badge ${statusBadgeClass}">${status}</span></div>
-            <p>Start Time: ${startTime.toLocaleString()}</p>
-            <p>Start Point: ${run.info.startPointName}</p>
-            <p>End Point: ${run.info.endPointName}</p>
-            <p>Expected Pace: ${run.info.expectedPace}</p>
-            <p>Recommendation score: ${run.score}%</p>
-            <button onclick="viewRunDetails('${
-              run.info._id
-            }')">See Detail</button>
-            `
-        listElement.appendChild(item)
-      })
+      listElement.innerHTML = `<br>Please participate in runs you like so we can learn about you ! <br><br> Once we know enough we will recommend the best runs for you !`
     }
   } catch (error) {
     console.error("Error finding runs:", error)
@@ -903,6 +912,7 @@ async function findRun() {
   }
 }
 
+findRun()
 function generateUUID() {
   return "xxxx-xxxx-xxxx-xxxx".replace(/[x]/g, function (c) {
     const r = (Math.random() * 16) | 0

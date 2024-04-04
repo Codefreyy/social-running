@@ -161,12 +161,45 @@ Retrieves details of a specific run by its ID.
 bashCopy code
 ```
 
-GET http://localhost:5500/runs/uniqueRunId
+GET http://localhost:5500/runs/ZGss1lcLznRMHu3hq0Rqk
 
 **Example Response:**
 
 ```json
-{ "runDetails": "Details of the requested run" }
+{
+  "_id": "JL3IxF8AaCIUnh9FVzWXL",
+  "name": "Central Park Run",
+  "startTime": "2024-04-10T07:00:00.000Z",
+  "startPoint": "-73.965355,40.782865",
+  "endPoint": "-73.97505656531952,40.78243350598806",
+  "startPointName": "New York, USA",
+  "endPointName": "End Point near New York",
+  "expectedPace": 9,
+  "description": "Central Park Run in beautiful New York, USA. Perfect for newbie runners.",
+  "level": "newbie",
+  "participants": [
+    "user0",
+    "user1",
+    "user2",
+    "user3",
+    "user4",
+    "user5",
+    "user6",
+    "user7",
+    "user8",
+    "user9",
+    "user10",
+    "user11",
+    "user12",
+    "user13",
+    "user14",
+    "user15",
+    "user16",
+    "user17",
+    "user18",
+    "user19"
+  ]
+}
 ```
 
 or
