@@ -100,9 +100,13 @@ const showRunDetailPage = async (runId) => {
 
   // constructing details section content
   const detailsSection = document.getElementById("run-details-content")
+  console.log(12, runDetails.meetingPoints)
   const meetingPointsText = runDetails?.meetingPoints?.length
     ? runDetails.meetingPoints
-        .map((mp) => `${mp.name} at ${mp.coordinates}`)
+        .map(
+          (mp, index) =>
+            `Meeting Point ${index + 1}: ${mp.name} at ${mp.coordinates}`
+        )
         .join(", ")
     : "Not set"
 
@@ -568,8 +572,6 @@ function showUserSpaceButton(username) {
 
   userSpaceBtn.onclick = null // remove previous one
   userSpaceBtn.addEventListener("click", async () => {
-    document.getElementById("user-name").textContent = `Username: ${username}`
-
     document.getElementById("create-run").style.display = "block"
     document.getElementById("run-list-section").style.display = "block"
     document.getElementById("user-space-section").style.display = "none"

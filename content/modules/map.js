@@ -21,7 +21,6 @@ export function initializeMap() {
 }
 
 export function showRoute() {
-  console.log("showRoute start, markers:", markers)
   if (!markers["start"] || !markers["end"]) return
 
   const startLngLat = markers["start"].getLngLat()
@@ -44,8 +43,6 @@ export function showRoute() {
     }
   })
 
-  console.log({ waypoints })
-
   const waypointsString = waypoints.join(";")
 
   const directionsQuery = `https://api.mapbox.com/directions/v5/mapbox/walking/${
@@ -57,12 +54,9 @@ export function showRoute() {
   fetch(directionsQuery)
     .then((response) => response.json())
     .then((data) => {
-      console.log({ data })
       const route = data.routes[0].geometry
       updateRouteOnMap(route)
     })
-
-  console.log("showRoute start, markers:", markers)
 }
 
 export function showDetailRunRoute(start, end, meetingPoints) {
@@ -89,7 +83,7 @@ export function showDetailRunRoute(start, end, meetingPoints) {
     })
 
     // Prepare waypoints string from meeting points for the directions query
-    const waypoints = meetingPoints.map((mp) => mp.coordinates).join(";")
+    const waypoints = meetingPoints?.map((mp) => mp.coordinates).join(";")
 
     const directionsQuery = `https://api.mapbox.com/directions/v5/mapbox/walking/${start[0]},${start[1]};${waypoints};${end[0]},${end[1]}?geometries=geojson&access_token=${MY_MAPBOXGL_TOKEN}`
 
@@ -221,7 +215,6 @@ export function handleAddMeetingPoint() {
 
         markers[uniqueKey] = marker
 
-        console.log({ uniqueKey })
         selectMeetingPoint(
           searchInput,
           place.center,
@@ -240,11 +233,8 @@ export function handleAddMeetingPoint() {
     .addEventListener("click", function () {
       const key = this.getAttribute("data-key")
       if (markers[key]) {
-        console.log("Removing marker:", markers)
         markers[key].remove() // Remove the marker from the map
         delete markers[key] // Remove the marker from the markers object
-        console.log("Removing marker: seccuess", markers)
-
         showRoute()
       }
       inputGroup.remove()
