@@ -1,6 +1,6 @@
 # Social Running Project
 
-Welcome to the Social Running Project! Follow these instructions to get the server and client running on your machine.
+Welcome to the Social Running Project! Follow these instructions to get the server, client and database running on your machine.
 
 ## Getting Started
 
@@ -17,7 +17,7 @@ Welcome to the Social Running Project! Follow these instructions to get the serv
 
 Open the web browser and enter the URL `http://localhost:5500` in the address bar. Press Enter to navigate to the page and start the app.
 
-### Server Setup
+### Database Setup
 
 If the database connection fails, please verify the settings in db/config-db.js. Double-check both the port and password.
 

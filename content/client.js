@@ -65,6 +65,7 @@ function setupEventListeners() {
 
   subCommentBtn.addEventListener("click", handleCommentSubmit)
 
+  // in the left-top corner of run detail page, click and return to homepage
   document.getElementById("btn-back-to-list").addEventListener("click", () => {
     document.getElementById("run-details").style.display = "none"
     document.getElementById("run-list-section").style.display = "block"
@@ -257,46 +258,57 @@ async function fetchParticipants(runId) {
 
 async function onCreateRunFormSubmit(e) {
   e.preventDefault()
+
+  // Retrieve the start time from the form and create a Date object
   const startTime = document.getElementById("start-time").value
   const startTimeDate = new Date(startTime)
-  const currentDateTime = new Date()
+  const currentDateTime = new Date() // Get the current date and time
+
+  // Collect meeting point data from the form
   const meetingPointsData = [
     ...document.querySelectorAll(".meeting-point-search"),
   ].map((input) => ({
-    name: input.value,
-    coordinates: [input.dataset.lng, input.dataset.lat],
+    name: input.value, // Meeting point name
+    coordinates: [input.dataset.lng, input.dataset.lat], // Meeting point coordinates
   }))
 
-  startTimeDate.setSeconds(0)
+  startTimeDate.setSeconds(0) // Reset seconds to 0 for the start time
 
+  // Validation: Ensure the start time is not in the past
   if (startTimeDate < currentDateTime) {
     alert("Start time cannot be earlier than current time")
     return
   }
+
+  // Retrieve other run details from the form
   const startPoint = document.getElementById("start-point").value
   const endPoint = document.getElementById("end-point").value
   const startPointName = document.getElementById("start-point-search").value
   const endPointName = document.getElementById("end-point-search").value
   const expectedPace = document.getElementById("expected-pace").value
   const level = document.getElementById("level").value
-
   const name = document.getElementById("name").value
   const description = document.getElementById("description").value
 
+  // Validation: Check if all required fields are filled
   if (!startTime || !expectedPace || !level) {
     alert("Please fill in all the fields")
     return
   }
 
+  // Validation: Ensure valid start and end points
   if (!startPoint || !endPoint) {
     alert("Please input valid start point and end point!")
     return
   }
 
+  // Validation: Expected pace must be a valid number
   if (!/^\d+(\.\d+)?$/.test(expectedPace)) {
     alert("Enter a valid number")
+    return
   }
 
+  // Prepare the run data to be sent to the server
   const runData = {
     startTime,
     startPoint,
@@ -310,6 +322,7 @@ async function onCreateRunFormSubmit(e) {
     meetingPoints: meetingPointsData,
   }
 
+  // Send a POST request to the server to create a new run
   const response = await fetch("/runs", {
     method: "POST",
     headers: {
@@ -319,11 +332,12 @@ async function onCreateRunFormSubmit(e) {
   })
   const result = await response.json()
 
+  // Check the response status and alert the user
   if (response.status == 200) {
     alert("Create Run Successfully!")
-    loadAndDisplayRuns()
+    loadAndDisplayRuns() // Reload or refresh the runs list/display
   } else {
-    alert(`Create run faild: ${result?.error}`)
+    alert(`Create run failed: ${result?.error}`)
   }
 }
 
@@ -354,9 +368,9 @@ function login(username, password) {
     .then((data) => {
       sessionStorage.setItem("sessionId", data.sessionId)
       sessionStorage.setItem("username", data.username)
-      updateNavbar(data.username)
-      loadAndDisplayRuns()
-      findRun()
+      updateNavbar(data.username) // update user info in the navbar
+      loadAndDisplayRuns() // display all run list
+      findRun() // find recommendation runs
       showAuthSection(false) // login successfully, so hide auth form, show other sections
     })
     .catch((error) => {
@@ -431,6 +445,8 @@ const handleLogoutClick = async () => {
 async function updateNavbar(username) {
   const greeting = document.getElementById("user-greeting")
   const userSpaceBtn = document.getElementById("user-space-btn")
+
+  // toggle navbar username
   if (username) {
     greeting.textContent = `Hi ${username}`
     showUserSpaceButton(username)
@@ -551,6 +567,7 @@ function showUserSpaceButton(username) {
     const now = new Date()
     const hour = now.getHours()
 
+    // tailor greeting text by different time
     if (hour < 12) {
       greetingText = `Good Morning! ${username}'s Space`
     } else if (hour < 18) {
@@ -600,6 +617,7 @@ function showAuthSection(showLogin) {
   }
 }
 
+// find recommendation run
 async function findRun() {
   var reco_runs = []
   var filtered_runs
@@ -703,8 +721,6 @@ async function findRun() {
       const user_avg_startTime = avgStartTime(user_runs)
 
       //we display the users stats for testing purposes
-
-      // TO ADD: avg start time and address
 
       //get the runs the user has not participated in yet
       const response = await fetch("/runs")
@@ -810,7 +826,6 @@ async function findRun() {
           }
         })
       } else {
-        //alert("You participated in all the runs ! We are unable to recommend new runs !")
         //we display the recommended runs in the html page
         const listElement = document.getElementById("reco-run")
         listElement.innerHTML = ""
@@ -826,7 +841,6 @@ async function findRun() {
   }
 }
 
-findRun()
 function generateUUID() {
   return "xxxx-xxxx-xxxx-xxxx".replace(/[x]/g, function (c) {
     const r = (Math.random() * 16) | 0
