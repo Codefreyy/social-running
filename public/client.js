@@ -1,9 +1,9 @@
 import {
-  markers,
   initializeMap,
-  addOrUpdateMarker,
-  MY_MAPBOXGL_TOKEN,
-  showRoute,
+  handleStartPointSearch,
+  handleEndPointSearch,
+  showDetailRunRoute,
+  handleAddMeetingPoint,
 } from "./map.js"
 
 const filterSelect = document.getElementById("filter-by-level")
@@ -30,10 +30,10 @@ document.addEventListener("DOMContentLoaded", () => {
 function setupEventListeners() {
   // auth
   logoutBtn.addEventListener("click", handleLogoutClick)
-
   loginBtn.addEventListener("click", handleLogin)
   signUpBtn.addEventListener("click", handleSignUp)
 
+  // create run form
   filterSelect.addEventListener("change", (event) => {
     const selectedLevel = event.target.value
     displayRuns(selectedLevel)
@@ -58,14 +58,11 @@ function setupEventListeners() {
     } else {
       document.getElementById("error-message").style.display = "none"
     }
-    const expectedPace = e.target.value
   })
 
   window.viewRunDetails = showRunDetailPage
 
   subCommentBtn.addEventListener("click", handleCommentSubmit)
-
-  //document.getElementById("find-run-btn").addEventListener("click", findRun)
 
   document.getElementById("btn-back-to-list").addEventListener("click", () => {
     document.getElementById("run-details").style.display = "none"
@@ -79,53 +76,7 @@ function setupEventListeners() {
 
   document
     .getElementById("add-meeting-point")
-    .addEventListener("click", function () {
-      const container = document.getElementById("meeting-points-container")
-      const inputGroup = document.createElement("div")
-      inputGroup.className = "meeting-point-input-groups"
-      inputGroup.innerHTML = `
-    <div class="meeting-point-input-group">
-    <input type="text" placeholder="Enter meeting point" class="meeting-point-search" required/>
-    <button type="button" class="remove-meeting-point sm-button">Remove</button>
-    </div>
-    <div class="meeting-point-suggestions">
-
-  </div>
-  `
-      container.appendChild(inputGroup)
-
-      const searchInput = inputGroup.querySelector(".meeting-point-search")
-      const suggestionsBox = inputGroup.querySelector(
-        ".meeting-point-suggestions"
-      )
-
-      searchInput.addEventListener("input", async (e) => {
-        const searchText = e.target.value
-        if (searchText.length < 3) return // Wait for at least 3 characters
-
-        const suggestions = await fetchMeetingPointSuggestions(searchText)
-        suggestionsBox.innerHTML = "" // Clear existing suggestions
-        suggestionsBox.style.display = "block"
-        suggestions.forEach((place) => {
-          const option = document.createElement("div")
-          option.className = "suggestion"
-          option.textContent = place.place_name
-          option.addEventListener("click", () => {
-            searchInput.value = place.place_name
-            // Optionally store coordinates in a hidden input for form submission
-            suggestionsBox.innerHTML = "" // Clear suggestions after selection
-            suggestionsBox.style.display = "none"
-          })
-          suggestionsBox.appendChild(option)
-        })
-      })
-
-      inputGroup
-        .querySelector(".remove-meeting-point")
-        .addEventListener("click", function () {
-          inputGroup.remove()
-        })
-    })
+    .addEventListener("click", handleAddMeetingPoint)
 }
 
 const showRunDetailPage = async (runId) => {
@@ -147,9 +98,12 @@ const showRunDetailPage = async (runId) => {
 
   // constructing details section content
   const detailsSection = document.getElementById("run-details-content")
-  const meetingPointsText = runDetails?.meetingPoints
-    ? runDetails.meetingPoints.join(",")
+  const meetingPointsText = runDetails?.meetingPoints?.length
+    ? runDetails.meetingPoints
+        .map((mp) => `${mp.name} at ${mp.coordinates}`)
+        .join(", ")
     : "Not set"
+
   detailsSection.innerHTML = `
 <div class="run-details-card">
    <div class="run-details-header"> 
@@ -180,7 +134,7 @@ const showRunDetailPage = async (runId) => {
   const startTime = runDetails.startTime
   await Weather(runId, startPointCoords, startTime)
   await showComments(runId)
-  showDetailRunRoute(startPointCoords, endPointCoords)
+  showDetailRunRoute(startPointCoords, endPointCoords, runDetails.meetingPoints)
 
   // bind eventListner to joinRun button
   document
@@ -329,9 +283,13 @@ async function onCreateRunFormSubmit(e) {
   const startTime = document.getElementById("start-time").value
   const startTimeDate = new Date(startTime)
   const currentDateTime = new Date()
-  const meetingPoints = [
+  const meetingPointsData = [
     ...document.querySelectorAll(".meeting-point-search"),
-  ].map((input) => input.value)
+  ].map((input) => ({
+    name: input.value,
+    coordinates: [input.dataset.lng, input.dataset.lat],
+  }))
+
   startTimeDate.setSeconds(0)
 
   if (startTimeDate < currentDateTime) {
@@ -372,7 +330,7 @@ async function onCreateRunFormSubmit(e) {
     name,
     level,
     description,
-    meetingPoints,
+    meetingPoints: meetingPointsData,
   }
 
   const response = await fetch("/runs", {
@@ -651,50 +609,6 @@ function showAuthSection(showLogin) {
   if (userspaceBtn && showLogin) {
     userspaceBtn.style.display = "none"
   }
-}
-
-function showDetailRunRoute(start, end) {
-  const detailsMap = new mapboxgl.Map({
-    container: "run-details-map",
-    style: "mapbox://styles/mapbox/streets-v11",
-    center: [start[0], start[1]],
-    zoom: 12,
-  })
-
-  detailsMap.on("load", () => {
-    new mapboxgl.Marker({ color: "green" }).setLngLat(start).addTo(detailsMap)
-    new mapboxgl.Marker({ color: "red" }).setLngLat(end).addTo(detailsMap)
-
-    const directionsQuery = `https://api.mapbox.com/directions/v5/mapbox/walking/${start[0]},${start[1]};${end[0]},${end[1]}?geometries=geojson&access_token=${MY_MAPBOXGL_TOKEN}`
-
-    fetch(directionsQuery)
-      .then((response) => response.json())
-      .then((data) => {
-        const route = data.routes[0].geometry
-        detailsMap.addSource("route", {
-          type: "geojson",
-          data: {
-            type: "Feature",
-            properties: {},
-            geometry: route,
-          },
-        })
-
-        detailsMap.addLayer({
-          id: "route",
-          type: "line",
-          source: "route",
-          layout: {
-            "line-join": "round",
-            "line-cap": "round",
-          },
-          paint: {
-            "line-color": "#888",
-            "line-width": 6,
-          },
-        })
-      })
-  })
 }
 
 /** Comments Section */
@@ -1005,85 +919,5 @@ function generateUUID() {
   return "xxxx-xxxx-xxxx-xxxx".replace(/[x]/g, function (c) {
     const r = (Math.random() * 16) | 0
     return r.toString(16)
-  })
-}
-
-async function fetchMeetingPointSuggestions(searchText) {
-  const response = await fetch(
-    `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
-      searchText
-    )}.json?access_token=${MY_MAPBOXGL_TOKEN}`
-  )
-  const data = await response.json()
-  return data.features // Assuming features contain the suggestions
-}
-
-const handleEndPointSearch = async (e) => {
-  const searchText = e.target.value
-  if (searchText.length < 3) return // Wait for at least 3 characters before searching
-
-  const response = await fetch(
-    `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
-      searchText
-    )}.json?access_token=${MY_MAPBOXGL_TOKEN}`
-  )
-  const data = await response.json()
-  const suggestions = data.features
-
-  const suggestionsList = document.getElementById("end-point-suggestions")
-  suggestionsList.innerHTML = "" // Clear existing suggestions
-  suggestionsList.style.display = "block"
-  suggestions.forEach((place) => {
-    const option = document.createElement("div")
-    option.className = "suggestion"
-    option.textContent = place.place_name
-    option.onclick = function () {
-      document.getElementById("end-point-search").value = place.place_name
-      document.getElementById("end-point").value = place.center.join(",")
-      suggestionsList.innerHTML = "" // Clear suggestions after selection
-      suggestionsList.style.display = "none"
-
-      addOrUpdateMarker(place.center, "end")
-
-      // Check if both start and end markers are set and show the route
-      if (markers["start"] && markers["end"]) {
-        showRoute()
-      }
-    }
-    suggestionsList.appendChild(option)
-  })
-}
-
-const handleStartPointSearch = async (e) => {
-  const searchText = e.target.value
-  if (searchText.length < 3) return // Wait for at least 3 characters before searching
-
-  const response = await fetch(
-    `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
-      searchText
-    )}.json?access_token=${MY_MAPBOXGL_TOKEN}`
-  )
-  const data = await response.json()
-  const suggestions = data.features
-
-  const suggestionsList = document.getElementById("start-point-suggestions")
-  suggestionsList.style.display = "block"
-  suggestionsList.innerHTML = "" // Clear existing suggestions
-  suggestions.forEach((place) => {
-    const option = document.createElement("div")
-    option.className = "suggestion"
-    option.textContent = place.place_name
-    option.onclick = function () {
-      document.getElementById("start-point-search").value = place.place_name
-      document.getElementById("start-point").value = place.center.join(",")
-      suggestionsList.innerHTML = "" // Clear suggestions after selection
-      suggestionsList.style.display = "none"
-
-      addOrUpdateMarker(place.center, "start")
-      if (markers["start"] && markers["end"]) {
-        showRoute()
-      }
-    }
-    suggestionsList.appendChild(option)
   })
 }

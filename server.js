@@ -151,7 +151,10 @@ app.post("/runs", async (req, res) => {
     name,
     level,
     description,
-    meetingPoints,
+    meetingPoints: meetingPoints.map((mp) => ({
+      name: mp.name,
+      coordinates: mp.coordinates,
+    })),
     createdAt: new Date(),
   }
   try {
