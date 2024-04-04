@@ -285,7 +285,7 @@ async function onCreateRunFormSubmit(e) {
   const endPoint = document.getElementById("end-point").value
   const startPointName = document.getElementById("start-point-search").value
   const endPointName = document.getElementById("end-point-search").value
-  const expectedPace = document.getElementById("expected-pace").value
+  const expectedPace = Number(document.getElementById("expected-pace").value)
   const level = document.getElementById("level").value
   const name = document.getElementById("name").value
   const description = document.getElementById("description").value
@@ -490,6 +490,7 @@ async function displayUserRuns(username) {
 
   let averagePace =
     totalParticipations > 0 ? totalPace / totalParticipations : 0
+  debugger
 
   document.getElementById(
     "total-participations"
