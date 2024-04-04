@@ -17,4 +17,17 @@ Welcome to the Social Running Project! Follow these instructions to get the serv
 
 Open the web browser and enter the URL `http://localhost:5500` in the address bar. Press Enter to navigate to the page and start the app.
 
-### Test
+### Server Setup
+
+If the database connection fails, please verify the settings in db/config-db.js. Double-check both the port and password.
+
+If you're running MongoDB locally on your machine, the port is likely set to 27017. However, if you're using a lab machine, the port may be different, possibly 24667.
+
+### Login
+
+In order to have acces to the aplication, please log in using the admin account :
+
+- username : admin
+- password : admin
+
+You'll then have access to the admin profile with existing runs and participations.
