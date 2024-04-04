@@ -308,9 +308,9 @@ app.get("/users/:username/joinedRuns", async (req, res) => {
   }
 })
 
-// post comments to a specific run
 app.post("/comments", async (req, res) => {
   const { content, runId, username } = req.body
+  //Get the required data
   const commentText = {
     _id: nanoid(),
     runId,
@@ -319,7 +319,7 @@ app.post("/comments", async (req, res) => {
     createdAt: new Date(),
   }
   try {
-    await commentsCollection.insertOne(commentText)
+    await commentsCollection.insertOne(commentText) //Insert comment's content into database
     res.json({ message: "comment saved" })
   } catch (error) {
     res.status(500).json({ message: "An error occurred while saving comments" })
@@ -343,8 +343,10 @@ app.get("/comments", async (req, res) => {
 // Get weather data by coordinates and startTime of the run
 app.get("/weather", async (req, res) => {
   const { lat, lon, startTime } = req.query
-  const date = new Date(startTime)
+  const date = new Date(startTime) //Get the specific date of the run
+  //Format startTime as YYYY-MM-DD and only select the day
   const targetDate = date.toISOString().split("T")[0]
+  //If the token not available, the user needs to register for a token from Weather API: "https://www.weatherapi.com/"
   const url = `http://api.weatherapi.com/v1/forecast.json?key=dbb28b581c6541268f4193126243103&q=${lat},${lon}&dt=${targetDate}`
   try {
     const response = await fetch(url)

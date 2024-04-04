@@ -1,6 +1,7 @@
 export async function Weather(runId, startPointCoords, startTime) {
-  // Format startTime as YYYY-MM-DD
+  //Get the specific date of the run
   const date = new Date(startTime)
+  //Format startTime as YYYY-MM-DD and only select the day
   const targetDate = date.toISOString().split("T")[0]
   const url = `/weather?runId=${runId}&lat=${startPointCoords[0]}&lon=${startPointCoords[1]}&startTime=${targetDate}`
   try {
@@ -10,6 +11,7 @@ export async function Weather(runId, startPointCoords, startTime) {
     // If weatherData exists and contains the day attribute, it means that we have weather data for a specific day.
     if (weatherData && weatherData.day) {
       const weatherInfo = weatherData.day
+      //Get data values based on desired attributes
       showWeather.innerHTML = `
           <h3>Weather Forecast for ${weatherData.date}</h3>
           <img src="https:${weatherInfo.condition.icon}" alt="${weatherInfo.condition.text}">
