@@ -85,12 +85,11 @@ export function showDetailRunRoute(start, end, meetingPoints) {
     // Prepare waypoints string from meeting points for the directions query
     const waypoints = meetingPoints?.map((mp) => mp.coordinates).join(";")
     let directionsQuery
-    if (waypoints == undefined) {
+    if (!waypoints) {
       directionsQuery = `https://api.mapbox.com/directions/v5/mapbox/walking/${start[0]},${start[1]};${end[0]},${end[1]}?geometries=geojson&access_token=${MY_MAPBOXGL_TOKEN}`
     } else {
       directionsQuery = `https://api.mapbox.com/directions/v5/mapbox/walking/${start[0]},${start[1]};${waypoints};${end[0]},${end[1]}?geometries=geojson&access_token=${MY_MAPBOXGL_TOKEN}`
     }
-    console.log({ waypoints })
 
     fetch(directionsQuery)
       .then((response) => response.json())
