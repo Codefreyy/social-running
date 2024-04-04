@@ -379,6 +379,8 @@ function login(username, password) {
       sessionStorage.setItem("username", data.username)
       updateNavbar(data.username)
       loadRuns()
+      findRun()
+
       showAuthSection(false) // login successfully, so hide auth form, show other sections
     })
     .catch((error) => {
@@ -882,8 +884,6 @@ async function findRun() {
     alert("An error occurred while finding runs. Please try again later.")
   }
 }
-
-findRun()
 
 export async function Weather(runId, startPointCoords, startTime) {
   // Format startTime as YYYY-MM-DD
