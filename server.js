@@ -41,7 +41,7 @@ client
     console.log("Giving up!", err.message)
   })
 
-app.use(express.static("public"))
+app.use(express.static("content"))
 app.use(express.json()) // parse the req body as json
 
 // User login route

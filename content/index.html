@@ -27,7 +27,6 @@
   </head>
 
   <body>
-    <!-- for logout -->
     <header>
       <nav class="navbar">
         <div class="navbar-logo">Social Runners</div>
@@ -214,11 +213,8 @@
       <!-- user space -->
       <section id="user-space-section" style="display: none">
         <div class="user-space-header">
-          <h2>User Space</h2>
+          <h2 id="userspace-greeting">User Space</h2>
           <button id="back-to-main">Back to homepage</button>
-        </div>
-        <div class="user-details">
-          <h4 id="user-name">Username: <span></span></h4>
         </div>
         <div class="user-statistics">
           <h3>Statistics</h3>
@@ -235,7 +231,7 @@
         </div>
       </section>
     </main>
-    <script type="module" src="map.js"></script>
+    <script type="module" src="./modules/map.js"></script>
     <script type="module" src="./client.js"></script>
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.js"></script>
   </body>

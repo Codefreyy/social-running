@@ -79,8 +79,7 @@ export function showDetailRunRoute(start, end, meetingPoints) {
     new mapboxgl.Marker({ color: "red" }).setLngLat(end).addTo(detailsMap)
 
     // For each meeting point, create and add a marker to the map
-    console.log({ meetingPoints }, 123123)
-    meetingPoints.forEach((mp) => {
+    meetingPoints?.forEach((mp) => {
       // Parse the coordinates to float, since they are provided as strings
       const coordinates = mp.coordinates.map((coord) => parseFloat(coord))
       // Add a marker for each meeting point using its coordinates

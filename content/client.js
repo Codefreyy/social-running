@@ -4,9 +4,9 @@ import {
   handleEndPointSearch,
   showDetailRunRoute,
   handleAddMeetingPoint,
-} from "./modules/map"
+} from "./modules/map.js"
 
-import { Weather } from "./modules/weather"
+import { Weather } from "./modules/weather.js"
 
 const filterSelect = document.getElementById("filter-by-level")
 const runList = document.getElementById("run-list")
@@ -395,6 +395,7 @@ const handleLogin = () => {
   const login_username = document.getElementById("username").value
   const login_password = document.getElementById("password").value
   login(login_username, login_password)
+  console.log(1111)
 }
 
 function handleSignUp() {
@@ -458,6 +459,7 @@ async function updateNavbar(username) {
   const greeting = document.getElementById("user-greeting")
   const userSpaceBtn = document.getElementById("user-space-btn")
   if (username) {
+    debugger
     greeting.textContent = `Hi ${username}`
     showUserSpaceButton(username)
   } else {
@@ -554,6 +556,7 @@ async function displayUserRuns(username) {
 }
 
 function showUserSpaceButton(username) {
+  debugger
   // check if button exists
   let userSpaceBtn = document.getElementById("user-space-btn")
   if (!userSpaceBtn) {
@@ -568,12 +571,25 @@ function showUserSpaceButton(username) {
 
   userSpaceBtn.onclick = null // remove previous one
   userSpaceBtn.addEventListener("click", async () => {
-    document.getElementById("user-name").textContent = `Username: ${username}`
-
+    debugger
     document.getElementById("create-run").style.display = "block"
     document.getElementById("run-list-section").style.display = "block"
     document.getElementById("user-space-section").style.display = "none"
     toggleUserSpace(true)
+
+    let greetingText
+    const now = new Date()
+    const hour = now.getHours()
+
+    if (hour < 12) {
+      greetingText = `Good Morning! ${username}'s Space`
+    } else if (hour < 18) {
+      greetingText = `Good Afternoon! ${username}'s Space`
+    } else {
+      greetingText = `Good Evening! ${username}'s Space`
+    }
+    document.getElementById("userspace-greeting").textContent = greetingText
+
     await displayUserRuns(username)
 
     document
@@ -782,7 +798,7 @@ async function findRun() {
       const response = await fetch("/runs")
       const runs = await response.json()
       var filtered_runs = runs.filter((run) => {
-        return !run.participants.includes(username)
+        return !run.participants?.includes(username)
       })
 
       if (filtered_runs.length >= 1) {
