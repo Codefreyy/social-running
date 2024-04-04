@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Social Running</title>
+    <link rel="icon" type="image/x-icon" href="./imgs/favicon.ico" />
+    <link rel="stylesheet" href="style.css" />
+    <link
+      rel="stylesheet"
+      href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.0/mapbox-gl-geocoder.css"
+      type="text/css"
+    />
+    <link
+      href="https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.css"
+      rel="stylesheet"
+    />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+
+  <body>
+    <!-- for logout -->
+    <header>
+      <nav class="navbar">
+        <div class="navbar-logo">Social Runners</div>
+        <div class="navbar-logout">
+          <span id="user-greeting"></span>
+          <p id="logout">Logout</p>
+        </div>
+      </nav>
+    </header>
+
+    <main>
+      <!-- for login & register -->
+      <section id="auth">
+        <div id="form">
+          <h2>Sign in</h2>
+          <div class="input-group">
+            <label class="custom-label"> Username </label>
+            <input name="username" id="username" />
+          </div>
+
+          <div class="input-group">
+            <label class="custom-label"> Password </label>
+            <input type="password" name="password" id="password" />
+          </div>
+
+          <div class="auth-footer">
+            <button id="log-in">Log in</button>
+            <button id="sign-up">Sign up</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- for create runs form-->
+      <section id="create-run">
+        <h2 class="h5">Initiate a run</h2>
+        <p>Fill in the form to initiate your run.</p>
+        <br />
+        <form>
+          <div class="form-row">
+            <div class="input-group">
+              <label class="custom-label"> Name </label>
+              <input name="name" id="name" required />
+            </div>
+            <div class="input-group">
+              <label for="start-time" class="custom-label">
+                Starting Time
+              </label>
+              <input
+                name="start-time"
+                type="datetime-local"
+                id="start-time"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="input-group">
+              <label class="custom-label">Level</label>
+              <select name="level" id="level" class="custom-select" required>
+                <option selected value="newbie">Newbie</option>
+                <option value="intermediate">Intermediate</option>
+                <option value="expert">Expert</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label class="custom-label"> Expected Pace (minute miles) </label>
+              <input
+                name="expected-pace"
+                id="expected-pace"
+                pattern="\d+"
+                required
+              />
+              <span class="error-message" id="error-message"
+                >Please input number</span
+              >
+            </div>
+          </div>
+
+          <div id="search-section" class="form-row">
+            <div id="start-search-area" class="input-group">
+              <label class="custom-label"> Starting Point </label>
+              <input
+                type="text"
+                id="start-point-search"
+                placeholder="Search location"
+              />
+              <!-- this hidden input is for lat lon number form submit -->
+              <input type="hidden" name="start-point" id="start-point" />
+              <div id="start-point-suggestions"></div>
+            </div>
+
+            <div id="end-search-area" class="input-group">
+              <label class="custom-label"> Ending Point </label>
+              <input
+                type="text"
+                id="end-point-search"
+                placeholder="Search location"
+              />
+              <input type="hidden" name="end-point" id="end-point" />
+              <div id="end-point-suggestions"></div>
+            </div>
+          </div>
+
+          <div id="start-map" style="width: 800px; height: 400px"></div>
+          <br />
+          <div id="meeting-points-section">
+            <label class="custom-label">Meeting Points</label>
+            <div id="meeting-points-container">
+              <!-- Meeting points will be added here dynamically -->
+            </div>
+            <button type="button" id="add-meeting-point" class="outline-btn">
+              Add Meeting Point
+            </button>
+          </div>
+          <div class="input-group">
+            <label class="custom-label">Description</label>
+            <textarea name="description" id="description" rows="5"></textarea>
+          </div>
+
+          <button id="create-run-btn" type="submit">Create a run</button>
+        </form>
+      </section>
+      <br />
+
+      <!-- for runs list -->
+      <section id="run-list-section">
+        <h2 class="run-list-title">Run List</h2>
+        <section id="filter-run-section">
+          <div>
+            <label>Level</label>
+            <select id="filter-by-level">
+              <option value="all">All</option>
+              <option value="newbie">Newbie</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="expert">Expert</option>
+            </select>
+          </div>
+          <div>
+            <label>Pace not exceeding (minutes per mile):</label>
+            <select id="filter-by-pace">
+              <option value="all">All</option>
+              <option value="5">5 min/mile or faster</option>
+              <option value="6">6 min/mile</option>
+              <option value="7">7 min/mile</option>
+              <option value="8">8 min/mile</option>
+              <option value="9">9 min/mile</option>
+              <option value="10">10 min/mile</option>
+              <option value="11">11 min/mile</option>
+              <option value="12">12 min/mile or slower</option>
+            </select>
+          </div>
+        </section>
+
+        <div id="run-list"><!-- Runs will be populated here --></div>
+        <!-- for recommended runs -->
+        <section id="reco-run-section">
+          <h2 class="reco-run-title">Recommended Runs For You</h2>
+          <div id="reco-run"><!-- Runs will be populated here --></div>
+        </section>
+      </section>
+
+      <!-- for run details -->
+      <section id="run-details" style="display: none">
+        <button id="btn-back-to-list">&#x2190; Back</button>
+        <div id="run-details-content"></div>
+        <div id="mapAndWeather">
+          <div id="run-details-map" style="width: 800px; height: 400px"></div>
+          <div id="weather">weather</div>
+        </div>
+
+        <div class="comments">
+          <h2 id="titleCom">Comments</h2>
+          <div class="inputArea">
+            <textarea rows="6" id="comInput" type="text"> </textarea>
+            <button id="comSubmit">submit</button>
+          </div>
+          <div class="comArea">
+            <section id="commentsSec">showComments</section>
+          </div>
+        </div>
+      </section>
+
+      <!-- user space -->
+      <section id="user-space-section" style="display: none">
+        <div class="user-space-header">
+          <h2>User Space</h2>
+          <button id="back-to-main">Back to homepage</button>
+        </div>
+        <div class="user-details">
+          <h4 id="user-name">Username: <span></span></h4>
+        </div>
+        <div class="user-statistics">
+          <h3>Statistics</h3>
+          <p id="total-participations">Total Participations: 0</p>
+          <p id="average-pace">Average Pace: 0 min/mile</p>
+          <canvas id="level-distribution-chart"></canvas>
+        </div>
+
+        <div class="joined-runs">
+          <h3>Joined Runs</h3>
+          <div id="user-runs">
+            <!-- The list of runs the user has participated in will be dynamically populated here -->
+          </div>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="map.js"></script>
+    <script type="module" src="./client.js"></script>
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.js"></script>
+  </body>
+</html>
