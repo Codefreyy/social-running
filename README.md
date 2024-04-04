@@ -22,3 +22,5 @@ Open the web browser and enter the URL `http://localhost:5500` in the address ba
 In order to have acces to the aplication, please log in using the admin account :
    - username : admin
    - password : admin
+
+   You'll then have access to the admin profile with existing runs and participations.
