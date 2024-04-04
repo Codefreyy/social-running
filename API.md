@@ -1,478 +1,390 @@
-### API DOCUMENTATION
+### **(1) User Login** POST /login
 
-1. Start a Game`POST /game/start`
+Authenticates a user and returns a session ID.
 
-Creates a new game instance.
+**Parameters:**
 
-Parameters:
+- username (string): The user's username.
+- password (string): The user's password.
+- sessionId (string): A session identifier for the user session.
 
-- gridCol (integer): Number of columns in the game grid.
-- gridRow (integer): Number of rows in the game grid.
-- requiredPlayers (integer): Number of players required to start the game.
-
-Example Request:
+**Example Request:**
 
 ```bash
-POST http://localhost:5500/game/start
+POST http://localhost:5500/login
 ```
 
-Body:
-
-```
-{
-  "gridCol": 5,
-  "gridRow": 5,
-  "requiredPlayers": 2
-}
-```
-
-Example Response:
+**Body:**
 
 ```json
 {
-  "gameId": "tp8FYo_nrGGUc4f-7z3tX"
+  "username": "exampleUser",
+  "password": "examplePassword",
+  "sessionId": "exampleSessionId"
 }
 ```
 
-2. Join a Game `POST /game/:id/join`
+**Example Response:**
 
-Allows a player to join an existing game by ID.
+```json
+{ "username": "exampleUser", "sessionId": "exampleSessionId" }
+```
 
-Parameters:
+or
 
-- id (string): The ID of the game to join (URL parameter).
-- name (string): Name of the player joining the game (Body parameter).
+```json
+{ "error": "Invalid credentials" }
+```
 
-Example Request:
+### (2) **User Logout** POST /logout
+
+Logs out a user by clearing the session ID.
+
+**Parameters:**
+
+- username (string): The user's username.
+- sessionId (string): The session identifier to be cleared.
+
+**Example Request:**
 
 ```bash
-POST http://localhost:5500/game/uniqueGameId123/join
+POST http://localhost:5500/logout
 ```
 
-Body:
+**Body:**
 
 ```json
-{
-  "name": "Joy"
-}
+{ "username": "exampleUser", "sessionId": "exampleSessionId" }
 ```
 
-Example Response:
+**Example Response:**
 
 ```json
-{
-  "playerId": "ow4dFj_ban-tkp6-NDL09",
-  "gameState": {
-    "gameId": "w7kGkI-DAmvWHJLmZ8KMD",
-    "gridCol": 2,
-    "gridRow": 2,
-    "players": [
-      {
-        "id": "3lMwafaYRubvnYhs45WUW",
-        "name": "yuweii",
-        "score": 0,
-        "lastActiveTime": 1710412435382
-      },
-      {
-        "id": "ow4dFj_ban-tkp6-NDL09",
-        "name": "yujie312",
-        "score": 0,
-        "lastActiveTime": 1710412459491
-      }
-    ],
-    "active": true,
-    "requiredPlayers": 2,
-    "fences": {},
-    "currentPlayerIndex": 0,
-    "isGameEnd": false
-  }
-}
+{ "message": "Logged out successfully" }
 ```
 
-3. Get Game State `GET /game/:id/state`
+or
 
-Retrieves the current state of a game by ID.
+```json
+{ "error": "Invalid session or user" }
+```
 
-Parameters:
+### (3) **User Registration** POST /register
 
-- id (string): The ID of the game (URL parameter).
+Registers a new user.
 
-Example Request:
+**Parameters:**
+
+- username (string): The desired username.
+- password (string): The desired password.
+
+**Example Request:**
 
 ```bash
-GET http://localhost:5500/game/uniqueGameId123/state
+POST http://localhost:5500/register
 ```
 
-Example Response:
+**Body:**
+
+```json
+{ "username": "newUser", "password": "newPassword" }
+```
+
+**Example Response:**
+
+```json
+{ "success": true, "userId": "generatedUserId" }
+```
+
+or
+
+```json
+{ "success": false, "message": "User already exists" }
+```
+
+### (4) **Create a New Run** POST /runs
+
+Allows users to create a new running event.
+
+**Parameters:**
+
+- A JSON object containing run details such as startTime, startPoint, endPoint, expectedPace, name, level, description, startPointName, endPointName, and meetingPoints.
+
+**Example Request:**
+
+```bash
+POST http://localhost:5500/runs
+```
+
+**Body:**
 
 ```json
 {
-  "gameId": "C4bUZTLyuiRQIaULlHG_w",
-  "gridCol": 2,
-  "gridRow": 2,
-  "players": [
-    {
-      "id": "2JUljJmP-CQe03h7mLzSL",
-      "name": "yujie",
-      "score": 0,
-      "lastActiveTime": 1710412389351
-    },
-    {
-      "id": "VKrnP5Ouqe6cYrGcXIko9",
-      "name": "yuweii",
-      "score": 1,
-      "lastActiveTime": 1710412392651
-    }
-  ],
-  "active": true, //if the game has started
-  "requiredPlayers": 2, //how many players this game is allowed to have
-  "fences": {
-    "0-0-top": "2JUljJmP-CQe03h7mLzSL", //key is the position of the border, and value is the player who places this fence
-    "0-1-left": "VKrnP5Ouqe6cYrGcXIko9",
-    "0-0-right": "VKrnP5Ouqe6cYrGcXIko9",
-    "0-0-left": "2JUljJmP-CQe03h7mLzSL",
-    "1-0-top": "VKrnP5Ouqe6cYrGcXIko9",
-    "0-0-bottom": "VKrnP5Ouqe6cYrGcXIko9"
-  },
-  "currentPlayerIndex": 1, //the index of player who is allowed to place fence this turn
-  "isGameEnd": false, //if the game has ended
-  "claimedCells": [
-    {
-      "key": "0-0", // the position of the cell
-      "playerId": "VKrnP5Ouqe6cYrGcXIko9" // the playerId who claimed the cell
-    }
+  "startTime": "2023-01-01T09:00:00Z",
+  "startPoint": "Location Coordinates",
+  "endPoint": "Location Coordinates",
+  "expectedPace": "5:00 min/km",
+  "name": "Morning Run",
+  "level": "newbie",
+  "description": "A fun run for beginners.",
+  "startPointName": "Park Entrance",
+  "endPointName": "Lake View",
+  "meetingPoints": [
+    { "name": "Halfway Point", "coordinates": "Location Coordinates" }
   ]
 }
 ```
 
-4. List Games` GET /game/lists`
+**Example Response:**
 
-Retrieves a list of all current games.
+```json
+{ "message": "Run added successfully" }
+```
 
-Example Request:
+or
+
+```json
+{ "error": "An error occurred" }
+```
+
+### (5) **Get Run Details** GET /runs/:id
+
+Retrieves details of a specific run by its ID.
+
+**Parameters:**
+
+- id (path parameter): The unique identifier for the run.
+
+**Example Request:**
+
+```
+bashCopy code
+```
+
+GET http://localhost:5500/runs/uniqueRunId
+
+**Example Response:**
+
+```json
+{ "runDetails": "Details of the requested run" }
+```
+
+or
+
+```json
+{ "error": "Run not found" }
+```
+
+### (6) **Join a Run** POST /runs/:id/join
+
+Allows a user to join a run.
+
+**Parameters:**
+
+- id (path parameter): The unique identifier for the run.
+- username (string): The user's username.
+- sessionId (string): The session ID for user verification.
+
+**Example Request:**
 
 ```bash
-GET http://localhost:5500/game-lists
+POST http://localhost:5500/runs/uniqueRunId/join
 ```
 
-Example Response:
+**Body:**
 
 ```json
-[
-  {
-    "gameId": "03OHfypC0iPxTyFbM1SPE",
-    "players": [
-      {
-        "id": "NZrGZ4K4F1OsXAcmY1Wdd",
-        "name": "yuwei",
-        "score": 0,
-        "lastActiveTime": 1710404371851
-      },
-      {
-        "id": "fsPlfCOV5pU8L9rqRHD4m",
-        "name": "yujie",
-        "score": 0,
-        "lastActiveTime": 1710404389803
-      }
-    ],
-    "active": false,
-    "requiredPlayers": 2,
-    "isGameEnd": true
-  },
-  {
-    "gameId": "dKMYPHVh5kyyE4hHELLi6",
-    "players": [
-      {
-        "id": "mwPlfCOV5pU8L9rqRHD4m",
-        "name": "yujie",
-        "score": 0,
-        "lastActiveTime": 1710404389803
-      },
-      {
-        "id": "FXdht6Wi4CSQ7goC8_lWA",
-        "name": "yuwei",
-        "score": 0,
-        "lastActiveTime": 1710404449240
-      }
-    ],
-    "active": false,
-    "requiredPlayers": 2,
-    "isGameEnd": true
-  }
-]
+{ "username": "exampleUser", "sessionId": "exampleSessionId" }
 ```
 
-5. Place a Fence`POST /game/:id/placeFence`
+**Example Response:**
 
-Players can place a fence in the game grid.
+```json
+{ "message": "Successfully joined the run" }
+```
 
-Parameters:
+or
 
-- id (string): The ID of the game (URL parameter).
-- playerId (string): The ID of the player placing the fence.
-- row (integer): The row number where the fence is being placed.
-- col (integer): The column number where the fence is being placed.
-- border (string): Specifies which border of the cell to place the fence on.
+```json
+{ "error": "Session ID mismatch or user not found" }
+```
 
-Example Request:
+### (7) **Leave a Run** POST /runs/:id/leave
+
+Allows a user to leave a run they've joined.
+
+**Parameters:**
+
+- id (path parameter): The unique identifier for the run.
+- username (string): The user's username.
+- sessionId (string): The session ID for user verification.
+
+**Example Request:**
 
 ```bash
-POST http://localhost:5500/game/uniqueGameId123/placeFence
+POST http://localhost:5500/runs/uniqueRunId/leave
 ```
 
-Body:
+**Body:**
 
 ```json
-[
-  {
-    "playerId": "e4GtY0YC7eJlGJDcA4Hp9",
-    "row": "1",
-    "col": "0",
-    "border": "top"
-  },
-  {
-    "playerId": "e4GtY0YC7eJlGJDcA4Hp9",
-    "row": "0",
-    "col": "0",
-    "border": "bottom"
-  }
-]
+{ "username": "exampleUser", "sessionId": "exampleSessionId" }
 ```
 
-Example Response:
+**Example Response:**
 
 ```json
-{
-  "gameId": "ryJNlAB_52uSSN0fc-XLG",
-  "gridCol": 2,
-  "gridRow": 2,
-  "players": [
-    {
-      "id": "e4GtY0YC7eJlGJDcA4Hp9",
-      "name": "yujie312",
-      "score": 0,
-      "lastActiveTime": 1710412650468
-    },
-    {
-      "id": "f79ltjfSq4CHPn3yOX-u_",
-      "name": "yuweii",
-      "score": 0,
-      "lastActiveTime": 1710412642828
-    }
-  ],
-  "active": true,
-  "requiredPlayers": 2,
-  "fences": {
-    "1-0-top": "e4GtY0YC7eJlGJDcA4Hp9",
-    "0-0-bottom": "e4GtY0YC7eJlGJDcA4Hp9"
-  },
-  "currentPlayerIndex": 0,
-  "isGameEnd": false
-}
+{ "message": "Successfully left the run" }
 ```
 
-6. Update Claimed Cells and Score, Check whether game end
-   `PUT /game/:id/update`
+or
 
-Updates the score for a player and their claimed cells in the game.
+```json
+{ "error": "Session ID mismatch or user not found" }
+```
 
-Parameters:
+### **(8) Get Number of Participants for a Specific Run** GET /runs/:id/participants
 
-- id (string): The ID of the game (URL parameter).
-- playerId (string): The ID of the player whose score is being updated.
-- claimedCells (array of objects): A list of cells claimed by the player.
+Retrieves the number of participants for a specific run by its ID.
 
-Example Request:
+**Parameters:**
+
+- id (path parameter): The unique identifier for the run.
+
+**Example Request:**
+
+```
+GET http://localhost:5500/runs/uniqueRunId/participants
+```
+
+**Example Response:**
+
+```json
+{ "participantCount": 10 }
+```
+
+or
+
+```json
+{ "error": "Run not found" }
+```
+
+### **(9)Get Joined Runs by Username** GET /users/:username/joinedRuns
+
+Retrieves a list of runs that a user has joined.
+
+**Parameters:**
+
+- username (path parameter): The username of the user whose joined runs are to be retrieved.
+
+**Example Request:**
 
 ```bash
-PUT http://localhost:5500/game/uniqueGameId123/update
+GET http://localhost:5500/users/exampleUser/joinedRuns
 ```
 
-Body:
+**Example Response:**
 
 ```json
-{
-  "playerId": "f79ltjfSq4CHPn3yOX-u_",
-  "claimedCells": [
-    {
-      "row": 0,
-      "col": 0
-    }
-  ]
-}
+{ "joinedRuns": [{ "runDetails": "Details of joined run" }] }
 ```
 
-Example Response:
+or
 
 ```json
-{
-  "gameId": "ryJNlAB_52uSSN0fc-XLG",
-  "gridCol": 2,
-  "gridRow": 2,
-  "players": [
-    {
-      "id": "e4GtY0YC7eJlGJDcA4Hp9",
-      "name": "yujie312",
-      "score": 0,
-      "lastActiveTime": 1710412776937
-    },
-    {
-      "id": "f79ltjfSq4CHPn3yOX-u_",
-      "name": "yuweii",
-      "score": 1,
-      "lastActiveTime": 1710412781104
-    }
-  ],
-  "active": true,
-  "requiredPlayers": 2,
-  "fences": {
-    "1-0-top": "e4GtY0YC7eJlGJDcA4Hp9",
-    "0-0-bottom": "e4GtY0YC7eJlGJDcA4Hp9",
-    "0-0-left": "f79ltjfSq4CHPn3yOX-u_",
-    "0-1-left": "e4GtY0YC7eJlGJDcA4Hp9",
-    "0-0-right": "e4GtY0YC7eJlGJDcA4Hp9",
-    "0-0-top": "f79ltjfSq4CHPn3yOX-u_"
-  },
-  "currentPlayerIndex": 1,
-  "isGameEnd": false,
-  "claimedCells": [
-    {
-      "key": "0-0",
-      "playerId": "f79ltjfSq4CHPn3yOX-u_"
-    }
-  ]
-}
+{ "error": "An error occurred" }
 ```
 
-7. User Registration `POST /users/register`
+---
 
-Allows users to register for an account.
+### **(10) Post Comment to a Run** POST /comments
 
-Parameters:
+Allows users to post a comment to a specific run.
 
-- username (string): Username for the new account.
-- password (string): Password for the new account.
+**Parameters:**
 
-Example Request:
+- content (string): The content of the comment.
+- runId (string): The unique identifier for the run the comment is associated with.
+- username (string): The username of the user posting the comment.
+
+**Example Request:**
 
 ```bash
-POST http://localhost:5500/users/register
+POST http://localhost:5500/comments
 ```
 
-Body:
+**Body:**
 
 ```json
 {
-  "username": "yuweiai",
-  "password": "123"
+  "content": "Loved this run!",
+  "runId": "uniqueRunId",
+  "username": "exampleUser"
 }
 ```
 
-Example Response:
+**Example Response:**
 
 ```json
-{
-  "message": "User registered successfully"
-}
+{ "message": "comment saved" }
 ```
 
-8. User Login `POST /users/login`
+or
 
-Allows users to log into their account.
+```json
+{ "message": "An error occurred while saving comments" }
+```
 
-Parameters:
+### **(11) Get Comments for a Run** GET /comments
 
-- username (string): Username of the account.
-- password (string): Password of the account.
+Retrieves all comments associated with a specific run ID.
 
-Example Request:
+**Parameters:**
+
+- runId (query parameter): The unique identifier for the run whose comments are to be retrieved.
+
+**Example Request:**
 
 ```bash
-POST http://localhost:5500/users/login
+GET http://localhost:5500/comments?runId=uniqueRunId
 ```
 
-Body:
+**Example Response:**
 
 ```json
-{
-  "username": "yuweiai",
-  "password": "123"
-}
+[{ "commentDetails": "Details of the comment" }]
 ```
 
-Example Response:
+or
 
 ```json
-{
-  "message": "Login successful",
-  "username": "yuweiai"
-}
+{ "message": "An error occurred while getting comments" }
 ```
 
-9. User Stats `GET /users/:username/stats`
+### **(12) Get Weather Data for a Run** GET /weather
 
-Retrieves statistics for a specific user.
+Retrieves weather forecast data for a specific run based on coordinates and start time.
 
-Parameters:
+**Parameters:**
 
-- username (string): Username of the account (URL parameter).
+- lat (query parameter): The latitude coordinate of the run's location.
+- lon (query parameter): The longitude coordinate of the run's location.
+- startTime (query parameter): The start time of the run.
 
-Example Request:
+**Example Request:**
 
 ```bash
-GET http://localhost:5500/users/existingUser/stats
+GET http://localhost:5500/weather?lat=40.712776&lon=-74.005974&startTime=2023-01-01T09:00:00Z
 ```
 
-Example Response:
+**Example Response:**
 
 ```json
-{
-  "wins": 5,
-  "losses": 3,
-  "draws": 2
-}
+{ "forecastForTargetDate": "Weather forecast data" }
 ```
 
-10. Leave a Game `POST /game/:id/leave`
-
-Allows a player to leave an ongoing game.
-
-Parameters:
-
-- id (string): The ID of the game (URL parameter).
-- playerId (string): The ID of the player leaving the game (Body parameter).
-
-Example Request:
-
-```bash
-POST http://localhost:5500/game/uniqueGameId123/leave
-```
-
-Body:
+or
 
 ```json
-{
-  "playerId": "c5Hiq8HqQakEcqBTBfeWq"
-}
-```
-
-Example Response:
-
-```json
-{
-  "gameId": "fplzu-J2pXVUKYS4nF4Bc",
-  "gridCol": 2,
-  "gridRow": 2,
-  "players": [],
-  "active": false,
-  "requiredPlayers": 2,
-  "fences": {},
-  "currentPlayerIndex": 0,
-  "isGameEnd": true,
-  "claimedCells": [],
-  "result": {
-    "type": "win",
-    "winners": ["qh-mKgWlcbvLmecyZs4MW"]
-  }
-}
+{ "error": "Sorry, we can only predict the weather within 15 days" }
 ```
