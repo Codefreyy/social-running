@@ -5,6 +5,9 @@ import {
   handleEndPointSearch,
   showDetailRunRoute,
   handleAddMeetingPoint,
+  markers,
+  routeLayerID,
+  map,
 } from "./modules/map.js"
 import { Weather } from "./modules/weather.js"
 
@@ -301,12 +304,6 @@ async function onCreateRunFormSubmit(e) {
     return
   }
 
-  // // Validation: Expected pace must be a valid number
-  // if (!/^\d+(\.\d+)?$/.test(expectedPace)) {
-  //   alert("Enter a valid number")
-  //   return
-  // }
-
   // Prepare the run data to be sent to the server
   const runData = {
     startTime,
@@ -334,10 +331,30 @@ async function onCreateRunFormSubmit(e) {
   // Check the response status and alert the user
   if (response.status == 200) {
     alert("Create Run Successfully!")
+    clearFormAndMap()
     loadAndDisplayRuns() // Reload or refresh the runs list/display
   } else {
     alert(`Create run failed: ${result?.error}`)
   }
+}
+
+function clearFormAndMap() {
+  document.getElementById("create-run-form").reset()
+  // Remove all markers
+  Object.keys(markers).forEach((markerKey) => {
+    markers[markerKey].remove() // This removes the marker from the map
+    delete markers[markerKey] // This deletes the marker reference from the object
+  })
+
+  // Remove the route layer if it exists
+  if (map.getSource(routeLayerID)) {
+    map.removeLayer(routeLayerID).removeSource(routeLayerID)
+  }
+
+  // Reset any additional state or variables related to the map here
+  startPointMarker = undefined
+  endPointMarker = undefined
+  meetingPointIndex = 0 // Reset meeting point index if you're tracking it for dynamically added meeting points
 }
 
 function login(username, password) {
