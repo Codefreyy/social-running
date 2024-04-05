@@ -254,7 +254,6 @@ async function onCreateRunFormSubmit(e) {
   const startTime = document.getElementById("start-time").value
   const startTimeDate = new Date(startTime)
   const currentDateTime = new Date() // Get the current date and time
-  debugger
 
   // Collect meeting point data from the form
   const meetingPointsData = [
@@ -490,7 +489,6 @@ async function displayUserRuns(username) {
 
   let averagePace =
     totalParticipations > 0 ? totalPace / totalParticipations : 0
-  debugger
 
   document.getElementById(
     "total-participations"
