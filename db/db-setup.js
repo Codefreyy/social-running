@@ -26,8 +26,8 @@ async function insertStarterData(
 
   await insertRuns(runsCollection)
   await insertUsers(usersCollection)
-  await assignUsersToRuns(usersCollection, runsCollection) // This function will be defined below
-  await insertComments(commentsCollection, runsCollection, usersCollection) // Modified to include runs and users
+  await assignUsersToRuns(usersCollection, runsCollection)
+  await insertComments(commentsCollection, runsCollection, usersCollection)
 }
 
 async function insertRuns(runsCollection) {
@@ -194,13 +194,15 @@ async function insertComments(
   runs.forEach((run) => {
     const users = run.participants
     users.forEach((username, index) => {
-      comments.push({
-        _id: nanoid(),
-        runId: run._id,
-        username: username,
-        content: `This is a great run! Comment ${index} by ${username}`,
-        createdAt: new Date(),
-      })
+      if (index < 6) {
+        comments.push({
+          _id: nanoid(),
+          runId: run._id,
+          username: username,
+          content: `This is a great run! Comment ${index} by ${username}`,
+          createdAt: new Date(),
+        })
+      }
     })
   })
 

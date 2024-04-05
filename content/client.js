@@ -273,7 +273,11 @@ async function onCreateRunFormSubmit(e) {
   }))
 
   startTimeDate.setSeconds(0) // Reset seconds to 0 for the start time
-
+  // Check if the date is invalid (e.g., Date object couldn't parse the string)
+  if (isNaN(startTimeDate.getTime())) {
+    alert("Please fill in the time correctly!")
+    return
+  }
   // Validation: Ensure the start time is not in the past
   if (startTimeDate < currentDateTime) {
     alert("Start time cannot be earlier than current time")
@@ -291,7 +295,7 @@ async function onCreateRunFormSubmit(e) {
   const description = document.getElementById("description").value
 
   // Validation: Check if all required fields are filled
-  if (!startTime || !expectedPace || !level) {
+  if (!startTime || !expectedPace || !level || !name) {
     alert("Please fill in all the fields")
     return
   }
