@@ -22,6 +22,7 @@ export let currentRunId = null
 let levelDistributionChart = null
 
 document.addEventListener("DOMContentLoaded", () => {
+  sessionStorage.clear()
   initializeMap()
   setupEventListeners()
   showAuthSection(true) //ensure that when page loads, only show the auth form
@@ -50,16 +51,6 @@ function setupEventListeners() {
   document
     .getElementById("create-run")
     .addEventListener("submit", onCreateRunFormSubmit)
-
-  // listen expected pace input and show hint if no a number is input
-  document.getElementById("expected-pace").addEventListener("input", (e) => {
-    const errorElemnt = document.getElementById("error-message")
-    if (!e.target.checkValidity()) {
-      errorElemnt.style.display = "block"
-    } else {
-      document.getElementById("error-message").style.display = "none"
-    }
-  })
 
   window.viewRunDetails = showRunDetailPage
 
@@ -263,6 +254,7 @@ async function onCreateRunFormSubmit(e) {
   const startTime = document.getElementById("start-time").value
   const startTimeDate = new Date(startTime)
   const currentDateTime = new Date() // Get the current date and time
+  debugger
 
   // Collect meeting point data from the form
   const meetingPointsData = [
@@ -294,6 +286,10 @@ async function onCreateRunFormSubmit(e) {
   const name = document.getElementById("name").value
   const description = document.getElementById("description").value
 
+  if (isNaN(Number(expectedPace))) {
+    alert("Enter a valid number")
+    return
+  }
   // Validation: Check if all required fields are filled
   if (!startTime || !expectedPace || !level || !name) {
     alert("Please fill in all the fields")
@@ -306,11 +302,11 @@ async function onCreateRunFormSubmit(e) {
     return
   }
 
-  // Validation: Expected pace must be a valid number
-  if (!/^\d+(\.\d+)?$/.test(expectedPace)) {
-    alert("Enter a valid number")
-    return
-  }
+  // // Validation: Expected pace must be a valid number
+  // if (!/^\d+(\.\d+)?$/.test(expectedPace)) {
+  //   alert("Enter a valid number")
+  //   return
+  // }
 
   // Prepare the run data to be sent to the server
   const runData = {
@@ -731,7 +727,7 @@ async function findRun() {
       const response = await fetch("/runs")
       const runs = await response.json()
       var filtered_runs = runs.filter((run) => {
-        return !run.participants.includes(username)
+        return !run.participants?.includes(username)
       })
 
       if (filtered_runs.length >= 1) {
@@ -754,7 +750,7 @@ async function findRun() {
 
           // Number participants compatibility
           let participants_diff = Math.abs(
-            user_avg_num_participant - run.participants.length
+            user_avg_num_participant - run.participants?.length
           )
           score += max_participants_score / (participants_diff + 1)
 

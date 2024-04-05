@@ -151,8 +151,8 @@ async function assignUsersToRuns(usersCollection, runsCollection) {
       const run = runs[Math.floor(Math.random() * runs.length)]
       joinedRuns.add(run._id) // Set automatically handles duplicates
 
-      if (!run.participants.includes(user.username)) {
-        run.participants.push(user.username)
+      if (!run.participants?.includes(user.username)) {
+        run.participants?.push(user.username)
       }
 
       if (user.username === "admin") {
