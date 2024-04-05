@@ -225,8 +225,6 @@ button:hover {
   font-size: 16px;
 }
 
-/*for top two line of the table*/
-
 #start-search-area,
 #end-search-area {
   position: relative;
@@ -572,7 +570,7 @@ form select {
 #filter-run-section select:hover,
 #filter-run-section select:focus {
   border-color: #999;
-  cursor: pointer; /* 改变鼠标指针形状为手型，提高用户交互体验 */
+  cursor: pointer;
 }
 
 /** user space **/
@@ -758,4 +756,9 @@ form select {
 #weather {
   padding: 20px;
   text-align: center;
+}
+
+#start-map {
+  width: 100%;
+  height: 400px;
 }

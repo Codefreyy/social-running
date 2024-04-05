@@ -38,6 +38,10 @@ export const handleCommentSubmit = async () => {
   const username = sessionStorage.getItem("username")
 
   const commentText = comInput.value
+  if (!commentText.trim()) {
+    alert("Cannot Submit Empty Comment!")
+    return
+  }
   // If the comment text, current run activity ID (currentRunId) and user name all exist, the internal code is executed.
   if (commentText && currentRunId && username) {
     const response = await fetch("/comments", {
