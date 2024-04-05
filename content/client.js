@@ -351,10 +351,10 @@ function clearFormAndMap() {
     map.removeLayer(routeLayerID).removeSource(routeLayerID)
   }
 
-  // Reset any additional state or variables related to the map here
-  startPointMarker = undefined
-  endPointMarker = undefined
-  meetingPointIndex = 0 // Reset meeting point index if you're tracking it for dynamically added meeting points
+  // // Reset any additional state or variables related to the map here
+  // startPointMarker = undefined
+  // endPointMarker = undefined
+  // meetingPointIndex = 0 // Reset meeting point index if you're tracking it for dynamically added meeting points
 }
 
 function login(username, password) {
